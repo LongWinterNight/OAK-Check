@@ -9,6 +9,7 @@ import TopBar from '@/components/layout/TopBar/TopBar';
 import { Button } from '@/components/ui';
 import { Icons } from '@/components/icons';
 import { computeChapterStats, computeProgress } from '@/lib/utils';
+import { toast } from '@/components/ui/Toast/toastStore';
 import type { Shot, ChapterWithItems, RenderVersion, Comment } from '@/types';
 import styles from './page.module.css';
 
@@ -57,8 +58,7 @@ export default function ChecklistClient({
         body: JSON.stringify({ state }),
       });
     } catch {
-      // При ошибке можно откатить — пока просто логируем
-      console.error('Не удалось сохранить состояние пункта');
+      toast.error('Не удалось сохранить изменение');
     }
   };
 
@@ -74,7 +74,7 @@ export default function ChecklistClient({
         setComments((prev) => [...prev, newComment]);
       }
     } catch {
-      console.error('Не удалось отправить комментарий');
+      toast.error('Не удалось отправить комментарий');
     }
   };
 

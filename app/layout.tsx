@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import ThemeProvider from '@/components/layout/ThemeProvider/ThemeProvider';
 import Providers from '@/components/layout/Providers/Providers';
+import { ToastContainer } from '@/components/ui/Toast/Toast';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -18,6 +19,7 @@ export default function RootLayout({
       <body>
         <Providers>
           <ThemeProvider>{children}</ThemeProvider>
+          <ToastContainer />
         </Providers>
       </body>
     </html>

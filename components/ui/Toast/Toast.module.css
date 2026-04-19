@@ -1,0 +1,105 @@
+.container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 280px;
+  max-width: 420px;
+  padding: 12px 14px;
+  border-radius: var(--radius-lg);
+  border: 1px solid;
+  box-shadow: var(--shadow-lg);
+  font-size: 13px;
+  font-family: var(--font-sans);
+  pointer-events: all;
+  animation: slideIn 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(110%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.success {
+  background: color-mix(in srgb, var(--done) 10%, var(--surface));
+  border-color: color-mix(in srgb, var(--done) 25%, transparent);
+  color: var(--fg);
+}
+
+.success .icon {
+  color: var(--done);
+}
+
+.error {
+  background: color-mix(in srgb, var(--blocked) 10%, var(--surface));
+  border-color: color-mix(in srgb, var(--blocked) 25%, transparent);
+  color: var(--fg);
+}
+
+.error .icon {
+  color: var(--blocked);
+}
+
+.info {
+  background: color-mix(in srgb, var(--info) 10%, var(--surface));
+  border-color: color-mix(in srgb, var(--info) 25%, transparent);
+  color: var(--fg);
+}
+
+.info .icon {
+  color: var(--info);
+}
+
+.warning {
+  background: color-mix(in srgb, var(--wip) 10%, var(--surface));
+  border-color: color-mix(in srgb, var(--wip) 25%, transparent);
+  color: var(--fg);
+}
+
+.warning .icon {
+  color: var(--wip);
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.message {
+  flex: 1;
+  line-height: 1.4;
+}
+
+.close {
+  display: flex;
+  align-items: center;
+  border: none;
+  background: none;
+  color: var(--fg-subtle);
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  transition: color 0.1s;
+}
+
+.close:hover {
+  color: var(--fg);
+}

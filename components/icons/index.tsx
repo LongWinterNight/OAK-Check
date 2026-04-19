@@ -185,6 +185,20 @@ export const Icons = {
   Clock: (p: IconProps) => (
     <Ico {...p}><circle cx="10" cy="10" r="7" /><path d="M10 6v4l3 2" /></Ico>
   ),
+  Users: (p: IconProps) => (
+    <Ico {...p}>
+      <circle cx="7" cy="7" r="3" />
+      <path d="M1 17c0-3 2.5-5 6-5" />
+      <circle cx="14" cy="7" r="3" />
+      <path d="M19 17c0-3-2.5-5-6-5s-6 2-6 5" />
+    </Ico>
+  ),
+  AlertTriangle: (p: IconProps) => (
+    <Ico {...p}><path d="M10 4L2 17h16L10 4zM10 10v4M10 15.5v.5" /></Ico>
+  ),
+  MessageSquare: (p: IconProps) => (
+    <Ico {...p}><path d="M4 5h12a1 1 0 011 1v8a1 1 0 01-1 1h-7l-3 3v-3H4a1 1 0 01-1-1V6a1 1 0 011-1z" /></Ico>
+  ),
   // Логотип OAK — дубовый лист (фирменный элемент)
   Oak: ({ size = 20, color = 'currentColor', className }: IconProps) => (
     <svg width={size} height={size} viewBox="0 0 32 32" fill="none" className={className}>
