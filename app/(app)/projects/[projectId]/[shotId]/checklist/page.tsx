@@ -1,3 +1,5 @@
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+/* Типы Prisma будут доступны после `pnpm prisma generate` */
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { computeChapterStats } from '@/lib/utils';
@@ -36,10 +38,12 @@ export default async function ChecklistPage({ params }: Props) {
     }
   }
 
-  const chapters: ChapterWithItems[] = Array.from(chapterMap.values()).map((chapter) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const chapters: ChapterWithItems[] = Array.from(chapterMap.values()).map((chapter: any) => {
     const chapterItems = items
-      .filter((i) => i.chapterId === chapter.id)
-      .map(({ chapter: _c, ...item }) => ({
+      .filter((item: any) => item.chapterId === chapter.id)
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      .map(({ chapter: _chapter, ...item }: any) => ({
         ...item,
         state: item.state as 'TODO' | 'WIP' | 'DONE' | 'BLOCKED',
         createdAt: item.createdAt.toISOString(),
@@ -72,11 +76,12 @@ export default async function ChecklistPage({ params }: Props) {
     orderBy: { createdAt: 'asc' },
   });
 
-  const versions = versionsRaw.map((v) => ({
-    ...v,
-    createdAt: v.createdAt.toISOString(),
-    thumbnailUrl: v.thumbnailUrl ?? null,
-    fileSize: v.fileSize ?? null,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const versions = versionsRaw.map((ver: any) => ({
+    ...ver,
+    createdAt: ver.createdAt.toISOString(),
+    thumbnailUrl: ver.thumbnailUrl ?? null,
+    fileSize: ver.fileSize ?? null,
   }));
 
   // Комментарии
@@ -86,17 +91,18 @@ export default async function ChecklistPage({ params }: Props) {
     orderBy: { createdAt: 'asc' },
   });
 
-  const comments = commentsRaw.map((c) => ({
-    ...c,
-    createdAt: c.createdAt.toISOString(),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const comments = commentsRaw.map((com: any) => ({
+    ...com,
+    createdAt: com.createdAt.toISOString(),
     user: {
-      ...c.user,
-      role: c.user.role as 'ARTIST' | 'LEAD' | 'QA' | 'POST' | 'PM' | 'ADMIN',
-      createdAt: c.user.createdAt.toISOString(),
+      ...com.user,
+      role: com.user.role as 'ARTIST' | 'LEAD' | 'QA' | 'POST' | 'PM' | 'ADMIN',
+      createdAt: com.user.createdAt.toISOString(),
     },
-    pinX: c.pinX ?? null,
-    pinY: c.pinY ?? null,
-    parentId: c.parentId ?? null,
+    pinX: com.pinX ?? null,
+    pinY: com.pinY ?? null,
+    parentId: com.parentId ?? null,
   }));
 
   const shotData = {

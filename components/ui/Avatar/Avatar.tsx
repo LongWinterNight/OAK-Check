@@ -69,14 +69,17 @@ export function AvatarStack({ names, srcs = [], size = 22, max = 3 }: AvatarStac
   return (
     <div className={styles.stack}>
       {visible.map((name, i) => (
-        <Avatar
+        <div
           key={i}
-          name={name}
-          src={srcs[i]}
-          size={size}
-          className={styles.stackItem}
-          style={{ marginLeft: i > 0 ? -(size * 0.3) : 0 } as React.CSSProperties}
-        />
+          style={{ marginLeft: i > 0 ? -(size * 0.3) : 0 }}
+        >
+          <Avatar
+            name={name}
+            src={srcs[i]}
+            size={size}
+            className={styles.stackItem}
+          />
+        </div>
       ))}
       {rest > 0 && (
         <div

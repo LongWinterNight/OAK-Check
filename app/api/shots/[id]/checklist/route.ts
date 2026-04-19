@@ -29,8 +29,10 @@ export async function GET(
 
     const chapters = Array.from(chapterMap.values()).map((chapter) => {
       const chapterItems = items
-        .filter((i) => i.chapterId === chapter.id)
-        .map(({ chapter: _c, ...item }) => item);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .filter((item: any) => item.chapterId === chapter.id)
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        .map(({ chapter: _chap, ...item }: any) => item);
 
       const stats = computeChapterStats(chapterItems);
 
