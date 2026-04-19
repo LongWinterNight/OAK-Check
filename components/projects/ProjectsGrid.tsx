@@ -60,7 +60,7 @@ function ProjectCard({
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const doneShots = project.shots.filter((s) => s.status === 'DONE').length;
+  const doneShots = (project.shots ?? []).filter((s) => s.status === 'DONE').length;
 
   const handleDelete = async () => {
     setDeleting(true);
@@ -106,7 +106,7 @@ function ProjectCard({
             <ProgressBar value={project.totalProgress} height={5} />
             <div className={styles.cardFooter}>
               <span className={styles.shotCount}>
-                {doneShots}/{project.shots.length} шотов
+                {doneShots}/{(project.shots ?? []).length} шотов
               </span>
               <span className={styles.progress}>{Math.round(project.totalProgress)}%</span>
             </div>
@@ -170,8 +170,9 @@ export function ProjectsGrid({ initialProjects }: ProjectsGridProps) {
       p.client.toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleCreated = (project: Project) => {
-    setProjects((prev) => [project, ...prev]);
+  const handleCreated = (project: Omit<Project, 'shots' | 'totalProgress'> & Partial<Project>) => {
+    const full: Project = { shots: [], totalProgress: 0, ...project };
+    setProjects((prev) => [full, ...prev]);
     toast.success(`Проект «${project.title}» создан`);
     router.refresh();
   };
