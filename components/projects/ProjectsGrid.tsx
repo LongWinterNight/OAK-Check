@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Icons } from '@/components/icons';
-import { Badge, Button, ProgressBar } from '@/components/ui';
+import { Badge, Button, ProgressBar, ConfirmDialog } from '@/components/ui';
 import { shotStatusBadgeKind } from '@/lib/utils';
 import { toast } from '@/components/ui/Toast/toastStore';
 import { NewProjectModal } from './NewProjectModal';
@@ -49,42 +50,106 @@ function projectGradient(id: string) {
   return `linear-gradient(135deg, ${a}, ${b})`;
 }
 
-function ProjectCard({ project }: { project: Project }) {
+function ProjectCard({
+  project,
+  onDelete,
+}: {
+  project: Project;
+  onDelete: (id: string) => void;
+}) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const doneShots = project.shots.filter((s) => s.status === 'DONE').length;
 
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/projects/${project.id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error();
+      onDelete(project.id);
+      toast.success(`Проект «${project.title}» удалён`);
+    } catch {
+      toast.error('Не удалось удалить проект');
+    } finally {
+      setDeleting(false);
+      setConfirmDelete(false);
+    }
+  };
+
   return (
-    <Link href={`/projects/${project.id}`} className={styles.card}>
-      <div className={styles.cardHeader}>
-        <div
-          className={styles.thumb}
-          style={{ background: projectGradient(project.id) }}
-          aria-hidden="true"
-        />
-        <div className={styles.cardMeta}>
-          <Badge kind={shotStatusBadgeKind(project.status as any)} size="sm" dot>
-            {STATUS_LABELS[project.status]}
-          </Badge>
-          {project.dueDate && (
-            <span className={styles.due}>
-              <Icons.Calendar size={11} />
-              {new Date(project.dueDate).toLocaleDateString('ru', { day: 'numeric', month: 'short' })}
-            </span>
+    <>
+      <div className={styles.cardWrap}>
+        <Link href={`/projects/${project.id}`} className={styles.card}>
+          <div className={styles.cardHeader}>
+            <div
+              className={styles.thumb}
+              style={{ background: projectGradient(project.id) }}
+              aria-hidden="true"
+            />
+            <div className={styles.cardMeta}>
+              <Badge kind={shotStatusBadgeKind(project.status as any)} size="sm" dot>
+                {STATUS_LABELS[project.status]}
+              </Badge>
+              {project.dueDate && (
+                <span className={styles.due}>
+                  <Icons.Calendar size={11} />
+                  {new Date(project.dueDate).toLocaleDateString('ru', { day: 'numeric', month: 'short' })}
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className={styles.cardBody}>
+            <div className={styles.client}>{project.client}</div>
+            <div className={styles.title}>{project.title}</div>
+            <ProgressBar value={project.totalProgress} height={5} />
+            <div className={styles.cardFooter}>
+              <span className={styles.shotCount}>
+                {doneShots}/{project.shots.length} шотов
+              </span>
+              <span className={styles.progress}>{Math.round(project.totalProgress)}%</span>
+            </div>
+          </div>
+        </Link>
+
+        <div className={styles.menuWrap}>
+          <button
+            className={styles.menuBtn}
+            onClick={(e) => { e.preventDefault(); setMenuOpen((v) => !v); }}
+            aria-label="Действия"
+          >
+            <Icons.More size={14} />
+          </button>
+          {menuOpen && (
+            <>
+              <div className={styles.menuBackdrop} onClick={() => setMenuOpen(false)} />
+              <div className={styles.menu}>
+                <button
+                  className={[styles.menuItem, styles.menuDanger].join(' ')}
+                  onClick={() => { setMenuOpen(false); setConfirmDelete(true); }}
+                >
+                  <Icons.X size={13} />
+                  Удалить
+                </button>
+              </div>
+            </>
           )}
         </div>
       </div>
 
-      <div className={styles.cardBody}>
-        <div className={styles.client}>{project.client}</div>
-        <div className={styles.title}>{project.title}</div>
-        <ProgressBar value={project.totalProgress} height={5} />
-        <div className={styles.cardFooter}>
-          <span className={styles.shotCount}>
-            {doneShots}/{project.shots.length} шотов
-          </span>
-          <span className={styles.progress}>{Math.round(project.totalProgress)}%</span>
-        </div>
-      </div>
-    </Link>
+      {confirmDelete && (
+        <ConfirmDialog
+          title="Удалить проект?"
+          message={`Проект «${project.title}» и все его данные будут удалены безвозвратно.`}
+          confirmLabel="Удалить"
+          danger
+          loading={deleting}
+          onClose={() => setConfirmDelete(false)}
+          onConfirm={handleDelete}
+        />
+      )}
+    </>
   );
 }
 
@@ -96,6 +161,7 @@ export function ProjectsGrid({ initialProjects }: ProjectsGridProps) {
   const [projects, setProjects] = useState(initialProjects);
   const [showModal, setShowModal] = useState(false);
   const [search, setSearch] = useState('');
+  const router = useRouter();
 
   const filtered = projects.filter(
     (p) =>
@@ -107,6 +173,11 @@ export function ProjectsGrid({ initialProjects }: ProjectsGridProps) {
   const handleCreated = (project: Project) => {
     setProjects((prev) => [project, ...prev]);
     toast.success(`Проект «${project.title}» создан`);
+    router.refresh();
+  };
+
+  const handleDelete = (id: string) => {
+    setProjects((prev) => prev.filter((p) => p.id !== id));
   };
 
   return (
@@ -139,7 +210,7 @@ export function ProjectsGrid({ initialProjects }: ProjectsGridProps) {
       ) : (
         <div className={styles.grid}>
           {filtered.map((p) => (
-            <ProjectCard key={p.id} project={p} />
+            <ProjectCard key={p.id} project={p} onDelete={handleDelete} />
           ))}
         </div>
       )}

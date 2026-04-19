@@ -149,3 +149,78 @@
   color: var(--fg-subtle);
   font-size: 13px;
 }
+
+.cardWrap {
+  position: relative;
+}
+
+.menuWrap {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 10;
+}
+
+.menuBtn {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.3);
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+
+.cardWrap:hover .menuBtn {
+  opacity: 1;
+}
+
+.menuBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+}
+
+.menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  min-width: 140px;
+  overflow: hidden;
+  z-index: 20;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: none;
+  font-size: 13px;
+  color: var(--fg);
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.menuItem:hover {
+  background: var(--surface-2);
+}
+
+.menuDanger {
+  color: var(--blocked);
+}
+
+.menuDanger:hover {
+  background: color-mix(in srgb, var(--blocked) 8%, var(--surface));
+}

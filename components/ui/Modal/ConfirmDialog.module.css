@@ -1,0 +1,6 @@
+.message {
+  font-size: 13px;
+  color: var(--fg-muted);
+  line-height: 1.6;
+  margin: 0;
+}

@@ -1,66 +1,4 @@
-.overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 200;
-  backdrop-filter: blur(2px);
-}
-
-.modal {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  width: 440px;
-  max-width: calc(100vw - 32px);
-  display: flex;
-  flex-direction: column;
-  box-shadow: var(--shadow-lg);
-}
-
-.header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  padding: 20px 20px 16px;
-  border-bottom: 1px solid var(--border);
-}
-
-.title {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--fg);
-}
-
-.subtitle {
-  font-size: 12px;
-  color: var(--fg-muted);
-  margin-top: 2px;
-}
-
-.closeBtn {
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  background: none;
-  color: var(--fg-subtle);
-  cursor: pointer;
-  border-radius: var(--radius);
-  transition: background 0.1s, color 0.1s;
-}
-
-.closeBtn:hover {
-  background: var(--surface-2);
-  color: var(--fg);
-}
-
 .body {
-  padding: 16px 20px;
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -145,18 +83,9 @@
 
 .error {
   font-size: 12px;
-  color: var(--danger);
-  background: color-mix(in srgb, var(--danger) 10%, transparent);
-  border: 1px solid color-mix(in srgb, var(--danger) 20%, transparent);
+  color: var(--blocked);
+  background: color-mix(in srgb, var(--blocked) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--blocked) 20%, transparent);
   border-radius: var(--radius);
   padding: 8px 10px;
-}
-
-.footer {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-  padding: 14px 20px;
-  border-top: 1px solid var(--border);
 }

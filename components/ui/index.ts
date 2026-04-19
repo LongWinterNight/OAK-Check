@@ -22,3 +22,8 @@ export type { ItemState } from './Check3/Check3';
 export { ToastContainer } from './Toast/Toast';
 export { toast } from './Toast/toastStore';
 export type { ToastKind } from './Toast/toastStore';
+
+export { Modal } from './Modal/Modal';
+export type { ModalProps } from './Modal/Modal';
+
+export { ConfirmDialog } from './Modal/ConfirmDialog';

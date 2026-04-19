@@ -7,8 +7,12 @@ export const CreateProjectSchema = z.object({
   coverGradient: z.string().optional(),
 });
 
-export const UpdateProjectSchema = CreateProjectSchema.partial().extend({
-  status: z.enum(['ACTIVE', 'COMPLETED', 'ARCHIVED']).optional(),
+export const UpdateProjectSchema = z.object({
+  title: z.string().min(1).max(100).optional(),
+  client: z.string().min(1).max(100).optional(),
+  status: z.enum(['ACTIVE', 'PAUSED', 'DONE', 'ARCHIVED']).optional(),
+  dueDate: z.string().nullable().optional(),
+  coverGradient: z.string().optional(),
 });
 
 // Шоты
