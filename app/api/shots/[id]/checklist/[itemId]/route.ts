@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { UpdateCheckItemSchema } from '@/lib/zod-schemas';
+import { broadcast } from '@/lib/sse/emitter';
 
 export async function PATCH(
   req: NextRequest,
@@ -27,7 +28,16 @@ export async function PATCH(
     const updated = await prisma.checkItem.update({
       where: { id: itemId },
       data: parsed.data,
-      include: { owner: true },
+      include: { owner: true, shot: { select: { projectId: true } } },
+    });
+
+    // Рассылаем real-time событие всем в проекте
+    broadcast(updated.shot.projectId, {
+      type: 'checklist:updated',
+      shotId,
+      itemId,
+      state: updated.state,
+      userId: updated.ownerId ?? '',
     });
 
     return NextResponse.json(updated);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import ShotHeader from '@/components/checklist/ShotHeader/ShotHeader';
 import ChaptersPanel from '@/components/checklist/ChaptersPanel/ChaptersPanel';
 import ItemsList from '@/components/checklist/ItemsList/ItemsList';
@@ -10,11 +10,14 @@ import { Button } from '@/components/ui';
 import { Icons } from '@/components/icons';
 import { computeChapterStats, computeProgress } from '@/lib/utils';
 import { toast } from '@/components/ui/Toast/toastStore';
+import { useSSE } from '@/hooks/useSSE';
+import type { SSEEvent } from '@/lib/sse/emitter';
 import type { Shot, ChapterWithItems, RenderVersion, Comment } from '@/types';
 import styles from './page.module.css';
 
 interface ChecklistClientProps {
   shot: Shot;
+  projectId: string;
   initialChapters: ChapterWithItems[];
   versions: RenderVersion[];
   comments: Comment[];
@@ -22,35 +25,47 @@ interface ChecklistClientProps {
 
 export default function ChecklistClient({
   shot,
+  projectId,
   initialChapters,
   versions,
   comments: initialComments,
 }: ChecklistClientProps) {
   const [chapters, setChapters] = useState(initialChapters);
-  const [activeChapterId, setActiveChapterId] = useState(
-    initialChapters[0]?.id ?? ''
-  );
+  const [activeChapterId, setActiveChapterId] = useState(initialChapters[0]?.id ?? '');
   const [comments, setComments] = useState(initialComments);
 
-  const totalItems = chapters.flatMap((c) => c.items);
-  const totalProgress = computeProgress(totalItems);
-
-  const activeChapter = chapters.find((c) => c.id === activeChapterId) ?? chapters[0];
-
-  // Оптимистичное обновление состояния пункта
-  const handleStateChange = async (itemId: string, state: 'TODO' | 'WIP' | 'DONE' | 'BLOCKED') => {
-    // Немедленно обновляем UI
+  const applyStateChange = useCallback((itemId: string, state: string) => {
     setChapters((prev) =>
       prev.map((chapter) => {
         const updatedItems = chapter.items.map((item) =>
-          item.id === itemId ? { ...item, state } : item
+          item.id === itemId ? { ...item, state: state as 'TODO' | 'WIP' | 'DONE' | 'BLOCKED' } : item
         );
         const stats = computeChapterStats(updatedItems);
         return { ...chapter, items: updatedItems, ...stats };
       })
     );
+  }, []);
 
-    // Синхронизируем с сервером в фоне
+  // SSE: слушаем обновления от других пользователей
+  useSSE(projectId, useCallback((event: SSEEvent) => {
+    if (event.type === 'checklist:updated' && event.shotId === shot.id) {
+      applyStateChange(event.itemId, event.state);
+    }
+    if (event.type === 'comment:added' && event.shotId === shot.id) {
+      setComments((prev) => {
+        const c = event.comment as Comment;
+        if (prev.find((x) => x.id === c.id)) return prev;
+        return [...prev, c];
+      });
+    }
+  }, [shot.id, applyStateChange]));
+
+  const totalItems = chapters.flatMap((c) => c.items);
+  const totalProgress = computeProgress(totalItems);
+  const activeChapter = chapters.find((c) => c.id === activeChapterId) ?? chapters[0];
+
+  const handleStateChange = async (itemId: string, state: 'TODO' | 'WIP' | 'DONE' | 'BLOCKED') => {
+    applyStateChange(itemId, state);
     try {
       await fetch(`/api/shots/${shot.id}/checklist/${itemId}`, {
         method: 'PATCH',
@@ -93,23 +108,17 @@ export default function ChecklistClient({
         }
       />
       <div className={styles.page}>
-        {/* Хедер шота */}
         <ShotHeader
           shot={shot}
           progress={totalProgress}
           latestVersion={versions[versions.length - 1]?.version ?? 'v001'}
         />
-
-        {/* Основная область */}
         <div className={styles.body}>
-          {/* Панель глав */}
           <ChaptersPanel
             chapters={chapters}
             activeId={activeChapterId}
             onSelect={setActiveChapterId}
           />
-
-          {/* Список пунктов */}
           {activeChapter && (
             <ItemsList
               chapter={activeChapter}
@@ -117,8 +126,6 @@ export default function ChecklistClient({
               onStateChange={handleStateChange}
             />
           )}
-
-          {/* Правая панель */}
           <RightPanel
             versions={versions}
             comments={comments}

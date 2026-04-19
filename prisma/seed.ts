@@ -1,7 +1,11 @@
 import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
 import bcrypt from 'bcryptjs';
 
-const prisma = new PrismaClient();
+const connectionString =
+  process.env.DATABASE_URL ?? 'postgresql://postgres:speed2705@localhost:5432/oak_check';
+const adapter = new PrismaPg({ connectionString });
+const prisma = new PrismaClient({ adapter, log: ['error'] });
 
 async function main() {
   console.log('Начинаем сидирование базы данных OAK·Check...');
@@ -56,7 +60,7 @@ async function main() {
         title: 'Primavera',
         client: 'Spartak',
         coverGradient: 'linear-gradient(135deg, #7a5a3a, #3a2a1a)',
-        status: 'COMPLETED',
+        status: 'DONE',
       },
     }),
     prisma.project.create({
@@ -175,8 +179,8 @@ async function main() {
   for (const def of chapterDefs) {
     const chapter = await prisma.chapter.create({
       data: {
+        shotId: shot04.id,
         title: def.title,
-        description: def.desc,
         order: def.order,
       },
     });
@@ -334,14 +338,14 @@ async function main() {
   // ===== АКТИВНОСТИ =====
   await prisma.activity.createMany({
     data: [
-      { userId: 'u1', shotId: shot04.id, type: 'RENDER_UPLOADED', payload: { version: 'v012' } },
-      { userId: 'u4', shotId: shot04.id, type: 'COMMENT_ADDED', payload: { body: 'firefly на карнизах' } },
-      { userId: 'u2', shotId: shot04.id, type: 'CHECKLIST_ITEM_UPDATED', payload: { state: 'BLOCKED', item: 'Экспозиция' } },
-      { userId: 'u1', shotId: shot04.id, type: 'RENDER_UPLOADED', payload: { version: 'v011' } },
-      { userId: 'u2', shotId: shot04.id, type: 'CHECKLIST_ITEM_UPDATED', payload: { state: 'DONE', item: 'Моделирование' } },
-      { userId: 'u3', shotId: shot04.id, type: 'COMMENT_ADDED', payload: { body: '3 референса в pre-production' } },
-      { userId: 'u1', shotId: shot04.id, type: 'SHOT_STATUS_CHANGED', payload: { from: 'TODO', to: 'WIP' } },
-      { userId: 'u2', type: 'SHOT_CREATED', payload: { title: 'Shot 04 · Lobby' } },
+      { userId: 'u1', shotId: shot04.id, type: 'VERSION_UPLOADED', message: 'Загружен рендер v012' },
+      { userId: 'u4', shotId: shot04.id, type: 'COMMENT_ADDED', message: 'Добавлен комментарий: firefly на карнизах' },
+      { userId: 'u2', shotId: shot04.id, type: 'ITEM_STATE_CHANGED', message: 'Экспозиция → BLOCKED' },
+      { userId: 'u1', shotId: shot04.id, type: 'VERSION_UPLOADED', message: 'Загружен рендер v011' },
+      { userId: 'u2', shotId: shot04.id, type: 'ITEM_STATE_CHANGED', message: 'Моделирование → DONE' },
+      { userId: 'u3', shotId: shot04.id, type: 'COMMENT_ADDED', message: '3 референса в pre-production' },
+      { userId: 'u1', shotId: shot04.id, type: 'SHOT_STATUS_CHANGED', message: 'Статус шота: TODO → WIP' },
+      { userId: 'u2', shotId: shot04.id, type: 'ITEM_CREATED', message: 'Shot 04 · Lobby добавлен' },
     ],
   });
   console.log(`✓ Создано 8 записей активности`);
@@ -349,37 +353,37 @@ async function main() {
   // ===== ШАБЛОНЫ ЧЕКЛИСТОВ =====
   const fullTemplate = await prisma.checklistTemplate.create({
     data: {
-      title: 'Стандартный интерьер V-Ray',
+      name: 'Стандартный интерьер V-Ray',
+      category: 'Интерьер',
       description: 'Полный чеклист для интерьерных рендеров в V-Ray. Охватывает все 7 этапов.',
-      tags: ['interior', 'v-ray', 'full'],
       usedCount: 14,
     },
   });
 
   await prisma.templateItem.createMany({
     data: [
-      { templateId: fullTemplate.id, chapterKey: 'pre', title: 'Бриф согласован с арт-директором', order: 0 },
-      { templateId: fullTemplate.id, chapterKey: 'pre', title: 'Референсы собраны (минимум 6)', order: 1 },
-      { templateId: fullTemplate.id, chapterKey: 'mod', title: "Геометрия без n-gon'ов", order: 0 },
-      { templateId: fullTemplate.id, chapterKey: 'mod', title: 'UVW разложены', order: 1 },
-      { templateId: fullTemplate.id, chapterKey: 'qc', title: 'Test-render 1080p без шумов', order: 0 },
+      { templateId: fullTemplate.id, title: 'Бриф согласован с арт-директором', order: 0 },
+      { templateId: fullTemplate.id, title: 'Референсы собраны (минимум 6)', order: 1 },
+      { templateId: fullTemplate.id, title: "Геометрия без n-gon'ов", order: 2 },
+      { templateId: fullTemplate.id, title: 'UVW разложены', order: 3 },
+      { templateId: fullTemplate.id, title: 'Test-render 1080p без шумов', order: 4 },
     ],
   });
 
   await prisma.checklistTemplate.create({
     data: {
-      title: 'Быстрый QC',
+      name: 'Быстрый QC',
+      category: 'QC',
       description: 'Минимальный чеклист перед отправкой на ревью.',
-      tags: ['qc', 'quick'],
       usedCount: 8,
     },
   });
 
   await prisma.checklistTemplate.create({
     data: {
-      title: 'Экстерьер Corona',
+      name: 'Экстерьер Corona',
+      category: 'Экстерьер',
       description: 'Чеклист для экстерьерных рендеров в Corona Renderer.',
-      tags: ['exterior', 'corona'],
       usedCount: 5,
     },
   });
