@@ -1,0 +1,48 @@
+.check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  outline: none;
+  user-select: none;
+}
+
+.check:focus-visible {
+  box-shadow: var(--shadow-focus);
+}
+
+/* todo: пустой, граница */
+.todo {
+  border: 1.5px solid var(--border-strong);
+  background: transparent;
+}
+
+.todo:hover {
+  border-color: var(--fg-subtle);
+}
+
+/* wip: граница и фон цвета wip */
+.wip {
+  border: 1.5px solid var(--wip);
+  background: color-mix(in srgb, var(--wip) 12%, transparent);
+}
+
+.wipSquare {
+  display: block;
+  background: var(--wip);
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* done: заполненный */
+.done {
+  border: 1.5px solid var(--done);
+  background: var(--done);
+}
+
+.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

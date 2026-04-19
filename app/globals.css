@@ -1,40 +1,115 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Поверхности */
+  --bg: #F7F4EE;
+  --surface: #FFFFFF;
+  --surface-2: #F2EEE5;
+  --surface-3: #ECE6D9;
+  --border: #E2DCD0;
+  --border-strong: #C9C1B1;
+
+  /* Текст */
+  --fg: #1A1813;
+  --fg-muted: #6A6558;
+  --fg-subtle: #8F897B;
+
+  /* Семантические */
+  --done: #3F8C4A;
+  --wip: #B87A14;
+  --blocked: #B8402D;
+  --info: #2563B0;
+
+  /* Бренд */
+  --accent: #1E6FE0;
+  --oak: #8C5E1E;
+  --oak-deep: #4A3616;
+
+  /* Скругления */
+  --radius: 8px;
+  --radius-sm: 6px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  /* Типографика */
+  --font-ui: 'Inter Tight', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
+
+  /* Тени */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.14), 0 2px 6px rgba(0, 0, 0, 0.08);
+  --shadow-focus: 0 0 0 3px rgba(30, 111, 224, 0.25);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+[data-theme="dark"] {
+  --bg: #0E0D0B;
+  --surface: #16140F;
+  --surface-2: #1C1914;
+  --surface-3: #24201A;
+  --border: #2A2620;
+  --border-strong: #3B3529;
+  --fg: #F2EFE7;
+  --fg-muted: #A39E90;
+  --fg-subtle: #6B6659;
+  --done: #7BC47F;
+  --wip: #E8B04B;
+  --blocked: #E26B5A;
+  --info: #7CB8FF;
+  --accent: #58A6FF;
+  --oak: #C89B54;
+  --oak-deep: #7A5A2E;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35), 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.25);
+  --shadow-focus: 0 0 0 3px rgba(88, 166, 255, 0.25);
 }
 
-html {
-  height: 100%;
+/* Акцентные варианты темы */
+[data-accent="oak"] { --accent: #8C5E1E; }
+[data-accent="oak"][data-theme="dark"] { --accent: #C89B54; }
+[data-accent="amber"] { --accent: #B87A14; }
+[data-accent="amber"][data-theme="dark"] { --accent: #E8B04B; }
+[data-accent="green"] { --accent: #3F8C4A; }
+[data-accent="green"][data-theme="dark"] { --accent: #7BC47F; }
+[data-accent="lime"] { --accent: #6A8A0D; }
+[data-accent="lime"][data-theme="dark"] { --accent: #C6E84B; }
+
+/* Кастомный скроллбар */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-strong);
+  background-clip: padding-box;
+  border: 2px solid transparent;
+}
+::-webkit-scrollbar-track { background: transparent; }
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 html,
 body {
-  max-width: 100vw;
-  overflow-x: hidden;
+  height: 100%;
 }
 
 body {
-  min-height: 100%;
-  display: flex;
-  flex-direction: column;
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-ui);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
+  line-height: 1.55;
 }
 
 a {
@@ -42,8 +117,14 @@ a {
   text-decoration: none;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
+button {
+  font-family: var(--font-ui);
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+input,
+textarea {
+  font-family: var(--font-ui);
 }

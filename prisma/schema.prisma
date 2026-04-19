@@ -1,0 +1,209 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  role      Role     @default(ARTIST)
+  avatarUrl String?
+  online    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  assignedShots Shot[]      @relation("ShotAssignee")
+  checkItems    CheckItem[] @relation("ItemOwner")
+  comments      Comment[]
+  activities    Activity[]
+
+  @@map("users")
+}
+
+enum Role {
+  ARTIST
+  LEAD
+  QA
+  POST
+  PM
+  ADMIN
+}
+
+model Project {
+  id             String        @id @default(cuid())
+  title          String
+  client         String
+  coverGradient  String        @default("linear-gradient(135deg, #3a5a7a, #1a2a3a)")
+  status         ProjectStatus @default(ACTIVE)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  shots Shot[]
+
+  @@map("projects")
+}
+
+enum ProjectStatus {
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+}
+
+model Shot {
+  id         String     @id @default(cuid())
+  projectId  String
+  code       String
+  title      String
+  software   String     @default("3dsmax 2024 · V-Ray 6.2")
+  resolution String     @default("3840×2160")
+  status     ShotStatus @default(TODO)
+  assigneeId String?
+  dueDate    DateTime?
+  order      Int        @default(0)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  project    Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assignee   User?          @relation("ShotAssignee", fields: [assigneeId], references: [id])
+  checkItems CheckItem[]
+  comments   Comment[]
+  versions   RenderVersion[]
+  activities Activity[]
+
+  @@map("shots")
+}
+
+enum ShotStatus {
+  TODO
+  WIP
+  REVIEW
+  APPROVED
+  BLOCKED
+  DONE
+}
+
+model Chapter {
+  id          String  @id @default(cuid())
+  title       String
+  description String
+  order       Int
+  templateId  String?
+
+  template ChecklistTemplate? @relation(fields: [templateId], references: [id])
+  items    CheckItem[]
+
+  @@map("chapters")
+}
+
+model CheckItem {
+  id        String    @id @default(cuid())
+  shotId    String
+  chapterId String
+  title     String
+  state     ItemState @default(TODO)
+  ownerId   String?
+  note      String?
+  order     Int       @default(0)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  shot    Shot    @relation(fields: [shotId], references: [id], onDelete: Cascade)
+  chapter Chapter @relation(fields: [chapterId], references: [id])
+  owner   User?   @relation("ItemOwner", fields: [ownerId], references: [id])
+
+  @@map("check_items")
+}
+
+enum ItemState {
+  TODO
+  WIP
+  DONE
+  BLOCKED
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  shotId    String
+  userId    String
+  body      String
+  pinX      Float?
+  pinY      Float?
+  parentId  String?
+  createdAt DateTime @default(now())
+
+  shot    Shot      @relation(fields: [shotId], references: [id], onDelete: Cascade)
+  user    User      @relation(fields: [userId], references: [id])
+  parent  Comment?  @relation("Replies", fields: [parentId], references: [id])
+  replies Comment[] @relation("Replies")
+
+  @@map("comments")
+}
+
+model RenderVersion {
+  id           String   @id @default(cuid())
+  shotId       String
+  version      String
+  url          String
+  thumbnailUrl String?
+  format       String   @default("EXR")
+  resolution   String
+  fileSize     Int?
+  createdAt    DateTime @default(now())
+
+  shot Shot @relation(fields: [shotId], references: [id], onDelete: Cascade)
+
+  @@map("render_versions")
+}
+
+model ChecklistTemplate {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  tags        String[]
+  usedCount   Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  chapters Chapter[]
+  items    TemplateItem[]
+
+  @@map("checklist_templates")
+}
+
+model TemplateItem {
+  id         String @id @default(cuid())
+  templateId String
+  chapterKey String
+  title      String
+  order      Int    @default(0)
+
+  template ChecklistTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@map("template_items")
+}
+
+model Activity {
+  id        String       @id @default(cuid())
+  userId    String
+  shotId    String?
+  type      ActivityType
+  payload   Json         @default("{}")
+  createdAt DateTime     @default(now())
+
+  user User  @relation(fields: [userId], references: [id])
+  shot Shot? @relation(fields: [shotId], references: [id])
+
+  @@map("activities")
+}
+
+enum ActivityType {
+  CHECKLIST_ITEM_UPDATED
+  COMMENT_ADDED
+  RENDER_UPLOADED
+  SHOT_STATUS_CHANGED
+  SHOT_CREATED
+  TEMPLATE_APPLIED
+}

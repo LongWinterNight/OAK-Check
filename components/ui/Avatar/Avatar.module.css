@@ -1,0 +1,55 @@
+.avatar {
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 0 0 1.5px var(--surface);
+}
+
+.initials {
+  color: #fff;
+  font-weight: 600;
+  font-family: var(--font-ui);
+  line-height: 1;
+  letter-spacing: -0.3px;
+}
+
+/* Онлайн-индикатор */
+.dot {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1.5px solid var(--surface);
+}
+
+.online { background: #22C55E; }
+.offline { background: var(--border-strong); }
+
+/* Стек аватаров */
+.stack {
+  display: flex;
+  align-items: center;
+}
+
+.stackItem {
+  box-shadow: 0 0 0 1.5px var(--surface);
+}
+
+.more {
+  border-radius: 50%;
+  background: var(--surface-3);
+  color: var(--fg-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-family: var(--font-ui);
+  flex-shrink: 0;
+  box-shadow: 0 0 0 1.5px var(--surface);
+}

@@ -1,0 +1,63 @@
+.input,
+.wrapper {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--fg);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  transition: border-color 0.12s, box-shadow 0.12s;
+  outline: none;
+}
+
+.input {
+  padding: 0 10px;
+  width: 100%;
+}
+
+.input:focus,
+.wrapper:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+.input::placeholder {
+  color: var(--fg-muted);
+}
+
+/* Размеры */
+.sm { height: 28px; font-size: 12.5px; }
+.md { height: 34px; font-size: 13px; }
+.lg { height: 40px; font-size: 14px; }
+
+/* Обёртка с иконками */
+.wrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  width: 100%;
+}
+
+.innerInput {
+  flex: 1;
+  min-width: 0;
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--fg);
+  font-family: var(--font-ui);
+  font-size: inherit;
+}
+
+.innerInput::placeholder {
+  color: var(--fg-muted);
+}
+
+.iconLeft,
+.iconRight {
+  display: inline-flex;
+  align-items: center;
+  color: var(--fg-muted);
+  flex-shrink: 0;
+}

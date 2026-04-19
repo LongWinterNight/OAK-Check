@@ -1,0 +1,19 @@
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.hoverable {
+  cursor: pointer;
+  transition: border-color 0.12s;
+  outline: none;
+}
+
+.hoverable:hover {
+  border-color: var(--border-strong);
+}
+
+.hoverable:focus-visible {
+  box-shadow: var(--shadow-focus);
+}
