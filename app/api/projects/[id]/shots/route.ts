@@ -11,7 +11,7 @@ export async function GET(
   try {
     const shots = await prisma.shot.findMany({
       where: { projectId },
-      include: { assignee: true },
+      include: { owner: true },
       orderBy: { order: 'asc' },
     });
 
@@ -56,7 +56,7 @@ export async function POST(
     const count = await prisma.shot.count({ where: { projectId } });
     const shot = await prisma.shot.create({
       data: { projectId, order: count, ...parsed.data },
-      include: { assignee: true },
+      include: { owner: true },
     });
 
     return NextResponse.json(shot, { status: 201 });

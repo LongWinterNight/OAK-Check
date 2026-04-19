@@ -1,6 +1,5 @@
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-/* Типы Prisma будут доступны после `pnpm prisma generate` */
 import { notFound } from 'next/navigation';
+import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { computeChapterStats } from '@/lib/utils';
 import type { ChapterWithItems } from '@/types';
@@ -12,25 +11,24 @@ interface Props {
 
 export default async function ChecklistPage({ params }: Props) {
   const { projectId, shotId } = await params;
+  const session = await auth();
 
   const shot = await prisma.shot.findFirst({
     where: { id: shotId, projectId },
     include: {
       project: true,
-      assignee: true,
+      owner: true,
     },
   });
 
   if (!shot) notFound();
 
-  // Получаем чеклист
   const items = await prisma.checkItem.findMany({
     where: { shotId },
     include: { chapter: true, owner: true },
     orderBy: [{ chapter: { order: 'asc' } }, { order: 'asc' }],
   });
 
-  // Группируем по главам
   const chapterMap = new Map<string, typeof items[0]['chapter']>();
   for (const item of items) {
     if (!chapterMap.has(item.chapterId)) {
@@ -38,12 +36,10 @@ export default async function ChecklistPage({ params }: Props) {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const chapters: ChapterWithItems[] = Array.from(chapterMap.values()).map((chapter: any) => {
+  const chapters: ChapterWithItems[] = Array.from(chapterMap.values()).map((chapter) => {
     const chapterItems = items
-      .filter((item: any) => item.chapterId === chapter.id)
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      .map(({ chapter: _chapter, ...item }: any) => ({
+      .filter((item) => item.chapterId === chapter.id)
+      .map(({ chapter: _ch, ...item }) => ({
         ...item,
         state: item.state as 'TODO' | 'WIP' | 'DONE' | 'BLOCKED',
         createdAt: item.createdAt.toISOString(),
@@ -61,38 +57,33 @@ export default async function ChecklistPage({ params }: Props) {
 
     return {
       id: chapter.id,
+      shotId: chapter.shotId,
       title: chapter.title,
-      description: chapter.description,
       order: chapter.order,
-      templateId: chapter.templateId,
       items: chapterItems,
       ...stats,
     };
   });
 
-  // Версии рендеров
   const versionsRaw = await prisma.renderVersion.findMany({
     where: { shotId },
     orderBy: { createdAt: 'asc' },
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const versions = versionsRaw.map((ver: any) => ({
+  const versions = versionsRaw.map((ver) => ({
     ...ver,
     createdAt: ver.createdAt.toISOString(),
     thumbnailUrl: ver.thumbnailUrl ?? null,
     fileSize: ver.fileSize ?? null,
   }));
 
-  // Комментарии
   const commentsRaw = await prisma.comment.findMany({
     where: { shotId },
     include: { user: true },
     orderBy: { createdAt: 'asc' },
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const comments = commentsRaw.map((com: any) => ({
+  const comments = commentsRaw.map((com) => ({
     ...com,
     createdAt: com.createdAt.toISOString(),
     user: {
@@ -110,30 +101,37 @@ export default async function ChecklistPage({ params }: Props) {
     createdAt: shot.createdAt.toISOString(),
     updatedAt: shot.updatedAt.toISOString(),
     dueDate: shot.dueDate?.toISOString() ?? null,
-    status: shot.status as 'TODO' | 'WIP' | 'REVIEW' | 'APPROVED' | 'BLOCKED' | 'DONE',
+    status: shot.status as 'TODO' | 'WIP' | 'REVIEW' | 'DONE',
     project: shot.project
       ? {
           ...shot.project,
-          status: shot.project.status as 'ACTIVE' | 'COMPLETED' | 'ARCHIVED',
+          status: shot.project.status as 'ACTIVE' | 'PAUSED' | 'DONE' | 'ARCHIVED',
           createdAt: shot.project.createdAt.toISOString(),
           updatedAt: shot.project.updatedAt.toISOString(),
+          dueDate: shot.project.dueDate?.toISOString() ?? null,
         }
       : undefined,
-    assignee: shot.assignee
+    owner: shot.owner
       ? {
-          ...shot.assignee,
-          role: shot.assignee.role as 'ARTIST' | 'LEAD' | 'QA' | 'POST' | 'PM' | 'ADMIN',
-          createdAt: shot.assignee.createdAt.toISOString(),
+          ...shot.owner,
+          role: shot.owner.role as 'ARTIST' | 'LEAD' | 'QA' | 'POST' | 'PM' | 'ADMIN',
+          createdAt: shot.owner.createdAt.toISOString(),
         }
       : null,
   };
 
+  const currentUser = session?.user
+    ? { id: session.user.id ?? '', name: session.user.name ?? 'Пользователь' }
+    : { id: '', name: 'Гость' };
+
   return (
     <ChecklistClient
-      shot={shotData}
+      shot={shotData as Parameters<typeof ChecklistClient>[0]['shot']}
+      projectId={projectId}
       initialChapters={chapters}
       versions={versions}
       comments={comments}
+      currentUser={currentUser}
     />
   );
 }

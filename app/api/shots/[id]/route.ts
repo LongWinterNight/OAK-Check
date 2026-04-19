@@ -11,7 +11,7 @@ export async function GET(
   try {
     const shot = await prisma.shot.findUnique({
       where: { id },
-      include: { project: true, assignee: true },
+      include: { project: true, owner: true },
     });
 
     if (!shot) return NextResponse.json({ error: 'Шот не найден' }, { status: 404 });
@@ -46,10 +46,15 @@ export async function PATCH(
       return NextResponse.json({ error: 'Невалидные данные' }, { status: 400 });
     }
 
+    const { assigneeId, dueDate, ...rest } = parsed.data;
     const shot = await prisma.shot.update({
       where: { id },
-      data: parsed.data,
-      include: { project: true, assignee: true },
+      data: {
+        ...rest,
+        ...(assigneeId !== undefined ? { assigneeId } : {}),
+        ...(dueDate !== undefined ? { dueDate: dueDate ? new Date(dueDate) : null } : {}),
+      },
+      include: { project: true, owner: true },
     });
 
     return NextResponse.json(shot);

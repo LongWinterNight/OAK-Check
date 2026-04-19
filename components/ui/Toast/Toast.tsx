@@ -8,7 +8,7 @@ import styles from './Toast.module.css';
 const KIND_ICON: Record<ToastKind, React.ReactNode> = {
   success: <Icons.Check size={14} />,
   error: <Icons.X size={14} />,
-  info: <Icons.Activity size={14} />,
+  info: <Icons.Bell size={14} />,
   warning: <Icons.AlertTriangle size={14} />,
 };
 

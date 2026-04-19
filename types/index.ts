@@ -51,10 +51,9 @@ export type ItemState = 'TODO' | 'WIP' | 'DONE' | 'BLOCKED';
 
 export interface Chapter {
   id: string;
+  shotId: string;
   title: string;
-  description: string;
   order: number;
-  templateId: string | null;
 }
 
 export interface CheckItem {

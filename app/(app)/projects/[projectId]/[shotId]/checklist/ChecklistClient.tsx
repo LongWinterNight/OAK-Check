@@ -21,6 +21,7 @@ interface ChecklistClientProps {
   initialChapters: ChapterWithItems[];
   versions: RenderVersion[];
   comments: Comment[];
+  currentUser: { id: string; name: string };
 }
 
 export default function ChecklistClient({
@@ -29,6 +30,7 @@ export default function ChecklistClient({
   initialChapters,
   versions,
   comments: initialComments,
+  currentUser,
 }: ChecklistClientProps) {
   const [chapters, setChapters] = useState(initialChapters);
   const [activeChapterId, setActiveChapterId] = useState(initialChapters[0]?.id ?? '');
@@ -122,14 +124,14 @@ export default function ChecklistClient({
           {activeChapter && (
             <ItemsList
               chapter={activeChapter}
-              currentUserId="u1"
+              currentUserId={currentUser.id}
               onStateChange={handleStateChange}
             />
           )}
           <RightPanel
             versions={versions}
             comments={comments}
-            currentUser={{ name: 'Артём Ковалёв' }}
+            currentUser={currentUser}
             onCommentSubmit={handleCommentSubmit}
           />
         </div>

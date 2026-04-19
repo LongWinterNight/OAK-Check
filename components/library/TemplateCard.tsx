@@ -35,7 +35,7 @@ export function TemplateCard({ template, onApply }: TemplateCardProps) {
           <Badge kind="neutral" size="sm">{template.category}</Badge>
           {template.usedCount > 0 && (
             <span className={styles.usage}>
-              <Icons.Activity size={11} />
+              <Icons.Bell size={11} />
               {template.usedCount}
             </span>
           )}

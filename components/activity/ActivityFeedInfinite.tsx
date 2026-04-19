@@ -27,7 +27,7 @@ const TYPE_ICON: Record<ActivityType, React.ReactNode> = {
   ITEM_CREATED: <Icons.Plus size={13} />,
   COMMENT_ADDED: <Icons.MessageSquare size={13} />,
   VERSION_UPLOADED: <Icons.Upload size={13} />,
-  SHOT_STATUS_CHANGED: <Icons.Activity size={13} />,
+  SHOT_STATUS_CHANGED: <Icons.ChevR size={13} />,
   MEMBER_ADDED: <Icons.Users size={13} />,
 };
 
@@ -38,7 +38,7 @@ function ActivityRow({ entry }: { entry: ActivityEntry }) {
 
   return (
     <div className={styles.row}>
-      <div className={styles.icon}>{TYPE_ICON[entry.type] ?? <Icons.Activity size={13} />}</div>
+      <div className={styles.icon}>{TYPE_ICON[entry.type] ?? <Icons.Bell size={13} />}</div>
       <div className={styles.body}>
         <div className={styles.message}>
           {entry.user && (

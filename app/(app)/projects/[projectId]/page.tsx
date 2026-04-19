@@ -44,7 +44,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ projec
     title: s.title,
     status: s.status,
     owner: s.owner?.name ?? null,
-    progress: computeProgress(s.items as { state: string }[]),
+    progress: computeProgress(s.items as { state: 'TODO' | 'WIP' | 'DONE' | 'BLOCKED' }[]),
   }));
 
   return (

@@ -22,7 +22,7 @@ async function getProjects() {
         id: s.id,
         code: s.code,
         status: s.status,
-        progress: computeProgress(s.items as { state: string }[]),
+        progress: computeProgress(s.items as { state: 'TODO' | 'WIP' | 'DONE' | 'BLOCKED' }[]),
       }));
       const totalProgress =
         shots.length > 0

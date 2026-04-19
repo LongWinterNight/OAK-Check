@@ -28,7 +28,7 @@ export const CreateShotSchema = z.object({
 export const UpdateShotSchema = z.object({
   title: z.string().min(1).max(200).optional(),
   code: z.string().min(1).max(50).optional(),
-  status: z.enum(['TODO', 'WIP', 'REVIEW', 'APPROVED', 'BLOCKED', 'DONE']).optional(),
+  status: z.enum(['TODO', 'WIP', 'REVIEW', 'DONE']).optional(),
   assigneeId: z.string().cuid().nullable().optional(),
   dueDate: z.string().datetime().nullable().optional(),
   software: z.string().optional(),
@@ -77,11 +77,10 @@ export const CreateRenderVersionSchema = z.object({
 
 // Шаблоны
 export const CreateTemplateSchema = z.object({
-  title: z.string().min(1).max(100),
+  name: z.string().min(1).max(100),
+  category: z.string().default('Общее'),
   description: z.string().max(500).optional(),
-  tags: z.array(z.string()).default([]),
   items: z.array(z.object({
-    chapterKey: z.string(),
     title: z.string().min(1),
     order: z.number().int().default(0),
   })),
@@ -90,6 +89,7 @@ export const CreateTemplateSchema = z.object({
 // Применить шаблон к шоту
 export const ApplyTemplateSchema = z.object({
   templateId: z.string().cuid(),
+  chapterName: z.string().optional(),
   replace: z.boolean().default(false),
 });
 

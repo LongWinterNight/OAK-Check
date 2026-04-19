@@ -1,29 +1,35 @@
+import { prisma } from '@/lib/prisma';
 import Avatar from '@/components/ui/Avatar/Avatar';
 import styles from './ActivityFeed.module.css';
 
-const ACTIVITY = [
-  { user: 'Артём Ковалёв', time: '11:30', text: 'обновил версию шота до v012', shot: 'SH04' },
-  { user: 'Катя Смирнова', time: '11:15', text: 'оставила комментарий: firefly на карнизах', shot: 'SH04' },
-  { user: 'Дарья Лин',     time: '10:42', text: 'пометила «HDRI multiplier» как требующий правки', shot: 'SH04' },
-  { user: 'Артём Ковалёв', time: '10:05', text: 'загрузил test-render 1080p', shot: 'SH04' },
-  { user: 'Дарья Лин',     time: 'вчера', text: 'согласовала моделирование', shot: 'SH04' },
-  { user: 'Миша Петров',   time: 'вчера', text: 'добавил 3 референса в pre-production', shot: 'SH04' },
-];
+function formatTime(date: Date): string {
+  const now = new Date();
+  const diff = now.getTime() - date.getTime();
+  const hours = Math.floor(diff / 3_600_000);
+  if (hours < 24) return date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+  return 'вчера';
+}
 
-export default function ActivityFeed() {
+export default async function ActivityFeed() {
+  const activities = await prisma.activity.findMany({
+    include: { user: true },
+    orderBy: { createdAt: 'desc' },
+    take: 8,
+  });
+
   return (
     <div className={styles.card}>
       <div className={styles.header}>
         <span className={styles.title}>Активность</span>
       </div>
       <div className={styles.list}>
-        {ACTIVITY.map((a, i) => (
-          <div key={i} className={styles.row}>
-            <span className={styles.time}>{a.time}</span>
-            <Avatar name={a.user} size={22} />
+        {activities.map((a) => (
+          <div key={a.id} className={styles.row}>
+            <span className={styles.time}>{formatTime(a.createdAt)}</span>
+            <Avatar name={a.user.name} size={22} />
             <div className={styles.text}>
-              <span className={styles.name}>{a.user.split(' ')[0]}</span>{' '}
-              <span className={styles.action}>{a.text}</span>
+              <span className={styles.name}>{a.user.name.split(' ')[0]}</span>{' '}
+              <span className={styles.action}>{a.message}</span>
             </div>
           </div>
         ))}

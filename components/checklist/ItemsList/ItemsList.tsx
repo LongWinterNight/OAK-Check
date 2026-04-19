@@ -42,7 +42,7 @@ export default function ItemsList({ chapter, currentUserId, onStateChange }: Ite
         <div className={styles.toolbarTop}>
           <div>
             <div className={styles.chapterTitle}>{chapter.title}</div>
-            <div className={styles.chapterDesc}>{chapter.description}</div>
+            <div className={styles.chapterDesc}>{chapter.items.length} пунктов</div>
           </div>
         </div>
         <div className={styles.toolbarBottom}>

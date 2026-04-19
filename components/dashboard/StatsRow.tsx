@@ -1,16 +1,30 @@
+import { prisma } from '@/lib/prisma';
 import styles from './StatsRow.module.css';
 
-const STATS = [
-  { label: 'Всего шотов', value: '62', note: 'по 4 проектам' },
-  { label: 'В работе', value: '18', note: '↑3 за неделю' },
-  { label: 'Готово сегодня', value: '7', note: '+2 vs вчера' },
-  { label: 'Блокеров', value: '3', note: 'требуют внимания' },
-];
+export default async function StatsRow() {
+  const [totalShots, wipShots, blockedItems] = await Promise.all([
+    prisma.shot.count(),
+    prisma.shot.count({ where: { status: 'WIP' } }),
+    prisma.checkItem.count({ where: { state: 'BLOCKED' } }),
+  ]);
 
-export default function StatsRow() {
+  const doneToday = await prisma.checkItem.count({
+    where: {
+      state: 'DONE',
+      updatedAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) },
+    },
+  });
+
+  const stats = [
+    { label: 'Всего шотов', value: String(totalShots), note: 'по всем проектам' },
+    { label: 'В работе', value: String(wipShots), note: 'статус WIP' },
+    { label: 'Готово сегодня', value: String(doneToday), note: 'пунктов чеклиста' },
+    { label: 'Блокеров', value: String(blockedItems), note: 'требуют внимания' },
+  ];
+
   return (
     <div className={styles.row}>
-      {STATS.map((s) => (
+      {stats.map((s) => (
         <div key={s.label} className={styles.card}>
           <div className={styles.label}>{s.label}</div>
           <div className={styles.value}>{s.value}</div>
