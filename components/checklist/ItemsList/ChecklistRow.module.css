@@ -1,0 +1,62 @@
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 0.12s;
+  outline: none;
+}
+
+.row:hover {
+  background: var(--surface-2);
+}
+
+.row.selected {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+.row:focus-visible {
+  box-shadow: var(--shadow-focus);
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  font-size: 13px;
+  color: var(--fg);
+  line-height: 1.4;
+  transition: color 0.15s;
+}
+
+.titleDone {
+  text-decoration: line-through;
+  color: var(--fg-muted);
+}
+
+.note {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 3px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--fg-muted);
+}
+
+.noteBlocked {
+  color: var(--blocked);
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
