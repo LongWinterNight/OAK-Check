@@ -1,0 +1,232 @@
+.section {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.sectionHead {
+  padding: var(--spacing-4) var(--spacing-5);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sectionTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg);
+  margin: 0;
+}
+
+.sectionDesc {
+  font-size: 12px;
+  color: var(--fg-subtle);
+  margin-top: 2px;
+}
+
+.sectionBody {
+  padding: var(--spacing-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+/* Form field */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.fieldRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-4);
+}
+
+.label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--fg);
+}
+
+.hint { font-size: 11px; color: var(--fg-subtle); }
+
+.input, .select {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 7px var(--spacing-3);
+  font-size: 13px;
+  color: var(--fg);
+  width: 100%;
+  transition: border-color 0.15s;
+}
+
+.input:focus, .select:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--surface-1);
+}
+
+/* Toggle row */
+.toggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-3) 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.toggleRow:last-child { border-bottom: none; }
+
+.toggleLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.toggleTitle { font-size: 13px; color: var(--fg); }
+.toggleSub   { font-size: 11px; color: var(--fg-subtle); }
+
+.toggle {
+  width: 40px;
+  height: 22px;
+  border-radius: 11px;
+  background: var(--border);
+  border: none;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+.toggleOn { background: var(--accent); }
+.toggleThumb {
+  position: absolute;
+  top: 2px; left: 2px;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: white;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+}
+.toggleOn .toggleThumb { transform: translateX(18px); }
+
+/* Table */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.table th {
+  padding: var(--spacing-2) var(--spacing-3);
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fg-subtle);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
+}
+
+.table td {
+  padding: var(--spacing-3) var(--spacing-3);
+  border-bottom: 1px solid var(--border);
+  color: var(--fg);
+  vertical-align: middle;
+}
+
+.table tr:last-child td { border-bottom: none; }
+.table tr:hover td { background: var(--surface-2); }
+
+/* Actions */
+.actions {
+  display: flex;
+  gap: var(--spacing-2);
+  justify-content: flex-end;
+  padding-top: var(--spacing-3);
+}
+
+/* Badge-like role pill */
+.role {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--surface-2);
+  color: var(--fg-subtle);
+  border: 1px solid var(--border);
+}
+
+.roleAdmin  { background: color-mix(in srgb, var(--accent) 15%, transparent); color: var(--accent); border-color: var(--accent); }
+.roleLead   { background: color-mix(in srgb, #f59e0b 15%, transparent); color: #d97706; border-color: #f59e0b; }
+.roleQa     { background: color-mix(in srgb, #22c55e 15%, transparent); color: #16a34a; border-color: #22c55e; }
+
+/* Status dot */
+.dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  background: var(--border);
+}
+.dotOnline { background: #22c55e; }
+
+/* Stat card grid */
+.statGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-3);
+}
+
+.statCard {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--spacing-4);
+}
+
+.statValue {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--fg);
+  font-variant-numeric: tabular-nums;
+}
+
+.statLabel {
+  font-size: 12px;
+  color: var(--fg-subtle);
+  margin-top: 2px;
+}
+
+/* Avatar */
+.avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: 700;
+  color: white;
+  flex-shrink: 0;
+}
+
+.avatarRow {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
+}
+
+.avatarInfo { display: flex; flex-direction: column; gap: var(--spacing-1); }
+.avatarName { font-size: 18px; font-weight: 600; color: var(--fg); }
+.avatarMeta { font-size: 12px; color: var(--fg-subtle); }
+
+/* Save status */
+.saveStatus { font-size: 12px; color: #22c55e; }
+.saveError  { font-size: 12px; color: #ef4444; }

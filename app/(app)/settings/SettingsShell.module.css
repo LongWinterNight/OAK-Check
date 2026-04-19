@@ -1,0 +1,99 @@
+.shell {
+  display: flex;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
+  background: var(--surface-1);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.sidebarHeader {
+  padding: var(--spacing-5) var(--spacing-4) var(--spacing-3);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fg-subtle);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing-2);
+  gap: 2px;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  padding: var(--spacing-2) var(--spacing-3);
+  border-radius: var(--radius);
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  color: var(--fg);
+  transition: background 0.12s;
+  width: 100%;
+}
+
+.navItem:hover {
+  background: var(--surface-2);
+}
+
+.navActive {
+  background: color-mix(in srgb, var(--accent) 12%, transparent) !important;
+  color: var(--accent);
+}
+
+.navIcon {
+  display: flex;
+  align-items: center;
+  color: inherit;
+  opacity: 0.7;
+}
+
+.navActive .navIcon { opacity: 1; }
+
+.navText {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.navLabel {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.navDesc {
+  font-size: 10px;
+  color: var(--fg-subtle);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.navActive .navDesc { color: color-mix(in srgb, var(--accent) 70%, var(--fg-subtle)); }
+
+/* Main content */
+.main {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-5);
+  max-width: 720px;
+}

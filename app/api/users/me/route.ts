@@ -1,0 +1,60 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/auth';
+import { prisma } from '@/lib/prisma';
+import { z } from 'zod';
+import bcrypt from 'bcryptjs';
+
+const UpdateMeSchema = z.object({
+  name: z.string().min(1).max(100).optional(),
+  newPassword: z.string().min(6).optional(),
+  currentPassword: z.string().optional(),
+});
+
+export async function GET() {
+  const session = await auth();
+  if (!session?.user?.id) return NextResponse.json({ error: 'Не авторизован' }, { status: 401 });
+
+  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+  if (!user) return NextResponse.json({ error: 'Пользователь не найден' }, { status: 404 });
+
+  const { passwordHash: _ph, ...safe } = user;
+  return NextResponse.json({ ...safe, createdAt: safe.createdAt.toISOString() });
+}
+
+export async function PATCH(req: NextRequest) {
+  const session = await auth();
+  if (!session?.user?.id) return NextResponse.json({ error: 'Не авторизован' }, { status: 401 });
+
+  const body = await req.json();
+  const parsed = UpdateMeSchema.safeParse(body);
+  if (!parsed.success) return NextResponse.json({ error: 'Невалидные данные' }, { status: 400 });
+
+  const { name, newPassword, currentPassword } = parsed.data;
+  const updateData: Record<string, string> = {};
+
+  if (name) updateData.name = name;
+
+  if (newPassword) {
+    if (!currentPassword) {
+      return NextResponse.json({ error: 'Введите текущий пароль' }, { status: 400 });
+    }
+    const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+    if (user?.passwordHash) {
+      const valid = await bcrypt.compare(currentPassword, user.passwordHash);
+      if (!valid) return NextResponse.json({ error: 'Неверный текущий пароль' }, { status: 400 });
+    }
+    updateData.passwordHash = await bcrypt.hash(newPassword, 10);
+  }
+
+  if (Object.keys(updateData).length === 0) {
+    return NextResponse.json({ error: 'Нет данных для обновления' }, { status: 400 });
+  }
+
+  const updated = await prisma.user.update({
+    where: { id: session.user.id },
+    data: updateData,
+  });
+
+  const { passwordHash: _ph, ...safe } = updated;
+  return NextResponse.json({ ...safe, createdAt: safe.createdAt.toISOString() });
+}
