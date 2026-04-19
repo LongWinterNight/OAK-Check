@@ -7,7 +7,7 @@ import { Icons } from '@/components/icons';
 import styles from './LoginForm.module.css';
 
 export function LoginForm() {
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [showPwd, setShowPwd] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -18,13 +18,13 @@ export function LoginForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) { setError('Заполните все поля'); return; }
+    if (!identifier || !password) { setError('Заполните все поля'); return; }
 
     setLoading(true);
     setError(null);
 
     const res = await signIn('credentials', {
-      email,
+      identifier,
       password,
       redirect: false,
     });
@@ -57,17 +57,17 @@ export function LoginForm() {
 
       <form className={styles.form} onSubmit={handleSubmit}>
         <div className={styles.field}>
-          <label className={styles.label} htmlFor="email">Email</label>
+          <label className={styles.label} htmlFor="identifier">Логин или Email</label>
           <div className={styles.inputWrap}>
             <Icons.User size={14} />
             <input
-              id="email"
-              type="email"
+              id="identifier"
+              type="text"
               className={styles.input}
-              value={email}
-              onChange={(e) => { setEmail(e.target.value); setError(null); }}
-              placeholder="artem@oak3d.ru"
-              autoComplete="email"
+              value={identifier}
+              onChange={(e) => { setIdentifier(e.target.value); setError(null); }}
+              placeholder="safanch6230i или artem@oak3d.ru"
+              autoComplete="username"
               autoFocus
             />
           </div>
