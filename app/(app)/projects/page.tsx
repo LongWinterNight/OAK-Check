@@ -1,22 +1,57 @@
 import TopBar from '@/components/layout/TopBar/TopBar';
-import { Button } from '@/components/ui';
-import { Icons } from '@/components/icons';
+import { ProjectsGrid } from '@/components/projects/ProjectsGrid';
+import { computeProgress } from '@/lib/utils';
 import styles from './page.module.css';
 
-export default function ProjectsPage() {
+async function getProjects() {
+  try {
+    const { prisma } = await import('@/lib/prisma');
+    const projects = await prisma.project.findMany({
+      include: {
+        shots: {
+          include: {
+            items: { select: { state: true } },
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return projects.map((p) => {
+      const shots = p.shots.map((s) => ({
+        id: s.id,
+        code: s.code,
+        status: s.status,
+        progress: computeProgress(s.items as { state: string }[]),
+      }));
+      const totalProgress =
+        shots.length > 0
+          ? shots.reduce((sum, s) => sum + s.progress, 0) / shots.length
+          : 0;
+
+      return {
+        id: p.id,
+        title: p.title,
+        client: p.client,
+        status: p.status,
+        dueDate: p.dueDate?.toISOString() ?? null,
+        shots,
+        totalProgress,
+      };
+    });
+  } catch {
+    return [];
+  }
+}
+
+export default async function ProjectsPage() {
+  const projects = await getProjects();
+
   return (
     <>
-      <TopBar
-        breadcrumbs={[{ label: 'Проекты' }]}
-        action={
-          <Button variant="primary" size="sm" icon={<Icons.Plus size={14} />}>
-            Новый проект
-          </Button>
-        }
-      />
+      <TopBar breadcrumbs={[{ label: 'Проекты' }]} />
       <div className={styles.content}>
-        <h1 className={styles.title}>Проекты</h1>
-        <p className={styles.note}>Страница в разработке — будет дополнена после Checklist.</p>
+        <ProjectsGrid initialProjects={projects} />
       </div>
     </>
   );
