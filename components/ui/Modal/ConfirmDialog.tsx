@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from '@/components/ui/Button/Button';
+import Button from '@/components/ui/Button/Button';
 import { Modal } from './Modal';
 import styles from './ConfirmDialog.module.css';
 
