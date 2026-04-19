@@ -1,4 +1,5 @@
 import TopBar from '@/components/layout/TopBar/TopBar';
+import KanbanBoard from '@/components/kanban/KanbanBoard';
 import styles from './page.module.css';
 
 export default function KanbanPage() {
@@ -6,8 +7,7 @@ export default function KanbanPage() {
     <>
       <TopBar breadcrumbs={[{ label: 'Канбан' }]} />
       <div className={styles.content}>
-        <h1 className={styles.title}>Канбан</h1>
-        <p className={styles.note}>Страница в разработке — будет реализована на следующем шаге.</p>
+        <KanbanBoard />
       </div>
     </>
   );
