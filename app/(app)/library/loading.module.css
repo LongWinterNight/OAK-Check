@@ -1,0 +1,38 @@
+.root {
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+}
+
+.toolbar {
+  display: flex;
+  gap: 12px;
+}
+
+.searchSkeleton {
+  width: 360px;
+  height: 36px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.cats {
+  display: flex;
+  gap: 6px;
+}
+
+.catSkeleton {
+  height: 28px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
