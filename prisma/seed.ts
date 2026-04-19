@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
@@ -18,21 +19,22 @@ async function main() {
   await prisma.user.deleteMany();
 
   // ===== ПОЛЬЗОВАТЕЛИ =====
+  const defaultPassword = await bcrypt.hash('oak3d2024', 10);
   const users = await Promise.all([
     prisma.user.create({
-      data: { id: 'u1', email: 'artem@oak3d.ru', name: 'Артём Ковалёв', role: 'ARTIST', online: true },
+      data: { id: 'u1', email: 'artem@oak3d.ru', name: 'Артём Ковалёв', role: 'ARTIST', online: true, passwordHash: defaultPassword },
     }),
     prisma.user.create({
-      data: { id: 'u2', email: 'dasha@oak3d.ru', name: 'Дарья Лин', role: 'LEAD', online: true },
+      data: { id: 'u2', email: 'dasha@oak3d.ru', name: 'Дарья Лин', role: 'LEAD', online: true, passwordHash: defaultPassword },
     }),
     prisma.user.create({
-      data: { id: 'u3', email: 'misha@oak3d.ru', name: 'Миша Петров', role: 'ARTIST', online: false },
+      data: { id: 'u3', email: 'misha@oak3d.ru', name: 'Миша Петров', role: 'ARTIST', online: false, passwordHash: defaultPassword },
     }),
     prisma.user.create({
-      data: { id: 'u4', email: 'katya@oak3d.ru', name: 'Катя Смирнова', role: 'QA', online: false },
+      data: { id: 'u4', email: 'katya@oak3d.ru', name: 'Катя Смирнова', role: 'QA', online: false, passwordHash: defaultPassword },
     }),
     prisma.user.create({
-      data: { id: 'u5', email: 'ivan@oak3d.ru', name: 'Иван Сорокин', role: 'POST', online: false },
+      data: { id: 'u5', email: 'ivan@oak3d.ru', name: 'Иван Сорокин', role: 'POST', online: false, passwordHash: defaultPassword },
     }),
   ]);
   console.log(`✓ Создано ${users.length} пользователей`);

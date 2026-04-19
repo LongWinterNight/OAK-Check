@@ -8,13 +8,14 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String
-  role      Role     @default(ARTIST)
-  avatarUrl String?
-  online    Boolean  @default(false)
-  createdAt DateTime @default(now())
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  role         Role     @default(ARTIST)
+  avatarUrl    String?
+  passwordHash String?
+  online       Boolean  @default(false)
+  createdAt    DateTime @default(now())
 
   assignedShots Shot[]      @relation("ShotAssignee")
   checkItems    CheckItem[] @relation("ItemOwner")
@@ -34,13 +35,14 @@ enum Role {
 }
 
 model Project {
-  id             String        @id @default(cuid())
-  title          String
-  client         String
-  coverGradient  String        @default("linear-gradient(135deg, #3a5a7a, #1a2a3a)")
-  status         ProjectStatus @default(ACTIVE)
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  id            String        @id @default(cuid())
+  title         String
+  client        String
+  coverGradient String        @default("linear-gradient(135deg, #3a5a7a, #1a2a3a)")
+  status        ProjectStatus @default(ACTIVE)
+  dueDate       DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 
   shots Shot[]
 
@@ -49,7 +51,8 @@ model Project {
 
 enum ProjectStatus {
   ACTIVE
-  COMPLETED
+  PAUSED
+  DONE
   ARCHIVED
 }
 
@@ -67,12 +70,13 @@ model Shot {
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt
 
-  project    Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  assignee   User?          @relation("ShotAssignee", fields: [assigneeId], references: [id])
-  checkItems CheckItem[]
+  project    Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  owner      User?           @relation("ShotAssignee", fields: [assigneeId], references: [id])
+  items      CheckItem[]
   comments   Comment[]
   versions   RenderVersion[]
   activities Activity[]
+  chapters   Chapter[]
 
   @@map("shots")
 }
@@ -81,20 +85,17 @@ enum ShotStatus {
   TODO
   WIP
   REVIEW
-  APPROVED
-  BLOCKED
   DONE
 }
 
 model Chapter {
-  id          String  @id @default(cuid())
-  title       String
-  description String
-  order       Int
-  templateId  String?
+  id     String @id @default(cuid())
+  shotId String
+  title  String
+  order  Int    @default(0)
 
-  template ChecklistTemplate? @relation(fields: [templateId], references: [id])
-  items    CheckItem[]
+  shot  Shot        @relation(fields: [shotId], references: [id], onDelete: Cascade)
+  items CheckItem[]
 
   @@map("chapters")
 }
@@ -112,7 +113,7 @@ model CheckItem {
   updatedAt DateTime  @updatedAt
 
   shot    Shot    @relation(fields: [shotId], references: [id], onDelete: Cascade)
-  chapter Chapter @relation(fields: [chapterId], references: [id])
+  chapter Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
   owner   User?   @relation("ItemOwner", fields: [ownerId], references: [id])
 
   @@map("check_items")
@@ -150,7 +151,7 @@ model RenderVersion {
   url          String
   thumbnailUrl String?
   format       String   @default("EXR")
-  resolution   String
+  resolution   String   @default("3840×2160")
   fileSize     Int?
   createdAt    DateTime @default(now())
 
@@ -161,14 +162,13 @@ model RenderVersion {
 
 model ChecklistTemplate {
   id          String   @id @default(cuid())
-  title       String
+  name        String
+  category    String   @default("Общее")
   description String?
-  tags        String[]
   usedCount   Int      @default(0)
   createdAt   DateTime @default(now())
 
-  chapters Chapter[]
-  items    TemplateItem[]
+  items TemplateItem[]
 
   @@map("checklist_templates")
 }
@@ -176,7 +176,6 @@ model ChecklistTemplate {
 model TemplateItem {
   id         String @id @default(cuid())
   templateId String
-  chapterKey String
   title      String
   order      Int    @default(0)
 
@@ -190,7 +189,7 @@ model Activity {
   userId    String
   shotId    String?
   type      ActivityType
-  payload   Json         @default("{}")
+  message   String
   createdAt DateTime     @default(now())
 
   user User  @relation(fields: [userId], references: [id])
@@ -200,10 +199,10 @@ model Activity {
 }
 
 enum ActivityType {
-  CHECKLIST_ITEM_UPDATED
+  ITEM_STATE_CHANGED
+  ITEM_CREATED
   COMMENT_ADDED
-  RENDER_UPLOADED
+  VERSION_UPLOADED
   SHOT_STATUS_CHANGED
-  SHOT_CREATED
-  TEMPLATE_APPLIED
+  MEMBER_ADDED
 }
