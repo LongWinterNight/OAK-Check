@@ -1,0 +1,204 @@
+.sidebar {
+  width: 236px;
+  flex-shrink: 0;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  overflow: hidden;
+}
+
+/* Logo block */
+.logo {
+  height: 58px;
+  padding: 0 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.logoIcon {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.logoText {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.logoTitle {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--fg);
+  letter-spacing: -0.2px;
+  line-height: 1;
+}
+
+.logoSub {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--fg-subtle);
+  line-height: 1;
+}
+
+/* Project switcher */
+.projectSwitcher {
+  padding: 10px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.projectBtn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 8px;
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.1s;
+  text-align: left;
+  outline: none;
+}
+
+.projectBtn:hover {
+  background: var(--surface-3);
+}
+
+.projectBtn:focus-visible {
+  box-shadow: var(--shadow-focus);
+}
+
+.projectThumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.projectName {
+  flex: 1;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--fg);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Nav */
+.nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.navSection {
+  margin-top: 8px;
+  margin-bottom: 4px;
+  padding: 0 6px;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  color: var(--fg-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Nav item */
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  color: var(--fg-muted);
+  font-size: 13px;
+  font-weight: 500;
+  transition: background 0.1s, color 0.1s;
+  outline: none;
+}
+
+.navItem:hover {
+  background: var(--surface-2);
+  color: var(--fg);
+}
+
+.navItem.active {
+  background: var(--surface-3);
+  color: var(--fg);
+  border-color: var(--border);
+}
+
+.navItem:focus-visible {
+  box-shadow: var(--shadow-focus);
+}
+
+.navLabel {
+  flex: 1;
+}
+
+.navBadge {
+  font-size: 10.5px;
+  font-family: var(--font-mono);
+  color: var(--fg-subtle);
+  background: var(--surface-3);
+  border-radius: 999px;
+  padding: 1px 6px;
+}
+
+/* User row */
+.userRow {
+  padding: 10px 14px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.userInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.userName {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--fg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+
+.userRole {
+  font-size: 10.5px;
+  font-family: var(--font-mono);
+  color: var(--fg-subtle);
+  line-height: 1.2;
+}

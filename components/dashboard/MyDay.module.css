@@ -1,0 +1,73 @@
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg);
+}
+
+.count {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--fg-subtle);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.1s;
+}
+
+.item:last-child { border-bottom: none; }
+.item:hover { background: var(--surface-2); }
+
+.info {
+  flex: 1;
+  min-width: 0;
+}
+
+.taskTitle {
+  font-size: 13px;
+  color: var(--fg);
+  transition: color 0.15s;
+}
+
+.done {
+  color: var(--fg-muted);
+  text-decoration: line-through;
+}
+
+.project {
+  font-size: 10.5px;
+  font-family: var(--font-mono);
+  color: var(--fg-subtle);
+  margin-top: 2px;
+}
+
+.time {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--fg-subtle);
+  flex-shrink: 0;
+}
