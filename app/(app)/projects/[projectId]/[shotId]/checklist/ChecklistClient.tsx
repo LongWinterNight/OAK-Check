@@ -5,6 +5,7 @@ import ShotHeader from '@/components/checklist/ShotHeader/ShotHeader';
 import ChaptersPanel from '@/components/checklist/ChaptersPanel/ChaptersPanel';
 import ItemsList from '@/components/checklist/ItemsList/ItemsList';
 import RightPanel from '@/components/checklist/RightPanel/RightPanel';
+import { UploadRenderModal } from '@/components/checklist/UploadRenderModal/UploadRenderModal';
 import TopBar from '@/components/layout/TopBar/TopBar';
 import { Button } from '@/components/ui';
 import { Icons } from '@/components/icons';
@@ -28,13 +29,15 @@ export default function ChecklistClient({
   shot,
   projectId,
   initialChapters,
-  versions,
+  versions: initialVersions,
   comments: initialComments,
   currentUser,
 }: ChecklistClientProps) {
   const [chapters, setChapters] = useState(initialChapters);
   const [activeChapterId, setActiveChapterId] = useState(initialChapters[0]?.id ?? '');
   const [comments, setComments] = useState(initialComments);
+  const [versions, setVersions] = useState(initialVersions);
+  const [showUpload, setShowUpload] = useState(false);
 
   const applyStateChange = useCallback((itemId: string, state: string) => {
     setChapters((prev) =>
@@ -48,7 +51,6 @@ export default function ChecklistClient({
     );
   }, []);
 
-  // SSE: слушаем обновления от других пользователей
   useSSE(projectId, useCallback((event: SSEEvent) => {
     if (event.type === 'checklist:updated' && event.shotId === shot.id) {
       applyStateChange(event.itemId, event.state);
@@ -104,7 +106,12 @@ export default function ChecklistClient({
           { label: 'Чек-лист' },
         ]}
         action={
-          <Button variant="secondary" size="sm" icon={<Icons.Upload size={14} />}>
+          <Button
+            variant="secondary"
+            size="sm"
+            icon={<Icons.Upload size={14} />}
+            onClick={() => setShowUpload(true)}
+          >
             Загрузить рендер
           </Button>
         }
@@ -136,6 +143,14 @@ export default function ChecklistClient({
           />
         </div>
       </div>
+
+      {showUpload && (
+        <UploadRenderModal
+          shotId={shot.id}
+          onUploaded={(v) => setVersions((prev) => [...prev, v])}
+          onClose={() => setShowUpload(false)}
+        />
+      )}
     </>
   );
 }

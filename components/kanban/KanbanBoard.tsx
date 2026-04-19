@@ -4,7 +4,6 @@ import { useState } from 'react';
 import {
   DndContext,
   DragEndEvent,
-  DragOverEvent,
   DragStartEvent,
   PointerSensor,
   useSensor,
@@ -20,18 +19,19 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { Icons } from '@/components/icons';
 import { Badge, Button, Avatar, ProgressBar } from '@/components/ui';
+import { toast } from '@/components/ui/Toast/toastStore';
 import styles from './KanbanBoard.module.css';
 
 type ShotStatus = 'TODO' | 'WIP' | 'REVIEW' | 'DONE';
 
-interface KanbanShot {
+export interface KanbanShot {
   id: string;
+  code: string;
   title: string;
-  project: string;
-  stage: string;
-  due: string;
-  assignee: string;
-  progress?: number;
+  projectTitle: string;
+  ownerName: string | null;
+  dueDate: string | null;
+  progress: number;
   status: ShotStatus;
 }
 
@@ -42,78 +42,60 @@ const COLUMNS: { id: ShotStatus; label: string; kind: 'neutral' | 'info' | 'wip'
   { id: 'DONE', label: 'Сдано', kind: 'done' },
 ];
 
-const INITIAL_SHOTS: KanbanShot[] = [
-  { id: 'k1', title: 'Shot 07 · Master Bedroom', project: 'Skolkovo One', due: '24 апр', assignee: 'Артём К.', stage: 'Моделирование', status: 'TODO' },
-  { id: 'k2', title: 'Shot 02 · Facade Evening', project: 'Kosmo', due: '28 апр', assignee: 'Миша П.', stage: 'Сцена', status: 'TODO' },
-  { id: 'k3', title: 'Shot 04 · Lobby', project: 'Skolkovo One', due: '24 апр', assignee: 'Артём К.', stage: 'QC', progress: 78, status: 'WIP' },
-  { id: 'k4', title: 'Shot 11 · Kitchen', project: 'Beregovoy 2', due: '2 мая', assignee: 'Артём К.', stage: 'Материалы', progress: 42, status: 'WIP' },
-  { id: 'k5', title: 'Shot 01 · Hero Exterior', project: 'Skolkovo One', due: '22 апр', assignee: 'Миша П.', stage: 'QC', progress: 95, status: 'REVIEW' },
-  { id: 'k6', title: 'Shot 03 · Living Room', project: 'Primavera', due: '12 апр', assignee: 'Артём К.', stage: 'Сдан', progress: 100, status: 'DONE' },
-  { id: 'k7', title: 'Shot 05 · Bathroom', project: 'Primavera', due: '12 апр', assignee: 'Миша П.', stage: 'Сдан', progress: 100, status: 'DONE' },
-];
-
 function KanbanCard({ shot, isDragging }: { shot: KanbanShot; isDragging?: boolean }) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: shot.id });
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
+  const due = shot.dueDate
+    ? new Date(shot.dueDate).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })
+    : null;
 
   return (
     <div
       ref={setNodeRef}
-      style={style}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
       {...attributes}
       {...listeners}
       className={[styles.card, isDragging ? styles.dragging : ''].join(' ')}
     >
-      <div className={styles.project}>{shot.project}</div>
+      <div className={styles.project}>{shot.projectTitle}</div>
       <div className={styles.shotTitle}>{shot.title}</div>
-      {shot.progress !== undefined && shot.progress > 0 && (
-        <ProgressBar value={shot.progress} height={4} />
-      )}
+      {shot.progress > 0 && <ProgressBar value={shot.progress} height={4} />}
       <div className={styles.cardFooter}>
         <div className={styles.cardMeta}>
-          <Badge size="sm" kind="neutral">{shot.stage}</Badge>
-          <span className={styles.date}>{shot.due}</span>
+          <Badge size="sm" kind="neutral">{shot.code}</Badge>
+          {due && <span className={styles.date}>{due}</span>}
         </div>
-        <Avatar name={shot.assignee} size={22} />
+        {shot.ownerName && <Avatar name={shot.ownerName} size={22} />}
       </div>
     </div>
   );
 }
 
-export default function KanbanBoard() {
-  const [shots, setShots] = useState<KanbanShot[]>(INITIAL_SHOTS);
+export default function KanbanBoard({ initialShots }: { initialShots: KanbanShot[] }) {
+  const [shots, setShots] = useState<KanbanShot[]>(initialShots);
   const [activeId, setActiveId] = useState<string | null>(null);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
-  const handleDragStart = (e: DragStartEvent) => {
-    setActiveId(e.active.id as string);
-  };
+  const handleDragStart = (e: DragStartEvent) => setActiveId(e.active.id as string);
 
   const handleDragEnd = (e: DragEndEvent) => {
     const { active, over } = e;
     setActiveId(null);
-
     if (!over || active.id === over.id) return;
 
-    // Если дроп в колонку (не карточку)
     const targetColumn = COLUMNS.find((c) => c.id === over.id);
-    if (targetColumn) {
-      setShots((prev) =>
-        prev.map((s) => s.id === active.id ? { ...s, status: targetColumn.id } : s)
-      );
+    if (!targetColumn) return;
 
-      // Синхронизируем с API
-      fetch(`/api/shots/${active.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: targetColumn.id }),
-      }).catch(console.error);
-    }
+    setShots((prev) =>
+      prev.map((s) => s.id === active.id ? { ...s, status: targetColumn.id } : s)
+    );
+
+    fetch(`/api/shots/${active.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: targetColumn.id }),
+    }).catch(() => toast.error('Не удалось обновить статус'));
   };
 
   const activeShot = shots.find((s) => s.id === activeId);
@@ -137,7 +119,7 @@ export default function KanbanBoard() {
                     {colShots.length}
                   </span>
                 </div>
-                <Button variant="ghost" size="sm" icon={<Icons.Plus size={13} />} aria-label="Добавить шот" />
+                <Button variant="ghost" size="sm" icon={<Icons.Plus size={13} />} aria-label="Добавить" />
               </div>
 
               <div className={styles.columnCards}>
@@ -158,7 +140,7 @@ export default function KanbanBoard() {
       <DragOverlay>
         {activeShot && (
           <div className={[styles.card, styles.dragging].join(' ')}>
-            <div className={styles.project}>{activeShot.project}</div>
+            <div className={styles.project}>{activeShot.projectTitle}</div>
             <div className={styles.shotTitle}>{activeShot.title}</div>
           </div>
         )}

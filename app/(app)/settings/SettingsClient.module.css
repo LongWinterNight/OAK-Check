@@ -1,0 +1,180 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-6);
+}
+
+.section {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--spacing-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+.sectionTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg);
+  margin: 0;
+  padding-bottom: var(--spacing-3);
+  border-bottom: 1px solid var(--border);
+}
+
+/* Toggle row */
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-4);
+}
+
+.rowLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 13px;
+  color: var(--fg);
+}
+
+.hint {
+  font-size: 11px;
+  color: var(--fg-subtle);
+}
+
+.toggle {
+  width: 44px;
+  height: 24px;
+  border-radius: 12px;
+  background: var(--border);
+  border: none;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.toggleOn {
+  background: var(--accent);
+}
+
+.toggleThumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: white;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.toggleOn .toggleThumb {
+  transform: translateX(20px);
+}
+
+/* Accent */
+.accentGrid {
+  display: flex;
+  gap: var(--spacing-3);
+  flex-wrap: wrap;
+}
+
+.accentBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-2) var(--spacing-3);
+  border: 2px solid transparent;
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.accentBtn:hover {
+  border-color: var(--border-strong);
+}
+
+.accentActive {
+  border-color: var(--accent) !important;
+}
+
+.accentSwatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--accent-swatch);
+}
+
+.accentLabel {
+  font-size: 11px;
+  color: var(--fg-subtle);
+}
+
+/* Radius */
+.radiusRow {
+  display: flex;
+  gap: var(--spacing-3);
+}
+
+.radiusBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-2) var(--spacing-4);
+  border: 2px solid transparent;
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.radiusBtn:hover {
+  border-color: var(--border-strong);
+}
+
+.radiusActive {
+  border-color: var(--accent) !important;
+}
+
+.radiusPreview {
+  width: 32px;
+  height: 32px;
+  background: var(--accent);
+  opacity: 0.6;
+}
+
+.radiusLabel {
+  font-size: 11px;
+  color: var(--fg-subtle);
+}
+
+/* Info */
+.infoGrid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.infoRow {
+  display: flex;
+  gap: var(--spacing-4);
+  font-size: 12px;
+}
+
+.infoKey {
+  width: 100px;
+  color: var(--fg-subtle);
+  flex-shrink: 0;
+}
+
+.infoVal {
+  color: var(--fg);
+  font-family: var(--font-mono);
+}

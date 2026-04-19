@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { href: '/kanban', icon: Icons.Kanban, label: 'Канбан' },
   { href: '/library', icon: Icons.Paper, label: 'Библиотека' },
   { href: '/activity', icon: Icons.Bolt, label: 'Активность' },
+  { href: '/settings', icon: Icons.Settings, label: 'Настройки' },
 ];
 
 interface NavLinksProps {
