@@ -275,7 +275,11 @@ export default function TeamTab({ users: initial, isAdmin, currentUserId }: Team
               </tbody>
             </table>
           ) : (
-            !invLoading && <p style={{ fontSize: 13, color: 'var(--fg-subtle)', margin: 0 }}>Нет активных приглашений</p>
+            !invLoading && (
+              <div className={styles.sectionBody}>
+                <p style={{ fontSize: 13, color: 'var(--fg-subtle)', margin: 0 }}>Нет активных приглашений</p>
+              </div>
+            )
           )}
         </div>
       )}
