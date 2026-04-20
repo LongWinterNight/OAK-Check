@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { UpdateCheckItemSchema } from '@/lib/zod-schemas';
 import { broadcast } from '@/lib/sse/emitter';
 import { requireAuth, requireRole } from '@/lib/auth-guard';
+import { apiError } from '@/lib/api-error';
 
 export async function PATCH(
   req: NextRequest,
@@ -16,11 +17,11 @@ export async function PATCH(
     const body = await req.json();
     const parsed = UpdateCheckItemSchema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json({ error: 'Невалидные данные', details: parsed.error.flatten() }, { status: 400 });
+      return apiError('VALIDATION_ERROR', parsed.error.errors[0].message);
     }
 
     const item = await prisma.checkItem.findFirst({ where: { id: itemId, shotId } });
-    if (!item) return NextResponse.json({ error: 'Пункт не найден' }, { status: 404 });
+    if (!item) return apiError('NOT_FOUND', 'Пункт не найден');
 
     const updated = await prisma.checkItem.update({
       where: { id: itemId },
@@ -39,7 +40,7 @@ export async function PATCH(
     return NextResponse.json(updated);
   } catch (e) {
     console.error('PATCH /api/shots/[id]/checklist/[itemId]:', e);
-    return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 });
+    return apiError('SERVER_ERROR');
   }
 }
 
@@ -53,12 +54,12 @@ export async function DELETE(
   const { id: shotId, itemId } = await params;
   try {
     const item = await prisma.checkItem.findFirst({ where: { id: itemId, shotId } });
-    if (!item) return NextResponse.json({ error: 'Пункт не найден' }, { status: 404 });
+    if (!item) return apiError('NOT_FOUND', 'Пункт не найден');
 
     await prisma.checkItem.delete({ where: { id: itemId } });
     return new NextResponse(null, { status: 204 });
   } catch (e) {
     console.error('DELETE /api/shots/[id]/checklist/[itemId]:', e);
-    return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 });
+    return apiError('SERVER_ERROR');
   }
 }

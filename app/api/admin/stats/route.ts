@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireRole } from '@/lib/auth-guard';
+import { apiError } from '@/lib/api-error';
 
 export async function GET() {
   const { error } = await requireRole(['ADMIN']);
@@ -44,6 +45,6 @@ export async function GET() {
     });
   } catch (e) {
     console.error('GET /api/admin/stats:', e);
-    return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 });
+    return apiError('SERVER_ERROR');
   }
 }

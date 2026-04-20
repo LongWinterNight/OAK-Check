@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireRole } from '@/lib/auth-guard';
+import { apiError } from '@/lib/api-error';
 
 export async function DELETE(
   _req: NextRequest,
@@ -12,12 +13,12 @@ export async function DELETE(
   const { id } = await params;
   try {
     const chapter = await prisma.chapter.findUnique({ where: { id } });
-    if (!chapter) return NextResponse.json({ error: 'Этап не найден' }, { status: 404 });
+    if (!chapter) return apiError('NOT_FOUND', 'Этап не найден');
 
     await prisma.chapter.delete({ where: { id } });
     return new NextResponse(null, { status: 204 });
   } catch (e) {
     console.error('DELETE /api/chapters/[id]:', e);
-    return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 });
+    return apiError('SERVER_ERROR');
   }
 }

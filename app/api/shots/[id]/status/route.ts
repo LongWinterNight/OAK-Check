@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireRole } from '@/lib/auth-guard';
+import { apiError } from '@/lib/api-error';
 import { logActivity } from '@/lib/activity';
 import { broadcast } from '@/lib/sse/emitter';
 import { z } from 'zod';
@@ -26,13 +27,13 @@ export async function PATCH(
     const body = await req.json();
     const parsed = StatusSchema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json({ error: parsed.error.errors[0].message }, { status: 400 });
+      return apiError('VALIDATION_ERROR', parsed.error.errors[0].message);
     }
 
     const { status } = parsed.data;
 
     const shot = await prisma.shot.findUnique({ where: { id } });
-    if (!shot) return NextResponse.json({ error: 'Шот не найден' }, { status: 404 });
+    if (!shot) return apiError('NOT_FOUND', 'Шот не найден');
 
     const updated = await prisma.shot.update({ where: { id }, data: { status } });
 
@@ -48,6 +49,6 @@ export async function PATCH(
     return NextResponse.json(updated);
   } catch (e) {
     console.error('PATCH /api/shots/[id]/status:', e);
-    return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 });
+    return apiError('SERVER_ERROR');
   }
 }

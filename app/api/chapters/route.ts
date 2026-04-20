@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireRole } from '@/lib/auth-guard';
+import { apiError } from '@/lib/api-error';
 import { z } from 'zod';
 
 const CreateChapterSchema = z.object({
@@ -16,7 +17,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const parsed = CreateChapterSchema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json({ error: parsed.error.errors[0].message }, { status: 400 });
+      return apiError('VALIDATION_ERROR', parsed.error.errors[0].message);
     }
 
     const { shotId, title } = parsed.data;
@@ -33,6 +34,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(chapter, { status: 201 });
   } catch (e) {
     console.error('POST /api/chapters:', e);
-    return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 });
+    return apiError('SERVER_ERROR');
   }
 }

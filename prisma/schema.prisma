@@ -19,11 +19,14 @@ model User {
   loginAttempts Int       @default(0)
   lockedUntil   DateTime?
 
-  assignedShots Shot[]       @relation("ShotAssignee")
-  checkItems    CheckItem[]  @relation("ItemOwner")
-  comments      Comment[]
-  activities    Activity[]
-  invitations   Invitation[] @relation("InvitationCreator")
+  assignedShots   Shot[]       @relation("ShotAssignee")
+  createdShots    Shot[]       @relation("ShotCreator")
+  checkItems      CheckItem[]  @relation("ItemOwner")
+  comments        Comment[]
+  activities      Activity[]
+  invitations     Invitation[] @relation("InvitationCreator")
+  createdProjects Project[]    @relation("ProjectCreator")
+  updatedProjects Project[]    @relation("ProjectUpdater")
 
   @@map("users")
 }
@@ -46,9 +49,14 @@ model Project {
   dueDate       DateTime?
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
+  createdById   String?
+  updatedById   String?
 
-  shots Shot[]
+  shots     Shot[]
+  createdBy User? @relation("ProjectCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy User? @relation("ProjectUpdater", fields: [updatedById], references: [id], onDelete: SetNull)
 
+  @@index([createdById])
   @@map("projects")
 }
 
@@ -60,21 +68,23 @@ enum ProjectStatus {
 }
 
 model Shot {
-  id         String     @id @default(cuid())
-  projectId  String
-  code       String
-  title      String
-  software   String     @default("3dsmax 2024 · V-Ray 6.2")
-  resolution String     @default("3840×2160")
-  status     ShotStatus @default(TODO)
-  assigneeId String?
-  dueDate    DateTime?
-  order      Int        @default(0)
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
+  id          String     @id @default(cuid())
+  projectId   String
+  code        String
+  title       String
+  software    String     @default("3dsmax 2024 · V-Ray 6.2")
+  resolution  String     @default("3840×2160")
+  status      ShotStatus @default(TODO)
+  assigneeId  String?
+  createdById String?
+  dueDate     DateTime?
+  order       Int        @default(0)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 
   project    Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
   owner      User?           @relation("ShotAssignee", fields: [assigneeId], references: [id])
+  createdBy  User?           @relation("ShotCreator", fields: [createdById], references: [id], onDelete: SetNull)
   items      CheckItem[]
   comments   Comment[]
   versions   RenderVersion[]
@@ -83,6 +93,7 @@ model Shot {
 
   @@index([projectId])
   @@index([assigneeId])
+  @@index([createdById])
   @@index([status])
   @@index([projectId, status])
   @@map("shots")

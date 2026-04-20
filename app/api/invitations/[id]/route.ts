@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireRole } from '@/lib/auth-guard';
 import { logActivity } from '@/lib/activity';
+import { apiError } from '@/lib/api-error';
 
 export async function DELETE(
   _req: NextRequest,
@@ -13,12 +14,8 @@ export async function DELETE(
   const { id } = await params;
   try {
     const invitation = await prisma.invitation.findUnique({ where: { id } });
-    if (!invitation) {
-      return NextResponse.json({ error: 'Приглашение не найдено' }, { status: 404 });
-    }
-    if (invitation.usedAt) {
-      return NextResponse.json({ error: 'Нельзя отозвать использованное приглашение' }, { status: 400 });
-    }
+    if (!invitation) return apiError('NOT_FOUND', 'Приглашение не найдено');
+    if (invitation.usedAt) return apiError('UNPROCESSABLE', 'Нельзя отозвать использованное приглашение');
 
     await prisma.invitation.delete({ where: { id } });
 
@@ -31,6 +28,6 @@ export async function DELETE(
     return new NextResponse(null, { status: 204 });
   } catch (e) {
     console.error('DELETE /api/invitations/[id]:', e);
-    return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 });
+    return apiError('SERVER_ERROR');
   }
 }

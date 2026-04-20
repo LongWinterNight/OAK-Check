@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireRole } from '@/lib/auth-guard';
 import { logActivity } from '@/lib/activity';
+import { apiError } from '@/lib/api-error';
 import { z } from 'zod';
 
 const AssignSchema = z.object({
@@ -20,21 +21,16 @@ export async function PATCH(
   try {
     const body = await req.json();
     const parsed = AssignSchema.safeParse(body);
-    if (!parsed.success) {
-      return NextResponse.json({ error: parsed.error.errors[0].message }, { status: 400 });
-    }
+    if (!parsed.success) return apiError('VALIDATION_ERROR', parsed.error.errors[0].message);
 
     const { assigneeId } = parsed.data;
 
-    const shot = await prisma.shot.findUnique({
-      where: { id },
-      include: { owner: { select: { name: true } } },
-    });
-    if (!shot) return NextResponse.json({ error: 'Шот не найден' }, { status: 404 });
+    const shot = await prisma.shot.findUnique({ where: { id } });
+    if (!shot) return apiError('NOT_FOUND', 'Шот не найден');
 
     if (assigneeId) {
       const assignee = await prisma.user.findUnique({ where: { id: assigneeId } });
-      if (!assignee) return NextResponse.json({ error: 'Пользователь не найден' }, { status: 404 });
+      if (!assignee) return apiError('NOT_FOUND', 'Пользователь не найден');
     }
 
     const updated = await prisma.shot.update({ where: { id }, data: { assigneeId } });
@@ -53,6 +49,6 @@ export async function PATCH(
     return NextResponse.json(updated);
   } catch (e) {
     console.error('PATCH /api/shots/[id]/assign:', e);
-    return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 });
+    return apiError('SERVER_ERROR');
   }
 }

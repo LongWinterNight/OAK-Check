@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { UpdateShotSchema } from '@/lib/zod-schemas';
 import { requireAuth, requireRole } from '@/lib/auth-guard';
+import { apiError } from '@/lib/api-error';
 
 export async function GET(
   _req: NextRequest,
@@ -14,14 +15,11 @@ export async function GET(
   try {
     const shot = await prisma.shot.findUnique({
       where: { id },
-      include: { project: true, owner: true },
+      include: { project: true, owner: true, createdBy: { select: { id: true, name: true } } },
     });
-    if (!shot) return NextResponse.json({ error: 'Шот не найден' }, { status: 404 });
+    if (!shot) return apiError('NOT_FOUND', 'Шот не найден');
 
-    const items = await prisma.checkItem.findMany({
-      where: { shotId: id },
-      select: { state: true },
-    });
+    const items = await prisma.checkItem.findMany({ where: { shotId: id }, select: { state: true } });
     const progress = items.length === 0
       ? 0
       : Math.round(items.filter((i) => i.state === 'DONE').length / items.length * 100);
@@ -29,7 +27,7 @@ export async function GET(
     return NextResponse.json({ ...shot, progress });
   } catch (e) {
     console.error('GET /api/shots/[id]:', e);
-    return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 });
+    return apiError('SERVER_ERROR');
   }
 }
 
@@ -45,7 +43,7 @@ export async function PATCH(
     const body = await req.json();
     const parsed = UpdateShotSchema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json({ error: 'Невалидные данные' }, { status: 400 });
+      return apiError('VALIDATION_ERROR', parsed.error.errors[0].message);
     }
 
     const { assigneeId, dueDate, ...rest } = parsed.data;
@@ -62,7 +60,7 @@ export async function PATCH(
     return NextResponse.json(shot);
   } catch (e) {
     console.error('PATCH /api/shots/[id]:', e);
-    return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 });
+    return apiError('SERVER_ERROR');
   }
 }
 
@@ -79,6 +77,6 @@ export async function DELETE(
     return new NextResponse(null, { status: 204 });
   } catch (e) {
     console.error('DELETE /api/shots/[id]:', e);
-    return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 });
+    return apiError('SERVER_ERROR');
   }
 }
