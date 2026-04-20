@@ -23,7 +23,7 @@ export async function PATCH(
     const body = await req.json();
     const parsed = ShotStatusSchema.safeParse(body);
     if (!parsed.success) {
-      return apiError('VALIDATION_ERROR', parsed.error.errors[0].message);
+      return apiError('VALIDATION_ERROR', parsed.error.issues[0].message);
     }
 
     const { status } = parsed.data;

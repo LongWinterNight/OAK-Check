@@ -17,7 +17,7 @@ export async function PATCH(
     const body = await req.json();
     const parsed = UpdateCheckItemSchema.safeParse(body);
     if (!parsed.success) {
-      return apiError('VALIDATION_ERROR', parsed.error.errors[0].message);
+      return apiError('VALIDATION_ERROR', parsed.error.issues[0].message);
     }
 
     const item = await prisma.checkItem.findFirst({ where: { id: itemId, shotId } });

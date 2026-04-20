@@ -22,11 +22,11 @@ export async function GET() {
       storageResult,
     ] = await prisma.$transaction([
       prisma.user.count(),
-      prisma.user.groupBy({ by: ['role'], _count: { _all: true } }),
+      prisma.user.groupBy({ by: ['role'], _count: true, orderBy: { role: 'asc' } }),
       prisma.project.count(),
       prisma.project.count({ where: { status: 'ACTIVE' } }),
       prisma.shot.count(),
-      prisma.shot.groupBy({ by: ['status'], _count: { _all: true } }),
+      prisma.shot.groupBy({ by: ['status'], _count: true, orderBy: { status: 'asc' } }),
       prisma.user.count({ where: { lastLoginAt: { gte: sevenDaysAgo } } }),
       prisma.invitation.count({ where: { usedAt: null, expiresAt: { gte: new Date() } } }),
       prisma.renderVersion.aggregate({ _sum: { fileSize: true } }),
@@ -34,11 +34,11 @@ export async function GET() {
 
     return NextResponse.json({
       totalUsers,
-      usersByRole: Object.fromEntries(usersByRole.map((r) => [r.role, r._count._all])),
+      usersByRole: Object.fromEntries(usersByRole.map((r) => [r.role, r._count])),
       totalProjects,
       activeProjects,
       totalShots,
-      shotsByStatus: Object.fromEntries(shotsByStatus.map((s) => [s.status, s._count._all])),
+      shotsByStatus: Object.fromEntries(shotsByStatus.map((s) => [s.status, s._count])),
       recentLogins,
       pendingInvitations,
       storageUsedBytes: storageResult._sum.fileSize ?? 0,

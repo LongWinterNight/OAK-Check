@@ -17,7 +17,7 @@ export async function PATCH(
   try {
     const body = await req.json();
     const parsed = AssignShotSchema.safeParse(body);
-    if (!parsed.success) return apiError('VALIDATION_ERROR', parsed.error.errors[0].message);
+    if (!parsed.success) return apiError('VALIDATION_ERROR', parsed.error.issues[0].message);
 
     const { assigneeId } = parsed.data;
 

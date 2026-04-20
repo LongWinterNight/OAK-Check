@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const parsed = CreateProjectSchema.safeParse(body);
     if (!parsed.success) {
-      return apiError('VALIDATION_ERROR', parsed.error.errors[0].message);
+      return apiError('VALIDATION_ERROR', parsed.error.issues[0].message);
     }
     const project = await prisma.project.create({
       data: { ...parsed.data, createdById: user.id },

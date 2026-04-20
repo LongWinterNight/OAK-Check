@@ -16,7 +16,7 @@ export async function PATCH(
   try {
     const body = await req.json();
     const parsed = UpdateUserRoleSchema.safeParse(body);
-    if (!parsed.success) return apiError('VALIDATION_ERROR', parsed.error.errors[0].message);
+    if (!parsed.success) return apiError('VALIDATION_ERROR', parsed.error.issues[0].message);
 
     const updated = await prisma.user.update({
       where: { id },
