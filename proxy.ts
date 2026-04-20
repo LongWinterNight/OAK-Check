@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const PUBLIC_PATHS = ['/login', '/api/auth'];
-
-// Читаем наличие NextAuth session-токена без импорта Prisma
 function hasSession(req: NextRequest): boolean {
-  // NextAuth v5 хранит сессию в куке __Secure-authjs.session-token (prod)
-  // или authjs.session-token (dev)
   const cookieNames = [
     'authjs.session-token',
     '__Secure-authjs.session-token',
@@ -19,19 +14,28 @@ export default function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   const isPublic =
-    PUBLIC_PATHS.some((p) => pathname.startsWith(p)) ||
+    pathname.startsWith('/login') ||
+    pathname.startsWith('/invite') ||
+    pathname.startsWith('/reset') ||
+    pathname.startsWith('/api/auth') ||
     pathname.startsWith('/_next') ||
-    pathname.startsWith('/favicon');
+    pathname.startsWith('/uploads') ||
+    pathname === '/favicon.ico';
+
+  if (isPublic) return NextResponse.next();
 
   const authenticated = hasSession(req);
 
-  if (!authenticated && !isPublic) {
+  if (!authenticated) {
+    if (pathname.startsWith('/api/')) {
+      return NextResponse.json({ error: 'Не авторизован' }, { status: 401 });
+    }
     const loginUrl = new URL('/login', req.url);
     loginUrl.searchParams.set('callbackUrl', pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  if (authenticated && pathname === '/login') {
+  if (pathname === '/login') {
     return NextResponse.redirect(new URL('/dashboard', req.url));
   }
 
@@ -39,5 +43,5 @@ export default function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|uploads).*)'],
 };
