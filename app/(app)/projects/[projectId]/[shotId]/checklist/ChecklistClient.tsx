@@ -152,14 +152,27 @@ export default function ChecklistClient({
           <ChaptersPanel
             chapters={chapters}
             activeId={activeChapterId}
+            shotId={shot.id}
             onSelect={setActiveChapterId}
+            onChapterCreated={(chapter) => {
+              setChapters((prev) => [...prev, chapter]);
+              setActiveChapterId(chapter.id);
+            }}
             canManage={can.manageChecklist(userRole)}
           />
           {activeChapter && (
             <ItemsList
               chapter={activeChapter}
+              shotId={shot.id}
               currentUserId={currentUser.id}
               onStateChange={handleStateChange}
+              onItemCreated={(item) => {
+                setChapters((prev) => prev.map((ch) =>
+                  ch.id === item.chapterId
+                    ? { ...ch, items: [...ch.items, item], ...computeChapterStats([...ch.items, item]) }
+                    : ch
+                ));
+              }}
               canManage={can.manageChecklist(userRole)}
             />
           )}

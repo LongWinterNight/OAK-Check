@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireRole } from '@/lib/auth-guard';
+import { logActivity } from '@/lib/activity';
 
 export async function DELETE(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { error } = await requireRole(['ADMIN']);
+  const { user, error } = await requireRole(['ADMIN']);
   if (error) return error;
 
   const { id } = await params;
@@ -20,6 +21,13 @@ export async function DELETE(
     }
 
     await prisma.invitation.delete({ where: { id } });
+
+    await logActivity({
+      userId: user.id,
+      type: 'INVITE_REVOKED',
+      message: `${user.name} отозвал приглашение для ${invitation.email}`,
+    });
+
     return new NextResponse(null, { status: 204 });
   } catch (e) {
     console.error('DELETE /api/invitations/[id]:', e);

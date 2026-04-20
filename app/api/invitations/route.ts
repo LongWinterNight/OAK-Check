@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireRole } from '@/lib/auth-guard';
 import { sendInviteEmail } from '@/lib/email';
+import { logActivity } from '@/lib/activity';
 import { z } from 'zod';
+import { randomBytes } from 'crypto';
 
 const CreateInvitationSchema = z.object({
   email: z.string().email('Некорректный email'),
@@ -49,9 +51,10 @@ export async function POST(req: NextRequest) {
     });
 
     const expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000); // +48 часов
+    const token = randomBytes(32).toString('hex');
 
     const invitation = await prisma.invitation.create({
-      data: { email, role, createdBy: user.id, expiresAt },
+      data: { email, role, createdBy: user.id, expiresAt, token },
     });
 
     // Отправляем email (или логируем ссылку в dev-режиме)
@@ -63,6 +66,12 @@ export async function POST(req: NextRequest) {
     });
 
     const inviteUrl = `${process.env.NEXTAUTH_URL ?? 'http://localhost:3000'}/invite/${invitation.token}`;
+
+    await logActivity({
+      userId: user.id,
+      type: 'INVITE_CREATED',
+      message: `${user.name} отправил приглашение для ${email} (роль: ${role})`,
+    });
 
     return NextResponse.json({ ...invitation, inviteUrl }, { status: 201 });
   } catch (e) {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
+import { logActivity } from '@/lib/activity';
 import { z } from 'zod';
 
 const UpdateUserSchema = z.object({
@@ -31,6 +32,14 @@ export async function PATCH(
       select: { id: true, name: true, email: true, role: true, online: true, avatarUrl: true },
     });
 
+    if (parsed.data.role && session.user.role === 'ADMIN' && session.user.id !== id) {
+      await logActivity({
+        userId: session.user.id,
+        type: 'USER_ROLE_CHANGED',
+        message: `${session.user.name} изменил роль ${updated.name} → ${parsed.data.role}`,
+      });
+    }
+
     return NextResponse.json(updated);
   } catch (e) {
     console.error('[PATCH /api/users/:id]', e);
@@ -49,6 +58,16 @@ export async function DELETE(
     }
 
     const { id } = await params;
+    const target = await prisma.user.findUnique({ where: { id }, select: { name: true } });
+
+    // Log before transaction (activities will be deleted inside)
+    if (target) {
+      await logActivity({
+        userId: session.user.id,
+        type: 'USER_DELETED',
+        message: `${session.user.name} удалил пользователя ${target.name}`,
+      });
+    }
 
     // Nullify optional FK relations before deleting to avoid constraint errors
     await prisma.$transaction([

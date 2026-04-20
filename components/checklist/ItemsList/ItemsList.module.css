@@ -84,6 +84,32 @@
   color: var(--oak);
 }
 
+.addForm {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  margin-top: 4px;
+  border: 1.5px solid var(--accent);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--accent) 5%, var(--surface));
+}
+
+.addInput {
+  flex: 1;
+  border: none;
+  background: none;
+  outline: none;
+  font-size: 13px;
+  color: var(--fg);
+  font-family: var(--font-sans);
+}
+
+.addInput::placeholder {
+  color: var(--fg-subtle);
+  font-size: 12px;
+}
+
 /* Пустое состояние */
 .empty {
   display: flex;

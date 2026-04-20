@@ -3,6 +3,14 @@ import { prisma } from '@/lib/prisma';
 import { computeChapterStats } from '@/lib/utils';
 import { ApplyTemplateSchema } from '@/lib/zod-schemas';
 import { requireAuth, requireRole } from '@/lib/auth-guard';
+import { logActivity } from '@/lib/activity';
+import { z } from 'zod';
+
+const CreateItemSchema = z.object({
+  chapterId: z.string().min(1),
+  title: z.string().min(1, 'Название обязательно').max(200),
+  ownerId: z.string().optional(),
+});
 
 export async function GET(
   _req: NextRequest,
@@ -45,12 +53,43 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { error } = await requireRole(['LEAD', 'ADMIN']);
+  const { user, error } = await requireRole(['LEAD', 'ADMIN']);
   if (error) return error;
 
   const { id: shotId } = await params;
   try {
     const body = await req.json();
+
+    // Создание одиночного пункта
+    if (body.chapterId && body.title && !body.templateId) {
+      const parsed = CreateItemSchema.safeParse(body);
+      if (!parsed.success) {
+        return NextResponse.json({ error: parsed.error.errors[0].message }, { status: 400 });
+      }
+
+      const { chapterId, title, ownerId } = parsed.data;
+
+      const lastItem = await prisma.checkItem.findFirst({
+        where: { chapterId },
+        orderBy: { order: 'desc' },
+      });
+
+      const item = await prisma.checkItem.create({
+        data: { shotId, chapterId, title, state: 'TODO', order: (lastItem?.order ?? 0) + 1, ownerId },
+        include: { owner: true },
+      });
+
+      await logActivity({
+        userId: user.id,
+        type: 'ITEM_CREATED',
+        shotId,
+        message: `${user.name} добавил пункт «${title}»`,
+      });
+
+      return NextResponse.json(item, { status: 201 });
+    }
+
+    // Применение шаблона
     const parsed = ApplyTemplateSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json({ error: 'Невалидные данные' }, { status: 400 });

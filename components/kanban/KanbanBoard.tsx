@@ -87,15 +87,19 @@ export default function KanbanBoard({ initialShots }: { initialShots: KanbanShot
     const targetColumn = COLUMNS.find((c) => c.id === over.id);
     if (!targetColumn) return;
 
-    setShots((prev) =>
-      prev.map((s) => s.id === active.id ? { ...s, status: targetColumn.id } : s)
-    );
+    const prevShots = shots;
+    setShots((prev) => prev.map((s) => s.id === active.id ? { ...s, status: targetColumn.id } : s));
 
-    fetch(`/api/shots/${active.id}`, {
+    fetch(`/api/shots/${active.id}/status`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: targetColumn.id }),
-    }).catch(() => toast.error('Не удалось обновить статус'));
+    }).then((res) => {
+      if (!res.ok) throw new Error();
+    }).catch(() => {
+      toast.error('Не удалось обновить статус');
+      setShots(prevShots);
+    });
   };
 
   const activeShot = shots.find((s) => s.id === activeId);
