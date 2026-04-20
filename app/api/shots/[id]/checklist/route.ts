@@ -1,16 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { computeChapterStats } from '@/lib/utils';
-import { ApplyTemplateSchema } from '@/lib/zod-schemas';
+import { ApplyTemplateSchema, CreateCheckItemSchema as CreateItemSchema } from '@/lib/zod-schemas';
 import { requireAuth, requireRole } from '@/lib/auth-guard';
 import { logActivity } from '@/lib/activity';
-import { z } from 'zod';
-
-const CreateItemSchema = z.object({
-  chapterId: z.string().min(1),
-  title: z.string().min(1, 'Название обязательно').max(200),
-  ownerId: z.string().optional(),
-});
 
 export async function GET(
   _req: NextRequest,

@@ -13,13 +13,13 @@ export default async function ChecklistPage({ params }: Props) {
   const { projectId, shotId } = await params;
   const session = await auth();
 
-  const shot = await prisma.shot.findFirst({
-    where: { id: shotId, projectId },
-    include: {
-      project: true,
-      owner: true,
-    },
-  });
+  const [shot, usersRaw] = await Promise.all([
+    prisma.shot.findFirst({
+      where: { id: shotId, projectId },
+      include: { project: true, owner: true },
+    }),
+    prisma.user.findMany({ select: { id: true, name: true }, orderBy: { name: 'asc' } }),
+  ]);
 
   if (!shot) notFound();
 
@@ -118,6 +118,13 @@ export default async function ChecklistPage({ params }: Props) {
           createdAt: shot.owner.createdAt.toISOString(),
         }
       : null,
+    assignee: shot.owner
+      ? {
+          ...shot.owner,
+          role: shot.owner.role as 'ARTIST' | 'LEAD' | 'QA' | 'POST' | 'PM' | 'ADMIN',
+          createdAt: shot.owner.createdAt.toISOString(),
+        }
+      : null,
   };
 
   const currentUser = session?.user
@@ -134,6 +141,7 @@ export default async function ChecklistPage({ params }: Props) {
       comments={comments}
       currentUser={currentUser}
       userRole={userRole}
+      users={usersRaw}
     />
   );
 }

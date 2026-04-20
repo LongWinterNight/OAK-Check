@@ -1,13 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { z } from 'zod';
+import { RegisterSchema } from '@/lib/zod-schemas';
 import bcrypt from 'bcryptjs';
-
-const RegisterSchema = z.object({
-  token: z.string().min(1),
-  name: z.string().min(2, 'Имя должно содержать минимум 2 символа').max(64),
-  password: z.string().min(8, 'Пароль должен содержать минимум 8 символов'),
-});
 
 export async function POST(req: NextRequest) {
   try {

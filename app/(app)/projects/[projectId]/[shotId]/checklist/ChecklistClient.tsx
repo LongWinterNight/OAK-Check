@@ -14,7 +14,7 @@ import { toast } from '@/components/ui/Toast/toastStore';
 import { useSSE } from '@/hooks/useSSE';
 import { can, type Role } from '@/lib/roles';
 import type { SSEEvent } from '@/lib/sse/emitter';
-import type { Shot, ChapterWithItems, RenderVersion, Comment } from '@/types';
+import type { Shot, ChapterWithItems, RenderVersion, Comment, User } from '@/types';
 import styles from './page.module.css';
 
 interface ChecklistClientProps {
@@ -25,6 +25,7 @@ interface ChecklistClientProps {
   comments: Comment[];
   currentUser: { id: string; name: string };
   userRole: Role;
+  users: Pick<User, 'id' | 'name'>[];
 }
 
 export default function ChecklistClient({
@@ -35,6 +36,7 @@ export default function ChecklistClient({
   comments: initialComments,
   currentUser,
   userRole,
+  users,
 }: ChecklistClientProps) {
   const [chapters, setChapters] = useState(initialChapters);
   const [activeChapterId, setActiveChapterId] = useState(initialChapters[0]?.id ?? '');
@@ -42,6 +44,7 @@ export default function ChecklistClient({
   const [versions, setVersions] = useState(initialVersions);
   const [showUpload, setShowUpload] = useState(false);
   const [shotStatus, setShotStatus] = useState(shot.status);
+  const [assignee, setAssignee] = useState(shot.assignee ?? null);
 
   const applyStateChange = useCallback((itemId: string, state: string) => {
     setChapters((prev) =>
@@ -82,6 +85,24 @@ export default function ChecklistClient({
       });
     } catch {
       toast.error('Не удалось сохранить изменение');
+    }
+  };
+
+  const handleAssign = async (assigneeId: string | null) => {
+    try {
+      const res = await fetch(`/api/shots/${shot.id}/assign`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ assigneeId }),
+      });
+      if (res.ok) {
+        const found = assigneeId ? users.find((u) => u.id === assigneeId) ?? null : null;
+        setAssignee(found ? { ...found, email: '', role: 'ARTIST', avatarUrl: null, online: false, createdAt: '' } : null);
+      } else {
+        toast.error('Не удалось изменить исполнителя');
+      }
+    } catch {
+      toast.error('Ошибка сети');
     }
   };
 
@@ -145,8 +166,12 @@ export default function ChecklistClient({
           progress={totalProgress}
           latestVersion={versions[versions.length - 1]?.version ?? 'v001'}
           canChangeStatus={can.changeStatus(userRole)}
+          canAssign={can.assign(userRole)}
+          assignee={assignee}
+          users={users}
           onUploadRender={() => setShowUpload(true)}
           onSendReview={handleSendReview}
+          onAssign={handleAssign}
         />
         <div className={styles.body}>
           <ChaptersPanel

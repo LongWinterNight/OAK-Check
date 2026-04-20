@@ -2,12 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireRole } from '@/lib/auth-guard';
 import { apiError } from '@/lib/api-error';
-import { z } from 'zod';
-
-const CreateChapterSchema = z.object({
-  shotId: z.string().min(1),
-  title: z.string().min(1, 'Название обязательно').max(100),
-});
+import { CreateChapterSchema } from '@/lib/zod-schemas';
 
 export async function POST(req: NextRequest) {
   const { error } = await requireRole(['LEAD', 'ADMIN']);

@@ -1,14 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
-import { z } from 'zod';
+import { UpdateMeSchema } from '@/lib/zod-schemas';
 import bcrypt from 'bcryptjs';
-
-const UpdateMeSchema = z.object({
-  name: z.string().min(1).max(100).optional(),
-  newPassword: z.string().min(6).optional(),
-  currentPassword: z.string().optional(),
-});
 
 export async function GET() {
   try {

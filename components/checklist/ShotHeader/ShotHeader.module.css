@@ -88,6 +88,119 @@
   color: var(--fg-muted);
 }
 
+/* Исполнитель */
+.assigneeBlock {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-shrink: 0;
+  min-width: 140px;
+}
+
+.assigneeLabel {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--fg-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.assigneeBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 4px 8px;
+  cursor: pointer;
+  color: var(--fg);
+  font-size: 12px;
+  transition: border-color 0.15s;
+}
+
+.assigneeBtn:hover {
+  border-color: var(--accent);
+}
+
+.assigneeStatic {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--fg);
+}
+
+.avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.avatarEmpty {
+  background: var(--surface-muted);
+  color: var(--fg-subtle);
+}
+
+.assigneeName {
+  font-size: 12px;
+  color: var(--fg);
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.assigneeMuted {
+  font-size: 12px;
+  color: var(--fg-subtle);
+}
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 160px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  z-index: 50;
+  overflow: hidden;
+}
+
+.dropdownItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 12px;
+  background: none;
+  border: none;
+  color: var(--fg);
+  font-size: 12px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.1s;
+}
+
+.dropdownItem:hover {
+  background: var(--surface-raised);
+}
+
+.dropdownItemActive {
+  color: var(--accent);
+}
+
 /* Правая часть */
 .right {
   display: flex;

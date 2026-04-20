@@ -3,12 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { logActivity } from '@/lib/activity';
 import { requireRole, requireSelfOrAdmin } from '@/lib/auth-guard';
 import { apiError } from '@/lib/api-error';
-import { z } from 'zod';
-
-const UpdateUserSchema = z.object({
-  role:   z.enum(['ARTIST', 'LEAD', 'QA', 'POST', 'PM', 'ADMIN']).optional(),
-  online: z.boolean().optional(),
-});
+import { UpdateUserRoleSchema } from '@/lib/zod-schemas';
 
 export async function PATCH(
   req: NextRequest,
@@ -20,7 +15,7 @@ export async function PATCH(
 
   try {
     const body = await req.json();
-    const parsed = UpdateUserSchema.safeParse(body);
+    const parsed = UpdateUserRoleSchema.safeParse(body);
     if (!parsed.success) return apiError('VALIDATION_ERROR', parsed.error.errors[0].message);
 
     const updated = await prisma.user.update({

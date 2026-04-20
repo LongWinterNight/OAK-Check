@@ -3,11 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { requireRole } from '@/lib/auth-guard';
 import { logActivity } from '@/lib/activity';
 import { apiError } from '@/lib/api-error';
-import { z } from 'zod';
-
-const AssignSchema = z.object({
-  assigneeId: z.string().nullable(),
-});
+import { AssignShotSchema } from '@/lib/zod-schemas';
 
 export async function PATCH(
   req: NextRequest,
@@ -20,7 +16,7 @@ export async function PATCH(
 
   try {
     const body = await req.json();
-    const parsed = AssignSchema.safeParse(body);
+    const parsed = AssignShotSchema.safeParse(body);
     if (!parsed.success) return apiError('VALIDATION_ERROR', parsed.error.errors[0].message);
 
     const { assigneeId } = parsed.data;

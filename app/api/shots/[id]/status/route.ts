@@ -4,11 +4,7 @@ import { requireRole } from '@/lib/auth-guard';
 import { apiError } from '@/lib/api-error';
 import { logActivity } from '@/lib/activity';
 import { broadcast } from '@/lib/sse/emitter';
-import { z } from 'zod';
-
-const StatusSchema = z.object({
-  status: z.enum(['TODO', 'WIP', 'REVIEW', 'DONE']),
-});
+import { ShotStatusSchema } from '@/lib/zod-schemas';
 
 const STATUS_LABELS: Record<string, string> = {
   TODO: 'Бэклог', WIP: 'В работе', REVIEW: 'На ревью', DONE: 'Сдано',
@@ -25,7 +21,7 @@ export async function PATCH(
 
   try {
     const body = await req.json();
-    const parsed = StatusSchema.safeParse(body);
+    const parsed = ShotStatusSchema.safeParse(body);
     if (!parsed.success) {
       return apiError('VALIDATION_ERROR', parsed.error.errors[0].message);
     }

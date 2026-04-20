@@ -98,3 +98,42 @@ export const UpdateUserSchema = z.object({
   name: z.string().min(1).max(100).optional(),
   avatarUrl: z.string().url().nullable().optional(),
 });
+
+export const UpdateUserRoleSchema = z.object({
+  role: z.enum(['ARTIST', 'LEAD', 'QA', 'POST', 'PM', 'ADMIN']).optional(),
+  online: z.boolean().optional(),
+});
+
+export const UpdateMeSchema = z.object({
+  name: z.string().min(1).max(100).optional(),
+  newPassword: z.string().min(6).optional(),
+  currentPassword: z.string().optional(),
+});
+
+// Авторизация / регистрация
+export const RegisterSchema = z.object({
+  token: z.string().min(1),
+  name: z.string().min(2, 'Имя должно содержать минимум 2 символа').max(64),
+  password: z.string().min(8, 'Пароль должен содержать минимум 8 символов'),
+});
+
+// Приглашения
+export const CreateInvitationSchema = z.object({
+  email: z.string().email('Некорректный email'),
+  role: z.enum(['ARTIST', 'LEAD', 'QA', 'POST', 'PM', 'ADMIN']).default('ARTIST'),
+});
+
+// Главы чек-листа
+export const CreateChapterSchema = z.object({
+  shotId: z.string().min(1),
+  title: z.string().min(1, 'Название обязательно').max(100),
+});
+
+// Статус и назначение шота
+export const ShotStatusSchema = z.object({
+  status: z.enum(['TODO', 'WIP', 'REVIEW', 'DONE']),
+});
+
+export const AssignShotSchema = z.object({
+  assigneeId: z.string().nullable(),
+});

@@ -1,6 +1,9 @@
+'use client';
+
+import { useState, useRef, useEffect } from 'react';
 import { Icons } from '@/components/icons';
 import { Badge, Button, OakRing } from '@/components/ui';
-import type { Shot } from '@/types';
+import type { Shot, User } from '@/types';
 import { shotStatusBadgeKind, shotStatusLabel } from '@/lib/utils';
 import styles from './ShotHeader.module.css';
 
@@ -9,8 +12,12 @@ interface ShotHeaderProps {
   progress: number;
   latestVersion?: string;
   canChangeStatus?: boolean;
+  canAssign?: boolean;
+  assignee?: User | null;
+  users?: Pick<User, 'id' | 'name'>[];
   onUploadRender?: () => void;
   onSendReview?: () => void;
+  onAssign?: (assigneeId: string | null) => void;
 }
 
 export default function ShotHeader({
@@ -18,9 +25,35 @@ export default function ShotHeader({
   progress,
   latestVersion = 'v012',
   canChangeStatus = false,
+  canAssign = false,
+  assignee,
+  users = [],
   onUploadRender,
   onSendReview,
+  onAssign,
 }: ShotHeaderProps) {
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!dropdownOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [dropdownOpen]);
+
+  const handleSelect = (id: string | null) => {
+    setDropdownOpen(false);
+    onAssign?.(id);
+  };
+
+  const initials = (name: string) =>
+    name.split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 2);
+
   return (
     <div className={styles.header}>
       {/* Превью шота */}
@@ -57,6 +90,61 @@ export default function ShotHeader({
             </span>
           )}
         </div>
+      </div>
+
+      {/* Исполнитель */}
+      <div className={styles.assigneeBlock} ref={dropdownRef}>
+        <span className={styles.assigneeLabel}>Исполнитель</span>
+        {canAssign ? (
+          <button
+            className={styles.assigneeBtn}
+            onClick={() => setDropdownOpen((v) => !v)}
+            title="Назначить исполнителя"
+          >
+            {assignee ? (
+              <>
+                <span className={styles.avatar}>{initials(assignee.name)}</span>
+                <span className={styles.assigneeName}>{assignee.name}</span>
+              </>
+            ) : (
+              <>
+                <span className={`${styles.avatar} ${styles.avatarEmpty}`}>—</span>
+                <span className={styles.assigneeMuted}>Не назначен</span>
+              </>
+            )}
+            <Icons.ChevD size={12} />
+          </button>
+        ) : (
+          <div className={styles.assigneeStatic}>
+            {assignee ? (
+              <>
+                <span className={styles.avatar}>{initials(assignee.name)}</span>
+                <span className={styles.assigneeName}>{assignee.name}</span>
+              </>
+            ) : (
+              <span className={styles.assigneeMuted}>Не назначен</span>
+            )}
+          </div>
+        )}
+
+        {dropdownOpen && (
+          <div className={styles.dropdown}>
+            <button className={styles.dropdownItem} onClick={() => handleSelect(null)}>
+              <span className={`${styles.avatar} ${styles.avatarEmpty}`}>—</span>
+              Снять назначение
+            </button>
+            {users.map((u) => (
+              <button
+                key={u.id}
+                className={`${styles.dropdownItem} ${shot.assigneeId === u.id ? styles.dropdownItemActive : ''}`}
+                onClick={() => handleSelect(u.id)}
+              >
+                <span className={styles.avatar}>{initials(u.name)}</span>
+                {u.name}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Прогресс + кнопки */}

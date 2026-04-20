@@ -3,13 +3,8 @@ import { prisma } from '@/lib/prisma';
 import { requireRole } from '@/lib/auth-guard';
 import { sendInviteEmail } from '@/lib/email';
 import { logActivity } from '@/lib/activity';
-import { z } from 'zod';
+import { CreateInvitationSchema } from '@/lib/zod-schemas';
 import { randomBytes } from 'crypto';
-
-const CreateInvitationSchema = z.object({
-  email: z.string().email('Некорректный email'),
-  role: z.enum(['ARTIST', 'LEAD', 'QA', 'POST', 'PM', 'ADMIN']).default('ARTIST'),
-});
 
 export async function GET() {
   const { error } = await requireRole(['ADMIN']);
