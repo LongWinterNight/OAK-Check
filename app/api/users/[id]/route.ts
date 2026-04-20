@@ -51,7 +51,16 @@ export async function DELETE(
     }
 
     const { id } = await params;
-    await prisma.user.delete({ where: { id } });
+
+    // Nullify optional FK relations before deleting to avoid constraint errors
+    await prisma.$transaction([
+      prisma.shot.updateMany({ where: { assigneeId: id }, data: { assigneeId: null } }),
+      prisma.checkItem.updateMany({ where: { ownerId: id }, data: { ownerId: null } }),
+      prisma.comment.deleteMany({ where: { userId: id } }),
+      prisma.activity.deleteMany({ where: { userId: id } }),
+      prisma.user.delete({ where: { id } }),
+    ]);
+
     return new NextResponse(null, { status: 204 });
   } catch (e) {
     console.error('[DELETE /api/users/:id]', e);

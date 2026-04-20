@@ -31,6 +31,7 @@ function roleClass(role: string) {
 export default function TeamTab({ users: initial, isAdmin, currentUserId }: TeamTabProps) {
   const [users, setUsers] = useState<User[]>(initial);
   const [saving, setSaving] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   // Invite form state
   const [showInvite, setShowInvite] = useState(false);
@@ -71,12 +72,19 @@ export default function TeamTab({ users: initial, isAdmin, currentUserId }: Team
   }
 
   async function deleteUser(userId: string) {
-    if (!confirm('Удалить пользователя?')) return;
+    if (!confirm('Удалить пользователя? Это действие нельзя отменить.')) return;
     setSaving(userId);
+    setDeleteError(null);
     try {
       const res = await fetch(`/api/users/${userId}`, { method: 'DELETE' });
-      if (!res.ok) return;
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        setDeleteError(d.error ?? 'Ошибка удаления');
+        return;
+      }
       setUsers(u => u.filter(x => x.id !== userId));
+    } catch {
+      setDeleteError('Ошибка сети');
     } finally { setSaving(null); }
   }
 
@@ -163,6 +171,11 @@ export default function TeamTab({ users: initial, isAdmin, currentUserId }: Team
           </form>
         )}
 
+        {deleteError && (
+          <div style={{ margin: '0 var(--spacing-5)', padding: '8px 12px', background: 'color-mix(in srgb, var(--blocked) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--blocked) 25%, transparent)', borderRadius: 'var(--radius)', color: 'var(--blocked)', fontSize: 12 }}>
+            {deleteError}
+          </div>
+        )}
         <table className={styles.table}>
           <thead>
             <tr>

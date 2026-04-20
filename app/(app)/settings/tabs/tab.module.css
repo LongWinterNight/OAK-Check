@@ -146,6 +146,10 @@
   border-bottom: 1px solid var(--border);
   color: var(--fg);
   vertical-align: middle;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .table tr:last-child td { border-bottom: none; }
