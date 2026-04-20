@@ -5,6 +5,7 @@ import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui';
 import { TemplateCard } from './TemplateCard';
 import { ApplyTemplateModal } from './ApplyTemplateModal';
+import { NewTemplateModal } from './NewTemplateModal';
 import styles from './LibraryClient.module.css';
 
 interface TemplateItem {
@@ -35,10 +36,12 @@ interface LibraryClientProps {
 
 const CATEGORIES = ['Все'];
 
-export function LibraryClient({ templates, shots }: LibraryClientProps) {
+export function LibraryClient({ templates: initialTemplates, shots }: LibraryClientProps) {
+  const [templates, setTemplates] = useState(initialTemplates);
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('Все');
   const [applyTarget, setApplyTarget] = useState<Template | null>(null);
+  const [showNew, setShowNew] = useState(false);
 
   const categories = useMemo(() => {
     const cats = Array.from(new Set(templates.map((t) => t.category)));
@@ -72,7 +75,7 @@ export function LibraryClient({ templates, shots }: LibraryClientProps) {
           )}
         </div>
 
-        <Button variant="secondary" size="sm" icon={<Icons.Plus size={13} />}>
+        <Button variant="secondary" size="sm" icon={<Icons.Plus size={13} />} onClick={() => setShowNew(true)}>
           Новый шаблон
         </Button>
       </div>
@@ -107,6 +110,16 @@ export function LibraryClient({ templates, shots }: LibraryClientProps) {
           template={applyTarget}
           shots={shots}
           onClose={() => setApplyTarget(null)}
+        />
+      )}
+
+      {showNew && (
+        <NewTemplateModal
+          onClose={() => setShowNew(false)}
+          onCreated={(t) => {
+            setTemplates((prev) => [t, ...prev]);
+            setShowNew(false);
+          }}
         />
       )}
     </div>

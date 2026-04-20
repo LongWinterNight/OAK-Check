@@ -12,7 +12,7 @@ export default async function DashboardPage() {
 
   return (
     <>
-      <TopBar breadcrumbs={[{ label: 'Дашборд' }]} />
+      <TopBar breadcrumbs={[{ label: 'Дашборд' }]} action={null} />
       <div className={styles.content}>
         <StatsRow />
         <div className={styles.grid}>
