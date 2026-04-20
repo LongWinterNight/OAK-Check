@@ -1,7 +1,11 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { requireAuth } from '@/lib/auth-guard';
 
 export async function GET() {
+  const { error } = await requireAuth();
+  if (error) return error;
+
   try {
     const [totalShots, inProgress, blockedItems] = await Promise.all([
       prisma.shot.count(),
@@ -9,23 +13,13 @@ export async function GET() {
       prisma.checkItem.count({ where: { state: 'BLOCKED' } }),
     ]);
 
-    // Готово сегодня: шоты с updatedAt сегодня и статусом DONE
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
-
     const doneToday = await prisma.shot.count({
-      where: {
-        status: 'DONE',
-        updatedAt: { gte: startOfDay },
-      },
+      where: { status: 'DONE', updatedAt: { gte: startOfDay } },
     });
 
-    return NextResponse.json({
-      totalShots,
-      inProgress,
-      doneToday,
-      blockers: blockedItems,
-    });
+    return NextResponse.json({ totalShots, inProgress, doneToday, blockers: blockedItems });
   } catch (e) {
     console.error('GET /api/stats:', e);
     return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 });

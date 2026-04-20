@@ -2,28 +2,25 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { UpdateCheckItemSchema } from '@/lib/zod-schemas';
 import { broadcast } from '@/lib/sse/emitter';
+import { requireAuth, requireRole } from '@/lib/auth-guard';
 
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string; itemId: string }> }
 ) {
-  const { id: shotId, itemId } = await params;
+  const { error } = await requireAuth();
+  if (error) return error;
 
+  const { id: shotId, itemId } = await params;
   try {
     const body = await req.json();
     const parsed = UpdateCheckItemSchema.safeParse(body);
-
     if (!parsed.success) {
       return NextResponse.json({ error: 'Невалидные данные', details: parsed.error.flatten() }, { status: 400 });
     }
 
-    const item = await prisma.checkItem.findFirst({
-      where: { id: itemId, shotId },
-    });
-
-    if (!item) {
-      return NextResponse.json({ error: 'Пункт не найден' }, { status: 404 });
-    }
+    const item = await prisma.checkItem.findFirst({ where: { id: itemId, shotId } });
+    if (!item) return NextResponse.json({ error: 'Пункт не найден' }, { status: 404 });
 
     const updated = await prisma.checkItem.update({
       where: { id: itemId },
@@ -31,7 +28,6 @@ export async function PATCH(
       include: { owner: true, shot: { select: { projectId: true } } },
     });
 
-    // Рассылаем real-time событие всем в проекте
     broadcast(updated.shot.projectId, {
       type: 'checklist:updated',
       shotId,
@@ -51,14 +47,13 @@ export async function DELETE(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string; itemId: string }> }
 ) {
-  const { id: shotId, itemId } = await params;
+  const { error } = await requireRole(['LEAD', 'ADMIN']);
+  if (error) return error;
 
+  const { id: shotId, itemId } = await params;
   try {
     const item = await prisma.checkItem.findFirst({ where: { id: itemId, shotId } });
-
-    if (!item) {
-      return NextResponse.json({ error: 'Пункт не найден' }, { status: 404 });
-    }
+    if (!item) return NextResponse.json({ error: 'Пункт не найден' }, { status: 404 });
 
     await prisma.checkItem.delete({ where: { id: itemId } });
     return new NextResponse(null, { status: 204 });

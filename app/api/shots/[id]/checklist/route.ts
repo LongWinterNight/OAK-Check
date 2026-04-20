@@ -2,46 +2,36 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { computeChapterStats } from '@/lib/utils';
 import { ApplyTemplateSchema } from '@/lib/zod-schemas';
+import { requireAuth, requireRole } from '@/lib/auth-guard';
 
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id: shotId } = await params;
+  const { error } = await requireAuth();
+  if (error) return error;
 
+  const { id: shotId } = await params;
   try {
-    // Получаем все пункты шота с главами
     const items = await prisma.checkItem.findMany({
       where: { shotId },
-      include: {
-        chapter: true,
-        owner: true,
-      },
+      include: { chapter: true, owner: true },
       orderBy: [{ chapter: { order: 'asc' } }, { order: 'asc' }],
     });
 
-    // Получаем уникальные главы в порядке
     const chapterMap = new Map<string, typeof items[0]['chapter']>();
     for (const item of items) {
-      if (!chapterMap.has(item.chapterId)) {
-        chapterMap.set(item.chapterId, item.chapter);
-      }
+      if (!chapterMap.has(item.chapterId)) chapterMap.set(item.chapterId, item.chapter);
     }
 
     const chapters = Array.from(chapterMap.values()).map((chapter) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const chapterItems = items
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .filter((item: any) => item.chapterId === chapter.id)
+        .filter((item) => item.chapterId === chapter.id)
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        .map(({ chapter: _chap, ...item }: any) => item);
+        .map(({ chapter: _chap, ...item }) => item);
 
-      const stats = computeChapterStats(chapterItems);
-
-      return {
-        ...chapter,
-        items: chapterItems,
-        ...stats,
-      };
+      return { ...chapter, items: chapterItems, ...computeChapterStats(chapterItems) };
     });
 
     return NextResponse.json(chapters);
@@ -55,33 +45,29 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id: shotId } = await params;
+  const { error } = await requireRole(['LEAD', 'ADMIN']);
+  if (error) return error;
 
+  const { id: shotId } = await params;
   try {
     const body = await req.json();
     const parsed = ApplyTemplateSchema.safeParse(body);
-
     if (!parsed.success) {
       return NextResponse.json({ error: 'Невалидные данные' }, { status: 400 });
     }
 
     const { templateId, chapterName } = parsed.data;
-
     const template = await prisma.checklistTemplate.findUnique({
       where: { id: templateId },
       include: { items: { orderBy: { order: 'asc' } } },
     });
-
-    if (!template) {
-      return NextResponse.json({ error: 'Шаблон не найден' }, { status: 404 });
-    }
+    if (!template) return NextResponse.json({ error: 'Шаблон не найден' }, { status: 404 });
 
     const existingChapters = await prisma.chapter.findMany({
       where: { shotId },
       orderBy: { order: 'desc' },
       take: 1,
     });
-
     const nextOrder = existingChapters.length > 0 ? existingChapters[0].order + 1 : 1;
 
     const chapter = await prisma.chapter.create({

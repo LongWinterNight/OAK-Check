@@ -1,22 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { UpdateShotSchema } from '@/lib/zod-schemas';
+import { requireAuth, requireRole } from '@/lib/auth-guard';
 
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
+  const { error } = await requireAuth();
+  if (error) return error;
 
+  const { id } = await params;
   try {
     const shot = await prisma.shot.findUnique({
       where: { id },
       include: { project: true, owner: true },
     });
-
     if (!shot) return NextResponse.json({ error: 'Шот не найден' }, { status: 404 });
 
-    // Вычисляем прогресс
     const items = await prisma.checkItem.findMany({
       where: { shotId: id },
       select: { state: true },
@@ -36,12 +37,13 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
+  const { error } = await requireRole(['LEAD', 'ADMIN']);
+  if (error) return error;
 
+  const { id } = await params;
   try {
     const body = await req.json();
     const parsed = UpdateShotSchema.safeParse(body);
-
     if (!parsed.success) {
       return NextResponse.json({ error: 'Невалидные данные' }, { status: 400 });
     }
@@ -68,8 +70,10 @@ export async function DELETE(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
+  const { error } = await requireRole(['ADMIN']);
+  if (error) return error;
 
+  const { id } = await params;
   try {
     await prisma.shot.delete({ where: { id } });
     return new NextResponse(null, { status: 204 });

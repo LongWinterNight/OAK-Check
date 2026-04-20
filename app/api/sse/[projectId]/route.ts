@@ -1,22 +1,28 @@
 import { subscribe } from '@/lib/sse/emitter';
+import { auth } from '@/auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ projectId: string }> }
 ) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return new Response(JSON.stringify({ error: 'Не авторизован' }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
   const { projectId } = await params;
 
   const stream = new ReadableStream({
     start(controller) {
-      // Пинг при подключении
-      const ping = new TextEncoder().encode(': ping\n\n');
-      controller.enqueue(ping);
+      controller.enqueue(new TextEncoder().encode(': ping\n\n'));
 
       const unsubscribe = subscribe(projectId, controller);
 
-      // Периодический keepalive (каждые 25 сек)
       const interval = setInterval(() => {
         try {
           controller.enqueue(new TextEncoder().encode(': keepalive\n\n'));
@@ -26,7 +32,6 @@ export async function GET(
         }
       }, 25_000);
 
-      // Cleanup при закрытии соединения
       return () => {
         clearInterval(interval);
         unsubscribe();

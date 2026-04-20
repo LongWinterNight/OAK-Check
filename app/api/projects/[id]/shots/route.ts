@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { CreateShotSchema } from '@/lib/zod-schemas';
+import { requireAuth, requireRole } from '@/lib/auth-guard';
 
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id: projectId } = await params;
+  const { error } = await requireAuth();
+  if (error) return error;
 
+  const { id: projectId } = await params;
   try {
     const shots = await prisma.shot.findMany({
       where: { projectId },
@@ -15,7 +18,6 @@ export async function GET(
       orderBy: { order: 'asc' },
     });
 
-    // Добавляем прогресс к каждому шоту
     const shotsWithProgress = await Promise.all(
       shots.map(async (shot) => {
         const items = await prisma.checkItem.findMany({
@@ -40,15 +42,16 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id: projectId } = await params;
+  const { error } = await requireRole(['LEAD', 'ADMIN']);
+  if (error) return error;
 
+  const { id: projectId } = await params;
   try {
     const project = await prisma.project.findUnique({ where: { id: projectId } });
     if (!project) return NextResponse.json({ error: 'Проект не найден' }, { status: 404 });
 
     const body = await req.json();
     const parsed = CreateShotSchema.safeParse(body);
-
     if (!parsed.success) {
       return NextResponse.json({ error: 'Невалидные данные' }, { status: 400 });
     }
