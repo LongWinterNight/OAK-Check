@@ -16,8 +16,14 @@ export async function GET() {
   if (error) return error;
 
   try {
+    // Удаляем истёкшие неиспользованные инвайты перед возвратом
+    await prisma.invitation.deleteMany({
+      where: { expiresAt: { lt: new Date() }, usedAt: null },
+    });
+
     const invitations = await prisma.invitation.findMany({
       orderBy: { createdAt: 'desc' },
+      include: { creator: { select: { id: true, name: true } } },
     });
     return NextResponse.json(invitations);
   } catch (e) {

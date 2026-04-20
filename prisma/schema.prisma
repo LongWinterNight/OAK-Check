@@ -19,10 +19,11 @@ model User {
   loginAttempts Int       @default(0)
   lockedUntil   DateTime?
 
-  assignedShots Shot[]      @relation("ShotAssignee")
-  checkItems    CheckItem[] @relation("ItemOwner")
+  assignedShots Shot[]       @relation("ShotAssignee")
+  checkItems    CheckItem[]  @relation("ItemOwner")
   comments      Comment[]
   activities    Activity[]
+  invitations   Invitation[] @relation("InvitationCreator")
 
   @@map("users")
 }
@@ -221,12 +222,15 @@ model Invitation {
   email     String
   role      Role      @default(ARTIST)
   token     String    @unique @default(cuid())
-  createdBy String
+  createdBy String?
   expiresAt DateTime
   usedAt    DateTime?
   createdAt DateTime  @default(now())
 
+  creator User? @relation("InvitationCreator", fields: [createdBy], references: [id], onDelete: SetNull)
+
   @@index([email])
+  @@index([createdBy])
   @@index([expiresAt])
   @@map("invitations")
 }
