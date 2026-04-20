@@ -7,14 +7,17 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  name         String
-  role         Role     @default(ARTIST)
-  avatarUrl    String?
-  passwordHash String?
-  online       Boolean  @default(false)
-  createdAt    DateTime @default(now())
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String
+  role          Role      @default(ARTIST)
+  avatarUrl     String?
+  passwordHash  String?
+  online        Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  lastLoginAt   DateTime?
+  loginAttempts Int       @default(0)
+  lockedUntil   DateTime?
 
   assignedShots Shot[]      @relation("ShotAssignee")
   checkItems    CheckItem[] @relation("ItemOwner")
@@ -195,6 +198,19 @@ model Activity {
   shot Shot? @relation(fields: [shotId], references: [id])
 
   @@map("activities")
+}
+
+model Invitation {
+  id        String    @id @default(cuid())
+  email     String
+  role      Role      @default(ARTIST)
+  token     String    @unique @default(cuid())
+  createdBy String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@map("invitations")
 }
 
 enum ActivityType {

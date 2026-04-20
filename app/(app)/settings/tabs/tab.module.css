@@ -245,3 +245,32 @@
 /* Save status */
 .saveStatus { font-size: 12px; color: var(--done); }
 .saveError  { font-size: 12px; color: var(--blocked); }
+
+/* Primary button */
+.btnPrimary {
+  height: 34px;
+  padding: 0 14px;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.12s;
+}
+.btnPrimary:hover:not(:disabled) { opacity: 0.88; }
+.btnPrimary:disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* Invite inline form */
+.inviteForm {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  padding: var(--spacing-4) var(--spacing-5);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+  flex-wrap: wrap;
+}
