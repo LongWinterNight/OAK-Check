@@ -1,42 +1,56 @@
-'use client';
-
-import { useState } from 'react';
-import Check3, { type ItemState } from '@/components/ui/Check3/Check3';
+import { prisma } from '@/lib/prisma';
+import { MyDayList, type MyDayItem } from './MyDayList';
 import styles from './MyDay.module.css';
 
-const MY_TASKS = [
-  { id: '1', title: 'Оптимизация плотности: карнизы', project: 'Skolkovo One · SH04', time: '14:00', state: 'todo' as ItemState },
-  { id: '2', title: 'Проверить HDRI multiplier', project: 'Skolkovo One · SH04', time: '14:30', state: 'wip' as ItemState },
-  { id: '3', title: 'Тестовый рендер 1080p', project: 'Kosmo · SH02', time: '16:00', state: 'todo' as ItemState },
-];
+const DB_TO_UI: Record<string, 'todo' | 'wip' | 'done' | 'blocked'> = {
+  TODO: 'todo', WIP: 'wip', DONE: 'done', BLOCKED: 'blocked',
+} as const;
 
-export default function MyDay() {
-  const [tasks, setTasks] = useState(MY_TASKS);
+interface MyDayProps {
+  userId?: string;
+}
 
-  const toggle = (id: string, next: ItemState) => {
-    setTasks((prev) => prev.map((t) => t.id === id ? { ...t, state: next } : t));
-  };
+export default async function MyDay({ userId }: MyDayProps) {
+  if (!userId) {
+    return (
+      <div className={styles.card}>
+        <div className={styles.header}>
+          <span className={styles.title}>Мой день</span>
+        </div>
+        <div className={styles.empty}>Войдите, чтобы увидеть свои задачи</div>
+      </div>
+    );
+  }
+
+  const rawItems = await prisma.checkItem.findMany({
+    where: { ownerId: userId, state: { not: 'DONE' } },
+    include: {
+      shot: {
+        select: {
+          id: true,
+          code: true,
+          projectId: true,
+          project: { select: { title: true } },
+        },
+      },
+    },
+    orderBy: { updatedAt: 'desc' },
+    take: 8,
+  });
+
+  const items: MyDayItem[] = rawItems.map((i) => ({
+    id: i.id,
+    title: i.title,
+    state: DB_TO_UI[i.state] ?? 'todo',
+    shotId: i.shot.id,
+    shotCode: i.shot.code,
+    projectTitle: i.shot.project.title,
+    projectId: i.shot.projectId,
+  }));
 
   return (
     <div className={styles.card}>
-      <div className={styles.header}>
-        <span className={styles.title}>Мой день</span>
-        <span className={styles.count}>{tasks.filter(t => t.state !== 'done').length} задач</span>
-      </div>
-      <div className={styles.list}>
-        {tasks.map((task) => (
-          <div key={task.id} className={styles.item}>
-            <Check3 state={task.state} onChange={(next) => toggle(task.id, next)} size={16} />
-            <div className={styles.info}>
-              <div className={[styles.taskTitle, task.state === 'done' ? styles.done : ''].join(' ')}>
-                {task.title}
-              </div>
-              <div className={styles.project}>{task.project}</div>
-            </div>
-            <span className={styles.time}>{task.time}</span>
-          </div>
-        ))}
-      </div>
+      <MyDayList items={items} />
     </div>
   );
 }

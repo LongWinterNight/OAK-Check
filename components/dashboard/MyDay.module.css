@@ -71,3 +71,21 @@
   color: var(--fg-subtle);
   flex-shrink: 0;
 }
+
+.empty {
+  padding: 20px 16px;
+  font-size: 12px;
+  color: var(--fg-subtle);
+  text-align: center;
+}
+
+.taskTitle {
+  font-size: 13px;
+  color: var(--fg);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.taskTitle:hover {
+  color: var(--accent);
+}
