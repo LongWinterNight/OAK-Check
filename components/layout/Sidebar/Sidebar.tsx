@@ -44,7 +44,7 @@ export default async function Sidebar() {
       </div>
 
       {/* Навигация */}
-      <NavLinks projects={projects} />
+      <NavLinks projects={projects} isAdmin={(user as { role?: string })?.role === 'ADMIN'} />
 
       {/* Пользователь */}
       <div className={styles.userRow}>

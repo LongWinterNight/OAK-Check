@@ -16,9 +16,10 @@ const NAV_ITEMS = [
 
 interface NavLinksProps {
   projects: { id: string; name: string; gradient: string }[];
+  isAdmin?: boolean;
 }
 
-export function NavLinks({ projects }: NavLinksProps) {
+export function NavLinks({ projects, isAdmin }: NavLinksProps) {
   const pathname = usePathname();
 
   return (
@@ -36,6 +37,16 @@ export function NavLinks({ projects }: NavLinksProps) {
           </Link>
         );
       })}
+
+      {isAdmin && (
+        <Link
+          href="/admin"
+          className={[styles.navItem, pathname === '/admin' ? styles.active : ''].join(' ')}
+        >
+          <Icons.Lock size={16} />
+          <span className={styles.navLabel}>Админ</span>
+        </Link>
+      )}
 
       {projects.length > 0 && (
         <>
