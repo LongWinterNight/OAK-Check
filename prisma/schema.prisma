@@ -80,6 +80,10 @@ model Shot {
   activities Activity[]
   chapters   Chapter[]
 
+  @@index([projectId])
+  @@index([assigneeId])
+  @@index([status])
+  @@index([projectId, status])
   @@map("shots")
 }
 
@@ -118,6 +122,10 @@ model CheckItem {
   chapter Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
   owner   User?   @relation("ItemOwner", fields: [ownerId], references: [id])
 
+  @@index([shotId])
+  @@index([chapterId])
+  @@index([ownerId])
+  @@index([shotId, state])
   @@map("check_items")
 }
 
@@ -143,6 +151,9 @@ model Comment {
   parent  Comment?  @relation("Replies", fields: [parentId], references: [id])
   replies Comment[] @relation("Replies")
 
+  @@index([shotId])
+  @@index([userId])
+  @@index([parentId])
   @@map("comments")
 }
 
@@ -159,6 +170,7 @@ model RenderVersion {
 
   shot Shot @relation(fields: [shotId], references: [id], onDelete: Cascade)
 
+  @@index([shotId])
   @@map("render_versions")
 }
 
@@ -197,6 +209,10 @@ model Activity {
   user User  @relation(fields: [userId], references: [id])
   shot Shot? @relation(fields: [shotId], references: [id])
 
+  @@index([userId])
+  @@index([shotId])
+  @@index([createdAt])
+  @@index([type])
   @@map("activities")
 }
 
@@ -210,6 +226,8 @@ model Invitation {
   usedAt    DateTime?
   createdAt DateTime  @default(now())
 
+  @@index([email])
+  @@index([expiresAt])
   @@map("invitations")
 }
 
@@ -220,4 +238,8 @@ enum ActivityType {
   VERSION_UPLOADED
   SHOT_STATUS_CHANGED
   MEMBER_ADDED
+  USER_ROLE_CHANGED
+  USER_DELETED
+  INVITE_CREATED
+  INVITE_REVOKED
 }

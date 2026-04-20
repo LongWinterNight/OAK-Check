@@ -41,6 +41,7 @@ export default function ChecklistClient({
   const [comments, setComments] = useState(initialComments);
   const [versions, setVersions] = useState(initialVersions);
   const [showUpload, setShowUpload] = useState(false);
+  const [shotStatus, setShotStatus] = useState(shot.status);
 
   const applyStateChange = useCallback((itemId: string, state: string) => {
     setChapters((prev) =>
@@ -84,6 +85,25 @@ export default function ChecklistClient({
     }
   };
 
+  const NEXT_STATUS: Record<string, 'TODO' | 'WIP' | 'REVIEW' | 'DONE'> = {
+    TODO: 'WIP', WIP: 'REVIEW', REVIEW: 'DONE', DONE: 'WIP',
+  };
+
+  const handleSendReview = async () => {
+    const next = NEXT_STATUS[shotStatus];
+    try {
+      const res = await fetch(`/api/shots/${shot.id}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: next }),
+      });
+      if (res.ok) setShotStatus(next);
+      else toast.error('Не удалось сменить статус');
+    } catch {
+      toast.error('Ошибка сети');
+    }
+  };
+
   const handleCommentSubmit = async (body: string) => {
     try {
       const res = await fetch(`/api/shots/${shot.id}/comments`, {
@@ -121,11 +141,12 @@ export default function ChecklistClient({
       />
       <div className={styles.page}>
         <ShotHeader
-          shot={shot}
+          shot={{ ...shot, status: shotStatus }}
           progress={totalProgress}
           latestVersion={versions[versions.length - 1]?.version ?? 'v001'}
           canChangeStatus={can.changeStatus(userRole)}
           onUploadRender={() => setShowUpload(true)}
+          onSendReview={handleSendReview}
         />
         <div className={styles.body}>
           <ChaptersPanel

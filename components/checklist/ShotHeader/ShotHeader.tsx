@@ -76,12 +76,15 @@ export default function ShotHeader({
           </Button>
           {canChangeStatus && (
             <Button
-              variant="primary"
+              variant={shot.status === 'DONE' ? 'secondary' : 'primary'}
               size="sm"
               icon={<Icons.Eye size={14} />}
               onClick={onSendReview}
             >
-              На ревью
+              {shot.status === 'TODO' && 'В работу'}
+              {shot.status === 'WIP' && 'На ревью'}
+              {shot.status === 'REVIEW' && 'Принять'}
+              {shot.status === 'DONE' && 'Вернуть'}
             </Button>
           )}
         </div>

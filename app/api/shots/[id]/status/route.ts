@@ -1,0 +1,53 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { requireRole } from '@/lib/auth-guard';
+import { logActivity } from '@/lib/activity';
+import { broadcast } from '@/lib/sse/emitter';
+import { z } from 'zod';
+
+const StatusSchema = z.object({
+  status: z.enum(['TODO', 'WIP', 'REVIEW', 'DONE']),
+});
+
+const STATUS_LABELS: Record<string, string> = {
+  TODO: 'Бэклог', WIP: 'В работе', REVIEW: 'На ревью', DONE: 'Сдано',
+};
+
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { user, error } = await requireRole(['LEAD', 'QA', 'PM', 'ADMIN']);
+  if (error) return error;
+
+  const { id } = await params;
+
+  try {
+    const body = await req.json();
+    const parsed = StatusSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error.errors[0].message }, { status: 400 });
+    }
+
+    const { status } = parsed.data;
+
+    const shot = await prisma.shot.findUnique({ where: { id } });
+    if (!shot) return NextResponse.json({ error: 'Шот не найден' }, { status: 404 });
+
+    const updated = await prisma.shot.update({ where: { id }, data: { status } });
+
+    await logActivity({
+      userId: user.id,
+      type: 'SHOT_STATUS_CHANGED',
+      shotId: id,
+      message: `${user.name} перевёл ${shot.code} → ${STATUS_LABELS[status]}`,
+    });
+
+    broadcast(shot.projectId, { type: 'shot:status', shotId: id, status });
+
+    return NextResponse.json(updated);
+  } catch (e) {
+    console.error('PATCH /api/shots/[id]/status:', e);
+    return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 });
+  }
+}

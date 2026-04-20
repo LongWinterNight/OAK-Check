@@ -6,7 +6,6 @@ import styles from './page.module.css';
 
 export default async function SettingsPage() {
   const session = await auth();
-  const sessionUser = session?.user as { id?: string; role?: string; name?: string; email?: string } | undefined;
 
   const [users, projects, stats] = await Promise.all([
     prisma.user.findMany({
@@ -27,11 +26,11 @@ export default async function SettingsPage() {
 
   const [totalShots, totalItems, totalComments, totalVersions] = stats;
 
-  const currentUser = sessionUser ? {
-    id: sessionUser.id ?? '',
-    name: sessionUser.name ?? '',
-    email: sessionUser.email ?? '',
-    role: (sessionUser.role ?? 'ARTIST') as string,
+  const currentUser = session?.user ? {
+    id: session.user.id,
+    name: session.user.name ?? '',
+    email: session.user.email ?? '',
+    role: session.user.role,
   } : null;
 
   return (

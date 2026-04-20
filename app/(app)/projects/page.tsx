@@ -48,7 +48,7 @@ async function getProjects() {
 
 export default async function ProjectsPage() {
   const [projects, session] = await Promise.all([getProjects(), auth()]);
-  const userRole = ((session?.user as { role?: string })?.role ?? 'ARTIST') as Role;
+  const userRole = session?.user?.role ?? 'ARTIST';
 
   return (
     <>

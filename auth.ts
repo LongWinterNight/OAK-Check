@@ -7,15 +7,17 @@ const LoginSchema = z.object({
   password: z.string().min(1),
 });
 
-// Встроенный аккаунт для тестирования (работает без БД)
-const DEV_USER = {
-  id: 'dev-safan',
-  name: 'Safan',
-  email: 'safanch6230i',
-  role: 'ADMIN',
-  identifier: 'safanch6230i',
-  password: 'Safanch_6230i',
-};
+// Dev-аккаунт — только в development, credentials из .env.local
+const DEV_USER = process.env.NODE_ENV !== 'production' && process.env.DEV_USER_LOGIN
+  ? {
+      id: 'dev-safan',
+      name: process.env.DEV_USER_NAME ?? 'Dev',
+      email: process.env.DEV_USER_LOGIN,
+      role: 'ADMIN' as const,
+      identifier: process.env.DEV_USER_LOGIN,
+      password: process.env.DEV_USER_PASSWORD ?? '',
+    }
+  : null;
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: 'jwt' },
@@ -34,14 +36,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         const { identifier, password } = parsed.data;
 
-        // Dev-аккаунт (без БД)
-        if (identifier === DEV_USER.identifier && password === DEV_USER.password) {
-          return {
-            id: DEV_USER.id,
-            name: DEV_USER.name,
-            email: DEV_USER.email,
-            role: DEV_USER.role,
-          };
+        // Dev-аккаунт (без БД, только в development)
+        if (DEV_USER && identifier === DEV_USER.identifier && password === DEV_USER.password) {
+          return { id: DEV_USER.id, name: DEV_USER.name, email: DEV_USER.email, role: DEV_USER.role };
         }
 
         // Аккаунты из БД
@@ -49,21 +46,33 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           const { prisma } = await import('@/lib/prisma');
           const { default: bcrypt } = await import('bcryptjs');
 
-          const user = await prisma.user.findUnique({
-            where: { email: identifier },
-          });
-
+          const user = await prisma.user.findUnique({ where: { email: identifier } });
           if (!user?.passwordHash) return null;
 
-          const valid = await bcrypt.compare(password, user.passwordHash);
-          if (!valid) return null;
+          // Проверка блокировки
+          if (user.lockedUntil && user.lockedUntil > new Date()) {
+            return null; // заблокирован — вернём null, UI покажет общее сообщение
+          }
 
-          return {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            role: user.role,
-          };
+          const valid = await bcrypt.compare(password, user.passwordHash);
+
+          if (!valid) {
+            const attempts = user.loginAttempts + 1;
+            const lockUntil = attempts >= 5 ? new Date(Date.now() + 15 * 60 * 1000) : null;
+            await prisma.user.update({
+              where: { id: user.id },
+              data: { loginAttempts: attempts, ...(lockUntil ? { lockedUntil: lockUntil } : {}) },
+            });
+            return null;
+          }
+
+          // Успешный вход — сброс счётчика
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { loginAttempts: 0, lockedUntil: null, lastLoginAt: new Date() },
+          });
+
+          return { id: user.id, name: user.name, email: user.email, role: user.role };
         } catch {
           return null;
         }
@@ -74,16 +83,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     jwt({ token, user }) {
       if (user) {
-        token.id = user.id;
-        token.role = (user as { role?: string }).role ?? 'ARTIST';
+        token.id = user.id ?? '';
+        token.role = ((user as Record<string, unknown>).role as string) ?? 'ARTIST';
       }
       return token;
     },
     session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id as string;
-        (session.user as { role?: string }).role = token.role as string;
-      }
+      session.user.id = token.id;
+      session.user.role = token.role;
       return session;
     },
   },

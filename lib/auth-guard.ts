@@ -1,7 +1,6 @@
 import { auth } from '@/auth';
 import { NextResponse } from 'next/server';
-
-type Role = 'ARTIST' | 'LEAD' | 'QA' | 'POST' | 'PM' | 'ADMIN';
+import type { Role } from '@/lib/roles';
 
 export type SessionUser = {
   id: string;
@@ -17,18 +16,17 @@ type GuardResult =
 /** Проверяет наличие сессии. Возвращает user или error 401. */
 export async function requireAuth(): Promise<GuardResult> {
   const session = await auth();
-  const raw = session?.user as { id?: string; name?: string; email?: string; role?: string } | undefined;
 
-  if (!raw?.id) {
+  if (!session?.user?.id) {
     return { user: null, error: NextResponse.json({ error: 'Не авторизован' }, { status: 401 }) };
   }
 
   return {
     user: {
-      id: raw.id,
-      name: raw.name ?? '',
-      email: raw.email ?? '',
-      role: (raw.role ?? 'ARTIST') as Role,
+      id: session.user.id,
+      name: session.user.name ?? '',
+      email: session.user.email ?? '',
+      role: session.user.role,
     },
     error: null,
   };

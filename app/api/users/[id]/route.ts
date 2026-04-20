@@ -17,8 +17,7 @@ export async function PATCH(
     if (!session?.user) return NextResponse.json({ error: 'Не авторизован' }, { status: 401 });
 
     const { id } = await params;
-    const sessionUser = session.user as { id?: string; role?: string };
-    if (sessionUser.role !== 'ADMIN' && sessionUser.id !== id) {
+    if (session.user.role !== 'ADMIN' && session.user.id !== id) {
       return NextResponse.json({ error: 'Нет доступа' }, { status: 403 });
     }
 
@@ -45,8 +44,7 @@ export async function DELETE(
 ) {
   try {
     const session = await auth();
-    const sessionUser = session?.user as { role?: string } | undefined;
-    if (sessionUser?.role !== 'ADMIN') {
+    if (session?.user?.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Нет доступа' }, { status: 403 });
     }
 

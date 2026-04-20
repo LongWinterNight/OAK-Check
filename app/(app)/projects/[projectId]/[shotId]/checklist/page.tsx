@@ -120,11 +120,10 @@ export default async function ChecklistPage({ params }: Props) {
       : null,
   };
 
-  const sessionUser = session?.user as { id?: string; name?: string; role?: string } | undefined;
-  const currentUser = sessionUser
-    ? { id: sessionUser.id ?? '', name: sessionUser.name ?? 'Пользователь' }
+  const currentUser = session?.user
+    ? { id: session.user.id, name: session.user.name ?? 'Пользователь' }
     : { id: '', name: 'Гость' };
-  const userRole = (sessionUser?.role ?? 'ARTIST') as import('@/lib/roles').Role;
+  const userRole = session?.user?.role ?? 'ARTIST';
 
   return (
     <ChecklistClient
