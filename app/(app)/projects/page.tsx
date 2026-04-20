@@ -1,6 +1,8 @@
+import { auth } from '@/auth';
 import TopBar from '@/components/layout/TopBar/TopBar';
 import { ProjectsGrid } from '@/components/projects/ProjectsGrid';
 import { computeProgress } from '@/lib/utils';
+import type { Role } from '@/lib/roles';
 import styles from './page.module.css';
 
 async function getProjects() {
@@ -45,13 +47,14 @@ async function getProjects() {
 }
 
 export default async function ProjectsPage() {
-  const projects = await getProjects();
+  const [projects, session] = await Promise.all([getProjects(), auth()]);
+  const userRole = ((session?.user as { role?: string })?.role ?? 'ARTIST') as Role;
 
   return (
     <>
       <TopBar breadcrumbs={[{ label: 'Проекты' }]} />
       <div className={styles.content}>
-        <ProjectsGrid initialProjects={projects} />
+        <ProjectsGrid initialProjects={projects} userRole={userRole} />
       </div>
     </>
   );

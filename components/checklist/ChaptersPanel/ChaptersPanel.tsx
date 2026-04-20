@@ -9,9 +9,10 @@ interface ChaptersPanelProps {
   chapters: ChapterWithItems[];
   activeId: string;
   onSelect: (id: string) => void;
+  canManage?: boolean;
 }
 
-export default function ChaptersPanel({ chapters, activeId, onSelect }: ChaptersPanelProps) {
+export default function ChaptersPanel({ chapters, activeId, onSelect, canManage = false }: ChaptersPanelProps) {
   return (
     <aside className={styles.panel}>
       <div className={styles.header}>Этапы</div>
@@ -46,16 +47,18 @@ export default function ChaptersPanel({ chapters, activeId, onSelect }: Chapters
         })}
       </div>
 
-      <div className={styles.footer}>
-        <Button
-          variant="ghost"
-          size="sm"
-          fullWidth
-          icon={<Icons.Plus size={14} />}
-        >
-          Этап или шаблон
-        </Button>
-      </div>
+      {canManage && (
+        <div className={styles.footer}>
+          <Button
+            variant="ghost"
+            size="sm"
+            fullWidth
+            icon={<Icons.Plus size={14} />}
+          >
+            Этап или шаблон
+          </Button>
+        </div>
+      )}
     </aside>
   );
 }

@@ -120,9 +120,11 @@ export default async function ChecklistPage({ params }: Props) {
       : null,
   };
 
-  const currentUser = session?.user
-    ? { id: session.user.id ?? '', name: session.user.name ?? 'Пользователь' }
+  const sessionUser = session?.user as { id?: string; name?: string; role?: string } | undefined;
+  const currentUser = sessionUser
+    ? { id: sessionUser.id ?? '', name: sessionUser.name ?? 'Пользователь' }
     : { id: '', name: 'Гость' };
+  const userRole = (sessionUser?.role ?? 'ARTIST') as import('@/lib/roles').Role;
 
   return (
     <ChecklistClient
@@ -132,6 +134,7 @@ export default async function ChecklistPage({ params }: Props) {
       versions={versions}
       comments={comments}
       currentUser={currentUser}
+      userRole={userRole}
     />
   );
 }

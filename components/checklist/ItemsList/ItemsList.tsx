@@ -20,9 +20,10 @@ interface ItemsListProps {
   chapter: ChapterWithItems;
   currentUserId?: string;
   onStateChange: (itemId: string, state: 'TODO' | 'WIP' | 'DONE' | 'BLOCKED') => void;
+  canManage?: boolean;
 }
 
-export default function ItemsList({ chapter, currentUserId, onStateChange }: ItemsListProps) {
+export default function ItemsList({ chapter, currentUserId, onStateChange, canManage = false }: ItemsListProps) {
   const [filter, setFilter] = useState<Filter>('all');
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -82,18 +83,19 @@ export default function ItemsList({ chapter, currentUserId, onStateChange }: Ite
           ))
         )}
 
-        {/* Добавить пункт */}
-        <div
-          className={styles.addRow}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => { if (e.key === 'Enter') { /* TODO: открыть форму */ } }}
-        >
-          <Icons.Plus size={14} />
-          <span>Новый пункт или вставить{' '}
-            <span className={styles.addOak}>шаблон</span>
-          </span>
-        </div>
+        {canManage && (
+          <div
+            className={styles.addRow}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === 'Enter') { /* TODO: открыть форму */ } }}
+          >
+            <Icons.Plus size={14} />
+            <span>Новый пункт или вставить{' '}
+              <span className={styles.addOak}>шаблон</span>
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );

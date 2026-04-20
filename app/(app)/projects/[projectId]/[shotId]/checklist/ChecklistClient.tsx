@@ -12,6 +12,7 @@ import { Icons } from '@/components/icons';
 import { computeChapterStats, computeProgress } from '@/lib/utils';
 import { toast } from '@/components/ui/Toast/toastStore';
 import { useSSE } from '@/hooks/useSSE';
+import { can, type Role } from '@/lib/roles';
 import type { SSEEvent } from '@/lib/sse/emitter';
 import type { Shot, ChapterWithItems, RenderVersion, Comment } from '@/types';
 import styles from './page.module.css';
@@ -23,6 +24,7 @@ interface ChecklistClientProps {
   versions: RenderVersion[];
   comments: Comment[];
   currentUser: { id: string; name: string };
+  userRole: Role;
 }
 
 export default function ChecklistClient({
@@ -32,6 +34,7 @@ export default function ChecklistClient({
   versions: initialVersions,
   comments: initialComments,
   currentUser,
+  userRole,
 }: ChecklistClientProps) {
   const [chapters, setChapters] = useState(initialChapters);
   const [activeChapterId, setActiveChapterId] = useState(initialChapters[0]?.id ?? '');
@@ -121,18 +124,22 @@ export default function ChecklistClient({
           shot={shot}
           progress={totalProgress}
           latestVersion={versions[versions.length - 1]?.version ?? 'v001'}
+          canChangeStatus={can.changeStatus(userRole)}
+          onUploadRender={() => setShowUpload(true)}
         />
         <div className={styles.body}>
           <ChaptersPanel
             chapters={chapters}
             activeId={activeChapterId}
             onSelect={setActiveChapterId}
+            canManage={can.manageChecklist(userRole)}
           />
           {activeChapter && (
             <ItemsList
               chapter={activeChapter}
               currentUserId={currentUser.id}
               onStateChange={handleStateChange}
+              canManage={can.manageChecklist(userRole)}
             />
           )}
           <RightPanel

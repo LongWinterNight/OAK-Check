@@ -8,6 +8,7 @@ interface ShotHeaderProps {
   shot: Shot;
   progress: number;
   latestVersion?: string;
+  canChangeStatus?: boolean;
   onUploadRender?: () => void;
   onSendReview?: () => void;
 }
@@ -16,6 +17,7 @@ export default function ShotHeader({
   shot,
   progress,
   latestVersion = 'v012',
+  canChangeStatus = false,
   onUploadRender,
   onSendReview,
 }: ShotHeaderProps) {
@@ -72,14 +74,16 @@ export default function ShotHeader({
           >
             Загрузить рендер
           </Button>
-          <Button
-            variant="primary"
-            size="sm"
-            icon={<Icons.Eye size={14} />}
-            onClick={onSendReview}
-          >
-            На ревью
-          </Button>
+          {canChangeStatus && (
+            <Button
+              variant="primary"
+              size="sm"
+              icon={<Icons.Eye size={14} />}
+              onClick={onSendReview}
+            >
+              На ревью
+            </Button>
+          )}
         </div>
       </div>
     </div>

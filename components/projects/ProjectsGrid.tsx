@@ -8,6 +8,7 @@ import { Badge, Button, ProgressBar, ConfirmDialog } from '@/components/ui';
 import { shotStatusBadgeKind } from '@/lib/utils';
 import { toast } from '@/components/ui/Toast/toastStore';
 import { NewProjectModal } from './NewProjectModal';
+import { can, type Role } from '@/lib/roles';
 import styles from './ProjectsGrid.module.css';
 
 type ProjectStatus = 'ACTIVE' | 'PAUSED' | 'DONE' | 'ARCHIVED';
@@ -53,9 +54,11 @@ function projectGradient(id: string) {
 function ProjectCard({
   project,
   onDelete,
+  canDelete,
 }: {
   project: Project;
   onDelete: (id: string) => void;
+  canDelete: boolean;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -113,29 +116,31 @@ function ProjectCard({
           </div>
         </Link>
 
-        <div className={styles.menuWrap}>
-          <button
-            className={styles.menuBtn}
-            onClick={(e) => { e.preventDefault(); setMenuOpen((v) => !v); }}
-            aria-label="Действия"
-          >
-            <Icons.More size={14} />
-          </button>
-          {menuOpen && (
-            <>
-              <div className={styles.menuBackdrop} onClick={() => setMenuOpen(false)} />
-              <div className={styles.menu}>
-                <button
-                  className={[styles.menuItem, styles.menuDanger].join(' ')}
-                  onClick={() => { setMenuOpen(false); setConfirmDelete(true); }}
-                >
-                  <Icons.X size={13} />
-                  Удалить
-                </button>
-              </div>
-            </>
-          )}
-        </div>
+        {canDelete && (
+          <div className={styles.menuWrap}>
+            <button
+              className={styles.menuBtn}
+              onClick={(e) => { e.preventDefault(); setMenuOpen((v) => !v); }}
+              aria-label="Действия"
+            >
+              <Icons.More size={14} />
+            </button>
+            {menuOpen && (
+              <>
+                <div className={styles.menuBackdrop} onClick={() => setMenuOpen(false)} />
+                <div className={styles.menu}>
+                  <button
+                    className={[styles.menuItem, styles.menuDanger].join(' ')}
+                    onClick={() => { setMenuOpen(false); setConfirmDelete(true); }}
+                  >
+                    <Icons.X size={13} />
+                    Удалить
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        )}
       </div>
 
       {confirmDelete && (
@@ -155,9 +160,10 @@ function ProjectCard({
 
 interface ProjectsGridProps {
   initialProjects: Project[];
+  userRole: Role;
 }
 
-export function ProjectsGrid({ initialProjects }: ProjectsGridProps) {
+export function ProjectsGrid({ initialProjects, userRole }: ProjectsGridProps) {
   const [projects, setProjects] = useState(initialProjects);
   const [showModal, setShowModal] = useState(false);
   const [search, setSearch] = useState('');
@@ -193,14 +199,16 @@ export function ProjectsGrid({ initialProjects }: ProjectsGridProps) {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <Button
-          variant="primary"
-          size="sm"
-          icon={<Icons.Plus size={13} />}
-          onClick={() => setShowModal(true)}
-        >
-          Новый проект
-        </Button>
+        {can.createProject(userRole) && (
+          <Button
+            variant="primary"
+            size="sm"
+            icon={<Icons.Plus size={13} />}
+            onClick={() => setShowModal(true)}
+          >
+            Новый проект
+          </Button>
+        )}
       </div>
 
       {filtered.length === 0 ? (
@@ -211,7 +219,7 @@ export function ProjectsGrid({ initialProjects }: ProjectsGridProps) {
       ) : (
         <div className={styles.grid}>
           {filtered.map((p) => (
-            <ProjectCard key={p.id} project={p} onDelete={handleDelete} />
+            <ProjectCard key={p.id} project={p} onDelete={handleDelete} canDelete={can.deleteProject(userRole)} />
           ))}
         </div>
       )}
