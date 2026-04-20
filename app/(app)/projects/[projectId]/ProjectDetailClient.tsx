@@ -1,11 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import TopBar from '@/components/layout/TopBar/TopBar';
-import { Badge, Button, ProgressBar } from '@/components/ui';
+import { Badge, Button, ProgressBar, ConfirmDialog } from '@/components/ui';
 import { Icons } from '@/components/icons';
 import { NewShotModal } from '@/components/projects/NewShotModal';
+import { EditShotModal } from '@/components/projects/EditShotModal';
+import { toast } from '@/components/ui/Toast/toastStore';
 import { shotStatusBadgeKind } from '@/lib/utils';
 import { can, type Role } from '@/lib/roles';
 import styles from './page.module.css';
@@ -21,6 +23,63 @@ interface ShotRow {
   status: string;
   owner: string | null;
   progress: number;
+  software?: string;
+  resolution?: string;
+  dueDate?: string | null;
+}
+
+function ShotMenu({
+  shot,
+  canEdit,
+  canDelete,
+  onEdit,
+  onDelete,
+}: {
+  shot: ShotRow;
+  canEdit: boolean;
+  canDelete: boolean;
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open]);
+
+  if (!canEdit && !canDelete) return null;
+
+  return (
+    <div ref={ref} style={{ position: 'relative', display: 'inline-block' }}>
+      <button
+        className={styles.menuBtn}
+        onClick={(e) => { e.preventDefault(); setOpen((v) => !v); }}
+        aria-label="Действия"
+      >
+        <Icons.More size={14} />
+      </button>
+      {open && (
+        <div className={styles.menu}>
+          {canEdit && (
+            <button className={styles.menuItem} onClick={() => { setOpen(false); onEdit(); }}>
+              <Icons.Pen size={13} /> Редактировать
+            </button>
+          )}
+          {canDelete && (
+            <button className={[styles.menuItem, styles.menuDanger].join(' ')} onClick={() => { setOpen(false); onDelete(); }}>
+              <Icons.X size={13} /> Удалить
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
 }
 
 interface ProjectDetailClientProps {
@@ -40,10 +99,36 @@ export default function ProjectDetailClient({
 }: ProjectDetailClientProps) {
   const [shots, setShots] = useState(initialShots);
   const [showNew, setShowNew] = useState(false);
+  const [editTarget, setEditTarget] = useState<ShotRow | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<ShotRow | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
-  const handleCreated = (shot: { id: string; code: string; title: string; status: string; owner: null; progress: number }) => {
-    setShots((prev) => [...prev, { ...shot, owner: null }]);
+  const handleCreated = (shot: ShotRow) => {
+    setShots((prev) => [...prev, shot]);
   };
+
+  const handleUpdated = (updated: ShotRow) => {
+    setShots((prev) => prev.map((s) => s.id === updated.id ? { ...s, ...updated } : s));
+  };
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/shots/${deleteTarget.id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error();
+      setShots((prev) => prev.filter((s) => s.id !== deleteTarget.id));
+      toast.success(`Шот «${deleteTarget.code}» удалён`);
+    } catch {
+      toast.error('Не удалось удалить шот');
+    } finally {
+      setDeleting(false);
+      setDeleteTarget(null);
+    }
+  };
+
+  const canEdit = can.manageChecklist(userRole);
+  const canDelete = userRole === 'ADMIN';
 
   return (
     <>
@@ -53,7 +138,7 @@ export default function ProjectDetailClient({
           { label: projectTitle },
         ]}
         action={
-          can.manageChecklist(userRole) ? (
+          canEdit ? (
             <Button
               variant="primary"
               size="sm"
@@ -104,9 +189,18 @@ export default function ProjectDetailClient({
                   <span className={styles.pct}>{Math.round(shot.progress)}%</span>
                 </td>
                 <td className={styles.tdAction}>
-                  <Link href={`/projects/${projectId}/${shot.id}/checklist`} className={styles.link}>
-                    Чек-лист →
-                  </Link>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'flex-end' }}>
+                    <Link href={`/projects/${projectId}/${shot.id}/checklist`} className={styles.link}>
+                      Чек-лист →
+                    </Link>
+                    <ShotMenu
+                      shot={shot}
+                      canEdit={canEdit}
+                      canDelete={canDelete}
+                      onEdit={() => setEditTarget(shot)}
+                      onDelete={() => setDeleteTarget(shot)}
+                    />
+                  </div>
                 </td>
               </tr>
             ))}
@@ -124,6 +218,26 @@ export default function ProjectDetailClient({
           projectId={projectId}
           onClose={() => setShowNew(false)}
           onCreated={handleCreated}
+        />
+      )}
+
+      {editTarget && (
+        <EditShotModal
+          shot={editTarget}
+          onClose={() => setEditTarget(null)}
+          onUpdated={(u) => handleUpdated({ ...editTarget, ...u })}
+        />
+      )}
+
+      {deleteTarget && (
+        <ConfirmDialog
+          title="Удалить шот?"
+          message={`Шот «${deleteTarget.code} — ${deleteTarget.title}» и все его данные (чеклист, комментарии, рендеры) будут удалены безвозвратно.`}
+          confirmLabel="Удалить"
+          danger
+          loading={deleting}
+          onClose={() => setDeleteTarget(null)}
+          onConfirm={handleDelete}
         />
       )}
     </>

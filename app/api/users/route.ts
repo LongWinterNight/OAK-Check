@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth-guard';
 import { apiError } from '@/lib/api-error';
+import { logger } from '@/lib/logger';
 
 export async function GET(req: NextRequest) {
   const { error } = await requireAuth();
@@ -34,7 +35,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ data, total, page, limit, hasMore: skip + data.length < total });
   } catch (e) {
-    console.error('GET /api/users:', e);
+    logger.error('GET /api/users:', e);
     return apiError('SERVER_ERROR');
   }
 }

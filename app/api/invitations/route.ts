@@ -5,6 +5,7 @@ import { sendInviteEmail } from '@/lib/email';
 import { logActivity } from '@/lib/activity';
 import { CreateInvitationSchema } from '@/lib/zod-schemas';
 import { randomBytes } from 'crypto';
+import { logger } from '@/lib/logger';
 
 export async function GET() {
   const { error } = await requireRole(['ADMIN']);
@@ -22,7 +23,7 @@ export async function GET() {
     });
     return NextResponse.json(invitations);
   } catch (e) {
-    console.error('GET /api/invitations:', e);
+    logger.error('GET /api/invitations:', e);
     return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 });
   }
 }
@@ -76,7 +77,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ ...invitation, inviteUrl }, { status: 201 });
   } catch (e) {
-    console.error('POST /api/invitations:', e);
+    logger.error('POST /api/invitations:', e);
     return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 });
   }
 }

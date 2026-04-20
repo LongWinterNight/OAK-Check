@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { logger } from '@/lib/logger';
 
 export async function GET(
   _req: NextRequest,
@@ -21,7 +22,7 @@ export async function GET(
 
     return NextResponse.json({ email: invitation.email, role: invitation.role });
   } catch (e) {
-    console.error('GET /api/auth/invite/[token]:', e);
+    logger.error('GET /api/auth/invite/[token]:', e);
     return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 });
   }
 }

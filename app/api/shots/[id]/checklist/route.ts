@@ -4,6 +4,7 @@ import { computeChapterStats } from '@/lib/utils';
 import { ApplyTemplateSchema, CreateCheckItemSchema as CreateItemSchema } from '@/lib/zod-schemas';
 import { requireAuth, requireRole } from '@/lib/auth-guard';
 import { logActivity } from '@/lib/activity';
+import { logger } from '@/lib/logger';
 
 export async function GET(
   _req: NextRequest,
@@ -37,7 +38,7 @@ export async function GET(
 
     return NextResponse.json(chapters);
   } catch (e) {
-    console.error('GET /api/shots/[id]/checklist:', e);
+    logger.error('GET /api/shots/[id]/checklist:', e);
     return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 });
   }
 }
@@ -126,7 +127,7 @@ export async function POST(
 
     return NextResponse.json(chapter, { status: 201 });
   } catch (e) {
-    console.error('POST /api/shots/[id]/checklist:', e);
+    logger.error('POST /api/shots/[id]/checklist:', e);
     return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 });
   }
 }

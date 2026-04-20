@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { CreateShotSchema } from '@/lib/zod-schemas';
 import { requireAuth, requireRole } from '@/lib/auth-guard';
+import { logger } from '@/lib/logger';
 
 export async function GET(
   _req: NextRequest,
@@ -33,7 +34,7 @@ export async function GET(
 
     return NextResponse.json(shotsWithProgress);
   } catch (e) {
-    console.error('GET /api/projects/[id]/shots:', e);
+    logger.error('GET /api/projects/[id]/shots:', e);
     return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 });
   }
 }
@@ -64,7 +65,7 @@ export async function POST(
 
     return NextResponse.json(shot, { status: 201 });
   } catch (e) {
-    console.error('POST /api/projects/[id]/shots:', e);
+    logger.error('POST /api/projects/[id]/shots:', e);
     return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 });
   }
 }

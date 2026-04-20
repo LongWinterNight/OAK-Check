@@ -4,6 +4,7 @@ import { logActivity } from '@/lib/activity';
 import { requireRole, requireSelfOrAdmin } from '@/lib/auth-guard';
 import { apiError } from '@/lib/api-error';
 import { UpdateUserRoleSchema } from '@/lib/zod-schemas';
+import { logger } from '@/lib/logger';
 
 export async function PATCH(
   req: NextRequest,
@@ -34,7 +35,7 @@ export async function PATCH(
 
     return NextResponse.json(updated);
   } catch (e) {
-    console.error('[PATCH /api/users/:id]', e);
+    logger.error('[PATCH /api/users/:id]', e);
     return apiError('SERVER_ERROR');
   }
 }
@@ -67,7 +68,7 @@ export async function DELETE(
 
     return new NextResponse(null, { status: 204 });
   } catch (e) {
-    console.error('[DELETE /api/users/:id]', e);
+    logger.error('[DELETE /api/users/:id]', e);
     return apiError('SERVER_ERROR');
   }
 }

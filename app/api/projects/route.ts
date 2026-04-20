@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { CreateProjectSchema } from '@/lib/zod-schemas';
 import { requireAuth, requireRole } from '@/lib/auth-guard';
 import { apiError } from '@/lib/api-error';
+import { logger } from '@/lib/logger';
 
 export async function GET(req: NextRequest) {
   const { error } = await requireAuth();
@@ -38,7 +39,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ data, total, page, limit, hasMore: skip + data.length < total });
   } catch (e) {
-    console.error('GET /api/projects:', e);
+    logger.error('GET /api/projects:', e);
     return apiError('SERVER_ERROR');
   }
 }
@@ -58,7 +59,7 @@ export async function POST(req: NextRequest) {
     });
     return NextResponse.json(project, { status: 201 });
   } catch (e) {
-    console.error('POST /api/projects:', e);
+    logger.error('POST /api/projects:', e);
     return apiError('SERVER_ERROR');
   }
 }

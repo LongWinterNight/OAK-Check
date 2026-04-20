@@ -4,6 +4,7 @@ import { UpdateCheckItemSchema } from '@/lib/zod-schemas';
 import { broadcast } from '@/lib/sse/emitter';
 import { requireAuth, requireRole } from '@/lib/auth-guard';
 import { apiError } from '@/lib/api-error';
+import { logger } from '@/lib/logger';
 
 export async function PATCH(
   req: NextRequest,
@@ -39,7 +40,7 @@ export async function PATCH(
 
     return NextResponse.json(updated);
   } catch (e) {
-    console.error('PATCH /api/shots/[id]/checklist/[itemId]:', e);
+    logger.error('PATCH /api/shots/[id]/checklist/[itemId]:', e);
     return apiError('SERVER_ERROR');
   }
 }
@@ -59,7 +60,7 @@ export async function DELETE(
     await prisma.checkItem.delete({ where: { id: itemId } });
     return new NextResponse(null, { status: 204 });
   } catch (e) {
-    console.error('DELETE /api/shots/[id]/checklist/[itemId]:', e);
+    logger.error('DELETE /api/shots/[id]/checklist/[itemId]:', e);
     return apiError('SERVER_ERROR');
   }
 }

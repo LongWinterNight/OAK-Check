@@ -117,3 +117,65 @@
   font-size: 13px;
   color: var(--fg-subtle);
 }
+
+/* Shot action menu */
+.menuBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: var(--radius);
+  background: none;
+  color: var(--fg-subtle);
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+  opacity: 0;
+}
+
+.tr:hover .menuBtn {
+  opacity: 1;
+}
+
+.menuBtn:hover {
+  background: var(--surface-raised);
+  color: var(--fg);
+}
+
+.menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  min-width: 150px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  z-index: 50;
+  overflow: hidden;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  background: none;
+  border: none;
+  color: var(--fg);
+  font-size: 12px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.1s;
+  font-family: var(--font-sans);
+}
+
+.menuItem:hover {
+  background: var(--surface-raised);
+}
+
+.menuDanger {
+  color: var(--blocked);
+}

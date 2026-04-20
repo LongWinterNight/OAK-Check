@@ -3,6 +3,7 @@ import { writeFile, mkdir } from 'fs/promises';
 import { join, extname } from 'path';
 import { randomUUID } from 'crypto';
 import { requireAuth } from '@/lib/auth-guard';
+import { logger } from '@/lib/logger';
 
 const ALLOWED_TYPES = new Set([
   'image/jpeg', 'image/png', 'image/webp', 'image/tiff',
@@ -40,7 +41,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ url: `/uploads/${filename}`, name: file.name, size: file.size });
   } catch (e) {
-    console.error('POST /api/upload:', e);
+    logger.error('POST /api/upload:', e);
     return NextResponse.json({ error: 'Ошибка загрузки' }, { status: 500 });
   }
 }

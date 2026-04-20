@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireRole } from '@/lib/auth-guard';
 import { apiError } from '@/lib/api-error';
+import { logger } from '@/lib/logger';
 
 export async function GET() {
   const { error } = await requireRole(['ADMIN']);
@@ -44,7 +45,7 @@ export async function GET() {
       storageUsedBytes: storageResult._sum.fileSize ?? 0,
     });
   } catch (e) {
-    console.error('GET /api/admin/stats:', e);
+    logger.error('GET /api/admin/stats:', e);
     return apiError('SERVER_ERROR');
   }
 }

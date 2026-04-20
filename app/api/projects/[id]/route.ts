@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { UpdateProjectSchema } from '@/lib/zod-schemas';
 import { requireAuth, requireRole } from '@/lib/auth-guard';
 import { apiError } from '@/lib/api-error';
+import { logger } from '@/lib/logger';
 
 export async function GET(
   _req: NextRequest,
@@ -26,7 +27,7 @@ export async function GET(
     if (!project) return apiError('NOT_FOUND', 'Проект не найден');
     return NextResponse.json(project);
   } catch (e) {
-    console.error('GET /api/projects/[id]:', e);
+    logger.error('GET /api/projects/[id]:', e);
     return apiError('SERVER_ERROR');
   }
 }
@@ -52,7 +53,7 @@ export async function PATCH(
     const project = await prisma.project.update({ where: { id }, data });
     return NextResponse.json(project);
   } catch (e) {
-    console.error('PATCH /api/projects/[id]:', e);
+    logger.error('PATCH /api/projects/[id]:', e);
     return apiError('SERVER_ERROR');
   }
 }
@@ -69,7 +70,7 @@ export async function DELETE(
     await prisma.project.delete({ where: { id } });
     return new NextResponse(null, { status: 204 });
   } catch (e) {
-    console.error('DELETE /api/projects/[id]:', e);
+    logger.error('DELETE /api/projects/[id]:', e);
     return apiError('SERVER_ERROR');
   }
 }

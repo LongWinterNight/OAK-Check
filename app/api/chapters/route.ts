@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { requireRole } from '@/lib/auth-guard';
 import { apiError } from '@/lib/api-error';
 import { CreateChapterSchema } from '@/lib/zod-schemas';
+import { logger } from '@/lib/logger';
 
 export async function POST(req: NextRequest) {
   const { error } = await requireRole(['LEAD', 'ADMIN']);
@@ -28,7 +29,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(chapter, { status: 201 });
   } catch (e) {
-    console.error('POST /api/chapters:', e);
+    logger.error('POST /api/chapters:', e);
     return apiError('SERVER_ERROR');
   }
 }

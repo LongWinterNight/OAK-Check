@@ -5,6 +5,7 @@ import { apiError } from '@/lib/api-error';
 import { logActivity } from '@/lib/activity';
 import { broadcast } from '@/lib/sse/emitter';
 import { ShotStatusSchema } from '@/lib/zod-schemas';
+import { logger } from '@/lib/logger';
 
 const STATUS_LABELS: Record<string, string> = {
   TODO: 'Бэклог', WIP: 'В работе', REVIEW: 'На ревью', DONE: 'Сдано',
@@ -44,7 +45,7 @@ export async function PATCH(
 
     return NextResponse.json(updated);
   } catch (e) {
-    console.error('PATCH /api/shots/[id]/status:', e);
+    logger.error('PATCH /api/shots/[id]/status:', e);
     return apiError('SERVER_ERROR');
   }
 }

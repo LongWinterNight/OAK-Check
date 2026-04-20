@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth-guard';
+import { logger } from '@/lib/logger';
 
 export async function GET() {
   const { error } = await requireAuth();
@@ -21,7 +22,7 @@ export async function GET() {
 
     return NextResponse.json({ totalShots, inProgress, doneToday, blockers: blockedItems });
   } catch (e) {
-    console.error('GET /api/stats:', e);
+    logger.error('GET /api/stats:', e);
     return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 });
   }
 }

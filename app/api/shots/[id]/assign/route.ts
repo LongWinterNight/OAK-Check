@@ -4,6 +4,7 @@ import { requireRole } from '@/lib/auth-guard';
 import { logActivity } from '@/lib/activity';
 import { apiError } from '@/lib/api-error';
 import { AssignShotSchema } from '@/lib/zod-schemas';
+import { logger } from '@/lib/logger';
 
 export async function PATCH(
   req: NextRequest,
@@ -44,7 +45,7 @@ export async function PATCH(
 
     return NextResponse.json(updated);
   } catch (e) {
-    console.error('PATCH /api/shots/[id]/assign:', e);
+    logger.error('PATCH /api/shots/[id]/assign:', e);
     return apiError('SERVER_ERROR');
   }
 }

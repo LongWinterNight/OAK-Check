@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { requireRole } from '@/lib/auth-guard';
 import { logActivity } from '@/lib/activity';
 import { apiError } from '@/lib/api-error';
+import { logger } from '@/lib/logger';
 
 export async function DELETE(
   _req: NextRequest,
@@ -27,7 +28,7 @@ export async function DELETE(
 
     return new NextResponse(null, { status: 204 });
   } catch (e) {
-    console.error('DELETE /api/invitations/[id]:', e);
+    logger.error('DELETE /api/invitations/[id]:', e);
     return apiError('SERVER_ERROR');
   }
 }

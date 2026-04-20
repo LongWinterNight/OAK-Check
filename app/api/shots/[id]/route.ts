@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { UpdateShotSchema } from '@/lib/zod-schemas';
 import { requireAuth, requireRole } from '@/lib/auth-guard';
 import { apiError } from '@/lib/api-error';
+import { logger } from '@/lib/logger';
 
 export async function GET(
   _req: NextRequest,
@@ -26,7 +27,7 @@ export async function GET(
 
     return NextResponse.json({ ...shot, progress });
   } catch (e) {
-    console.error('GET /api/shots/[id]:', e);
+    logger.error('GET /api/shots/[id]:', e);
     return apiError('SERVER_ERROR');
   }
 }
@@ -59,7 +60,7 @@ export async function PATCH(
 
     return NextResponse.json(shot);
   } catch (e) {
-    console.error('PATCH /api/shots/[id]:', e);
+    logger.error('PATCH /api/shots/[id]:', e);
     return apiError('SERVER_ERROR');
   }
 }
@@ -76,7 +77,7 @@ export async function DELETE(
     await prisma.shot.delete({ where: { id } });
     return new NextResponse(null, { status: 204 });
   } catch (e) {
-    console.error('DELETE /api/shots/[id]:', e);
+    logger.error('DELETE /api/shots/[id]:', e);
     return apiError('SERVER_ERROR');
   }
 }

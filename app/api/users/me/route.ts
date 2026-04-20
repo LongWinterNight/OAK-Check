@@ -3,6 +3,7 @@ import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { UpdateMeSchema } from '@/lib/zod-schemas';
 import bcrypt from 'bcryptjs';
+import { logger } from '@/lib/logger';
 
 export async function GET() {
   try {
@@ -15,7 +16,7 @@ export async function GET() {
     const { passwordHash: _ph, ...safe } = user;
     return NextResponse.json({ ...safe, createdAt: safe.createdAt.toISOString() });
   } catch (e) {
-    console.error('[GET /api/users/me]', e);
+    logger.error('[GET /api/users/me]', e);
     return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 });
   }
 }
@@ -64,7 +65,7 @@ export async function PATCH(req: NextRequest) {
     const { passwordHash: _ph, ...safe } = updated;
     return NextResponse.json({ ...safe, createdAt: safe.createdAt.toISOString() });
   } catch (e) {
-    console.error('[PATCH /api/users/me]', e);
+    logger.error('[PATCH /api/users/me]', e);
     return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 });
   }
 }

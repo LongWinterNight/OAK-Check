@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth-guard';
+import { logger } from '@/lib/logger';
 
 export async function GET(req: NextRequest) {
   const { error } = await requireAuth();
@@ -26,7 +27,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ data: activities, page, total, hasMore: page * limit < total });
   } catch (e) {
-    console.error('GET /api/activity:', e);
+    logger.error('GET /api/activity:', e);
     return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 });
   }
 }

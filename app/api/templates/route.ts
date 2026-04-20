@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { CreateTemplateSchema } from '@/lib/zod-schemas';
 import { requireAuth, requireRole } from '@/lib/auth-guard';
+import { logger } from '@/lib/logger';
 
 export async function GET() {
   const { error } = await requireAuth();
@@ -14,7 +15,7 @@ export async function GET() {
     });
     return NextResponse.json(templates);
   } catch (e) {
-    console.error('GET /api/templates:', e);
+    logger.error('GET /api/templates:', e);
     return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 });
   }
 }
@@ -36,7 +37,7 @@ export async function POST(req: NextRequest) {
     });
     return NextResponse.json(template, { status: 201 });
   } catch (e) {
-    console.error('POST /api/templates:', e);
+    logger.error('POST /api/templates:', e);
     return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 });
   }
 }
