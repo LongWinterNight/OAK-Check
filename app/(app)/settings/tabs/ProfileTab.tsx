@@ -18,16 +18,24 @@ export default function ProfileTab({ currentUser }: ProfileTabProps) {
 
   const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?';
 
+  async function patchMe(body: object): Promise<void> {
+    const res = await fetch('/api/users/me', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      let msg = 'Ошибка сервера';
+      try { const d = await res.json(); msg = d.error ?? msg; } catch { /* empty body */ }
+      throw new Error(msg);
+    }
+  }
+
   async function saveProfile() {
     setSaving(true);
     setStatus('idle');
     try {
-      const res = await fetch('/api/users/me', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name }),
-      });
-      if (!res.ok) { const d = await res.json(); throw new Error(d.error ?? 'Ошибка'); }
+      await patchMe({ name });
       setStatus('ok');
     } catch (e: unknown) {
       setErrMsg(e instanceof Error ? e.message : 'Ошибка');
@@ -41,12 +49,7 @@ export default function ProfileTab({ currentUser }: ProfileTabProps) {
     setSaving(true);
     setStatus('idle');
     try {
-      const res = await fetch('/api/users/me', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ currentPassword, newPassword }),
-      });
-      if (!res.ok) { const d = await res.json(); throw new Error(d.error ?? 'Ошибка'); }
+      await patchMe({ currentPassword, newPassword });
       setCurrentPassword(''); setNewPassword(''); setConfirmPassword('');
       setStatus('ok');
     } catch (e: unknown) {

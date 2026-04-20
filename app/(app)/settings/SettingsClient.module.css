@@ -5,7 +5,7 @@
 }
 
 .section {
-  background: var(--surface-1);
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: var(--spacing-5);

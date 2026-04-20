@@ -25,6 +25,14 @@
   --oak: #8C5E1E;
   --oak-deep: #4A3616;
 
+  /* Отступы */
+  --spacing-1: 2px;
+  --spacing-2: 4px;
+  --spacing-3: 8px;
+  --spacing-4: 14px;
+  --spacing-5: 20px;
+  --spacing-6: 28px;
+
   /* Скругления */
   --radius: 8px;
   --radius-sm: 6px;

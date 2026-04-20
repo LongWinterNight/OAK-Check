@@ -11,50 +11,66 @@ const UpdateMeSchema = z.object({
 });
 
 export async function GET() {
-  const session = await auth();
-  if (!session?.user?.id) return NextResponse.json({ error: 'Не авторизован' }, { status: 401 });
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return NextResponse.json({ error: 'Не авторизован' }, { status: 401 });
 
-  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
-  if (!user) return NextResponse.json({ error: 'Пользователь не найден' }, { status: 404 });
+    const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+    if (!user) return NextResponse.json({ error: 'Пользователь не найден' }, { status: 404 });
 
-  const { passwordHash: _ph, ...safe } = user;
-  return NextResponse.json({ ...safe, createdAt: safe.createdAt.toISOString() });
+    const { passwordHash: _ph, ...safe } = user;
+    return NextResponse.json({ ...safe, createdAt: safe.createdAt.toISOString() });
+  } catch (e) {
+    console.error('[GET /api/users/me]', e);
+    return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 });
+  }
 }
 
 export async function PATCH(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user?.id) return NextResponse.json({ error: 'Не авторизован' }, { status: 401 });
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return NextResponse.json({ error: 'Не авторизован' }, { status: 401 });
 
-  const body = await req.json();
-  const parsed = UpdateMeSchema.safeParse(body);
-  if (!parsed.success) return NextResponse.json({ error: 'Невалидные данные' }, { status: 400 });
+    const body = await req.json();
+    const parsed = UpdateMeSchema.safeParse(body);
+    if (!parsed.success) return NextResponse.json({ error: 'Невалидные данные' }, { status: 400 });
 
-  const { name, newPassword, currentPassword } = parsed.data;
-  const updateData: Record<string, string> = {};
+    const { name, newPassword, currentPassword } = parsed.data;
+    const updateData: Record<string, string> = {};
 
-  if (name) updateData.name = name;
+    if (name) updateData.name = name;
 
-  if (newPassword) {
-    if (!currentPassword) {
-      return NextResponse.json({ error: 'Введите текущий пароль' }, { status: 400 });
+    if (newPassword) {
+      if (!currentPassword) {
+        return NextResponse.json({ error: 'Введите текущий пароль' }, { status: 400 });
+      }
+      const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+      if (!user) return NextResponse.json({ error: 'Пользователь не найден' }, { status: 404 });
+      if (user.passwordHash) {
+        const valid = await bcrypt.compare(currentPassword, user.passwordHash);
+        if (!valid) return NextResponse.json({ error: 'Неверный текущий пароль' }, { status: 400 });
+      }
+      updateData.passwordHash = await bcrypt.hash(newPassword, 10);
     }
-    const user = await prisma.user.findUnique({ where: { id: session.user.id } });
-    if (user?.passwordHash) {
-      const valid = await bcrypt.compare(currentPassword, user.passwordHash);
-      if (!valid) return NextResponse.json({ error: 'Неверный текущий пароль' }, { status: 400 });
+
+    if (Object.keys(updateData).length === 0) {
+      return NextResponse.json({ error: 'Нет данных для обновления' }, { status: 400 });
     }
-    updateData.passwordHash = await bcrypt.hash(newPassword, 10);
+
+    // Dev-аккаунт существует только в сессии, не в БД
+    if (session.user.id === 'dev-safan') {
+      return NextResponse.json({ error: 'Данные demo-аккаунта нельзя изменить' }, { status: 403 });
+    }
+
+    const updated = await prisma.user.update({
+      where: { id: session.user.id },
+      data: updateData,
+    });
+
+    const { passwordHash: _ph, ...safe } = updated;
+    return NextResponse.json({ ...safe, createdAt: safe.createdAt.toISOString() });
+  } catch (e) {
+    console.error('[PATCH /api/users/me]', e);
+    return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 });
   }
-
-  if (Object.keys(updateData).length === 0) {
-    return NextResponse.json({ error: 'Нет данных для обновления' }, { status: 400 });
-  }
-
-  const updated = await prisma.user.update({
-    where: { id: session.user.id },
-    data: updateData,
-  });
-
-  const { passwordHash: _ph, ...safe } = updated;
-  return NextResponse.json({ ...safe, createdAt: safe.createdAt.toISOString() });
 }

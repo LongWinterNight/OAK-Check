@@ -12,39 +12,49 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: 'Не авторизован' }, { status: 401 });
+  try {
+    const session = await auth();
+    if (!session?.user) return NextResponse.json({ error: 'Не авторизован' }, { status: 401 });
 
-  const sessionUser = session.user as { id?: string; role?: string };
-  if (sessionUser.role !== 'ADMIN' && sessionUser.id !== (await params).id) {
-    return NextResponse.json({ error: 'Нет доступа' }, { status: 403 });
+    const { id } = await params;
+    const sessionUser = session.user as { id?: string; role?: string };
+    if (sessionUser.role !== 'ADMIN' && sessionUser.id !== id) {
+      return NextResponse.json({ error: 'Нет доступа' }, { status: 403 });
+    }
+
+    const body = await req.json();
+    const parsed = UpdateUserSchema.safeParse(body);
+    if (!parsed.success) return NextResponse.json({ error: 'Невалидные данные' }, { status: 400 });
+
+    const updated = await prisma.user.update({
+      where: { id },
+      data: parsed.data,
+      select: { id: true, name: true, email: true, role: true, online: true, avatarUrl: true },
+    });
+
+    return NextResponse.json(updated);
+  } catch (e) {
+    console.error('[PATCH /api/users/:id]', e);
+    return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 });
   }
-
-  const { id } = await params;
-  const body = await req.json();
-  const parsed = UpdateUserSchema.safeParse(body);
-  if (!parsed.success) return NextResponse.json({ error: 'Невалидные данные' }, { status: 400 });
-
-  const updated = await prisma.user.update({
-    where: { id },
-    data: parsed.data,
-    select: { id: true, name: true, email: true, role: true, online: true, avatarUrl: true },
-  });
-
-  return NextResponse.json(updated);
 }
 
 export async function DELETE(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await auth();
-  const sessionUser = session?.user as { role?: string } | undefined;
-  if (sessionUser?.role !== 'ADMIN') {
-    return NextResponse.json({ error: 'Нет доступа' }, { status: 403 });
-  }
+  try {
+    const session = await auth();
+    const sessionUser = session?.user as { role?: string } | undefined;
+    if (sessionUser?.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Нет доступа' }, { status: 403 });
+    }
 
-  const { id } = await params;
-  await prisma.user.delete({ where: { id } });
-  return new NextResponse(null, { status: 204 });
+    const { id } = await params;
+    await prisma.user.delete({ where: { id } });
+    return new NextResponse(null, { status: 204 });
+  } catch (e) {
+    console.error('[DELETE /api/users/:id]', e);
+    return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 });
+  }
 }
