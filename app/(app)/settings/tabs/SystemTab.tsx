@@ -123,7 +123,7 @@ export default function SystemTab({ stats, users }: SystemTabProps) {
         </div>
         <div className={styles.sectionBody}>
           <div style={{ display: 'flex', gap: 'var(--spacing-3)', flexWrap: 'wrap' }}>
-            <button className="btn" onClick={clearCache}>Очистить кэш Next.js</button>
+            <button className={styles.btnPrimary} onClick={clearCache}>Очистить кэш Next.js</button>
           </div>
           <div className={styles.hint} style={{ marginTop: 4 }}>
             Очистка кэша может помочь при проблемах с отображением актуальных данных.

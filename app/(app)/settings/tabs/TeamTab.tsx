@@ -190,8 +190,8 @@ export default function TeamTab({ users: initial, isAdmin, currentUserId }: Team
           <tbody>
             {users.map(u => (
               <tr key={u.id}>
-                <td style={{ fontWeight: 500 }}>{u.name}{u.id === currentUserId && <span style={{ fontSize: 11, color: 'var(--fg-subtle)', marginLeft: 6 }}>(вы)</span>}</td>
-                <td style={{ color: 'var(--fg-subtle)' }}>{u.email}</td>
+                <td className={styles.truncate} style={{ fontWeight: 500 }}>{u.name}{u.id === currentUserId && <span style={{ fontSize: 11, color: 'var(--fg-subtle)', marginLeft: 6 }}>(вы)</span>}</td>
+                <td className={styles.truncate} style={{ color: 'var(--fg-subtle)' }}>{u.email}</td>
                 <td>
                   {isAdmin && u.id !== currentUserId ? (
                     <select
@@ -256,7 +256,7 @@ export default function TeamTab({ users: initial, isAdmin, currentUserId }: Team
               <tbody>
                 {pending.map(inv => (
                   <tr key={inv.id}>
-                    <td style={{ color: 'var(--fg-subtle)' }}>{inv.email}</td>
+                    <td className={styles.truncate} style={{ color: 'var(--fg-subtle)' }}>{inv.email}</td>
                     <td><span className={styles.role}>{inv.role}</span></td>
                     <td style={{ color: 'var(--fg-subtle)', fontSize: 12 }}>
                       {new Date(inv.expiresAt).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
