@@ -178,12 +178,13 @@ export default function ChecklistClient({
     }
   };
 
-  const handleCommentSubmit = async (body: string) => {
+  const handleCommentSubmit = async (body: string, pinX?: number, pinY?: number) => {
+    if (!body.trim() && pinX === undefined) return;
     try {
       const res = await fetch(`/api/shots/${shot.id}/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ body }),
+        body: JSON.stringify({ body: body || '📍', pinX, pinY }),
       });
       if (res.ok) {
         const newComment = await res.json();
@@ -191,6 +192,19 @@ export default function ChecklistClient({
       }
     } catch {
       toast.error('Не удалось отправить комментарий');
+    }
+  };
+
+  const handleCommentDelete = async (commentId: string) => {
+    try {
+      const res = await fetch(`/api/shots/${shot.id}/comments/${commentId}`, { method: 'DELETE' });
+      if (res.ok) {
+        setComments((prev) => prev.filter((c) => c.id !== commentId));
+      } else {
+        toast.error('Не удалось удалить комментарий');
+      }
+    } catch {
+      toast.error('Ошибка сети');
     }
   };
 
@@ -265,7 +279,11 @@ export default function ChecklistClient({
             versions={versions}
             comments={comments}
             currentUser={currentUser}
+            canDeleteVersion={can.deleteShot(userRole)}
             onCommentSubmit={handleCommentSubmit}
+            onCommentDelete={handleCommentDelete}
+            onVersionDeleted={(versionId) => setVersions((prev) => prev.filter((v) => v.id !== versionId))}
+            shotId={shot.id}
           />
         </div>
       </div>

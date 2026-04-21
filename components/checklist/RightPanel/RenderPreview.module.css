@@ -28,6 +28,47 @@
   color: rgba(255, 255, 255, 0.65);
 }
 
+/* Pin mode toggle button */
+.pinModeBtn {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255,255,255,0.4);
+  background: rgba(0,0,0,0.45);
+  color: rgba(255,255,255,0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s;
+}
+.preview:hover .pinModeBtn { opacity: 1; }
+.pinModeBtnActive {
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+  opacity: 1 !important;
+  color: #fff;
+}
+
+.pinModeActive { cursor: crosshair; }
+
+/* Pending pin */
+.pinPending {
+  animation: pulse 1s infinite;
+  background: var(--accent);
+  color: #fff;
+  border-color: #fff;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  50% { transform: translate(-50%, -50%) scale(1.3); opacity: 0.7; }
+}
+
 /* Версии */
 .versions {
   display: flex;
@@ -35,9 +76,16 @@
   overflow-x: auto;
   padding: 8px 0;
   scrollbar-width: none;
+  flex-wrap: wrap;
 }
 
 .versions::-webkit-scrollbar { display: none; }
+
+.versionItem {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
 
 .versionBtn {
   flex-shrink: 0;
@@ -67,6 +115,113 @@
 
 .versionBtn:focus-visible {
   box-shadow: var(--shadow-focus);
+}
+
+.versionDelete {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--fg-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+  flex-shrink: 0;
+}
+.versionDelete:hover { background: var(--blocked); color: #fff; border-color: var(--blocked); }
+.versionDelete:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Lightbox */
+.lightboxOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.88);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.15s;
+}
+
+@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+
+.lightboxContent {
+  position: relative;
+  max-width: 92vw;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.lightboxClose {
+  position: absolute;
+  top: -40px;
+  right: 0;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.lightboxClose:hover { background: rgba(255,255,255,0.25); }
+
+.lightboxNav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  cursor: pointer;
+  z-index: 2;
+  transition: background 0.15s;
+}
+.lightboxNav:hover { background: rgba(255,255,255,0.25); }
+.lightboxNavL { left: -56px; }
+.lightboxNavR { right: -56px; }
+
+.lightboxImgWrap {
+  position: relative;
+  max-width: 88vw;
+  max-height: 82vh;
+}
+
+.lightboxImg {
+  max-width: 88vw;
+  max-height: 80vh;
+  object-fit: contain;
+  border-radius: var(--radius);
+  display: block;
+}
+
+.lightboxPlaceholder {
+  width: 800px;
+  height: 500px;
+  background: #2a3a4a;
+  border-radius: var(--radius);
+}
+
+.lightboxVersion {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: rgba(255,255,255,0.5);
 }
 
 /* Пин комментария */
