@@ -36,8 +36,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         const { identifier, password } = parsed.data;
 
-        // Dev-аккаунт (без БД, только в development)
+        // Dev-аккаунт — upsert в БД чтобы FK constraints работали
         if (DEV_USER && identifier === DEV_USER.identifier && password === DEV_USER.password) {
+          const { prisma } = await import('@/lib/prisma');
+          await prisma.user.upsert({
+            where: { id: DEV_USER.id },
+            create: { id: DEV_USER.id, email: DEV_USER.email, name: DEV_USER.name, role: 'ADMIN' },
+            update: {},
+          });
           return { id: DEV_USER.id, name: DEV_USER.name, email: DEV_USER.email, role: DEV_USER.role };
         }
 
