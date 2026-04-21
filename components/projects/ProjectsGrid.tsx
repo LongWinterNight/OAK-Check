@@ -181,19 +181,29 @@ interface ProjectsGridProps {
   userRole: Role;
 }
 
+const STATUS_FILTERS: { value: ProjectStatus | ''; label: string }[] = [
+  { value: '', label: 'Все' },
+  { value: 'ACTIVE', label: 'Активные' },
+  { value: 'PAUSED', label: 'На паузе' },
+  { value: 'DONE', label: 'Завершённые' },
+  { value: 'ARCHIVED', label: 'Архив' },
+];
+
 export function ProjectsGrid({ initialProjects, userRole }: ProjectsGridProps) {
   const [projects, setProjects] = useState(initialProjects);
   const [showModal, setShowModal] = useState(false);
   const [editTarget, setEditTarget] = useState<Project | null>(null);
   const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<ProjectStatus | ''>('');
   const router = useRouter();
 
-  const filtered = projects.filter(
-    (p) =>
-      !search ||
+  const filtered = projects.filter((p) => {
+    const matchSearch = !search ||
       p.title.toLowerCase().includes(search.toLowerCase()) ||
-      p.client.toLowerCase().includes(search.toLowerCase())
-  );
+      p.client.toLowerCase().includes(search.toLowerCase());
+    const matchStatus = !statusFilter || p.status === statusFilter;
+    return matchSearch && matchStatus;
+  });
 
   const handleCreated = (project: Omit<Project, 'shots' | 'totalProgress'> & Partial<Project>) => {
     const full: Project = { shots: [], totalProgress: 0, ...project };
@@ -238,10 +248,22 @@ export function ProjectsGrid({ initialProjects, userRole }: ProjectsGridProps) {
         )}
       </div>
 
+      <div className={styles.statusFilters}>
+        {STATUS_FILTERS.map((f) => (
+          <button
+            key={f.value}
+            className={[styles.statusBtn, statusFilter === f.value ? styles.statusBtnActive : ''].join(' ')}
+            onClick={() => setStatusFilter(f.value)}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+
       {filtered.length === 0 ? (
         <div className={styles.empty}>
           <Icons.Folder size={32} color="var(--fg-subtle)" />
-          <span>{search ? 'Проекты не найдены' : 'Нет проектов'}</span>
+          <span>{search || statusFilter ? 'Проекты не найдены' : 'Нет проектов'}</span>
         </div>
       ) : (
         <div className={styles.grid}>

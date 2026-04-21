@@ -1,8 +1,45 @@
 .root {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
   height: 100%;
+}
+
+.statusFilters {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.statusBtn {
+  height: 28px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  background: none;
+  color: var(--fg-muted);
+  font-size: 12px;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: background 0.1s, border-color 0.1s, color 0.1s;
+  white-space: nowrap;
+}
+
+.statusBtn:hover {
+  background: var(--surface-2);
+  color: var(--fg);
+}
+
+.statusBtnActive {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.statusBtnActive:hover {
+  background: var(--accent);
+  color: #fff;
 }
 
 .toolbar {
