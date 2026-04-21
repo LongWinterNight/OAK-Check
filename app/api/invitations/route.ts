@@ -55,8 +55,11 @@ export async function POST(req: NextRequest) {
     const expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000); // +48 часов
     const token = randomBytes(32).toString('hex');
 
+    // dev-пользователь ('dev-safan') не существует в БД — не передаём createdBy
+    const createdBy = user.id === 'dev-safan' ? null : user.id;
+
     const invitation = await prisma.invitation.create({
-      data: { email, role, createdBy: user.id, expiresAt, token },
+      data: { email, role, createdBy, expiresAt, token },
     });
 
     // Отправляем email (или логируем ссылку в dev-режиме)
