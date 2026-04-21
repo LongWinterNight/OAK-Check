@@ -1,3 +1,41 @@
+.filters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.filterBtn {
+  height: 28px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  background: none;
+  color: var(--fg-muted);
+  font-size: 12px;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: background 0.1s, border-color 0.1s, color 0.1s;
+  white-space: nowrap;
+}
+
+.filterBtn:hover {
+  background: var(--surface-2);
+  color: var(--fg);
+}
+
+.filterActive {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.filterActive:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
 .board {
   display: flex;
   gap: 14px;
@@ -97,4 +135,32 @@
 .drop {
   background: var(--surface-3);
   border: 1.5px dashed var(--border-strong);
+}
+
+.cardActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.checklistLink {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius);
+  color: var(--fg-subtle);
+  text-decoration: none;
+  opacity: 0;
+  transition: opacity 0.1s, background 0.1s, color 0.1s;
+}
+
+.card:hover .checklistLink {
+  opacity: 1;
+}
+
+.checklistLink:hover {
+  background: var(--surface-raised);
+  color: var(--accent);
 }

@@ -7,7 +7,7 @@ import styles from './page.module.css';
 export default async function KanbanPage() {
   const shots = await prisma.shot.findMany({
     include: {
-      project: { select: { title: true } },
+      project: { select: { id: true, title: true } },
       owner: { select: { name: true } },
       items: { select: { state: true } },
     },
@@ -18,6 +18,7 @@ export default async function KanbanPage() {
     id: s.id,
     code: s.code,
     title: s.title,
+    projectId: s.project.id,
     projectTitle: s.project.title,
     ownerName: s.owner?.name ?? null,
     dueDate: s.dueDate?.toISOString() ?? null,

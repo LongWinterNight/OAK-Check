@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import Link from 'next/link';
 import {
   DndContext,
   DragEndEvent,
@@ -28,6 +29,7 @@ export interface KanbanShot {
   id: string;
   code: string;
   title: string;
+  projectId: string;
   projectTitle: string;
   ownerName: string | null;
   dueDate: string | null;
@@ -65,7 +67,17 @@ function KanbanCard({ shot, isDragging }: { shot: KanbanShot; isDragging?: boole
           <Badge size="sm" kind="neutral">{shot.code}</Badge>
           {due && <span className={styles.date}>{due}</span>}
         </div>
-        {shot.ownerName && <Avatar name={shot.ownerName} size={22} />}
+        <div className={styles.cardActions}>
+          {shot.ownerName && <Avatar name={shot.ownerName} size={22} />}
+          <Link
+            href={`/projects/${shot.projectId}/${shot.id}/checklist`}
+            className={styles.checklistLink}
+            onClick={(e) => e.stopPropagation()}
+            title="Открыть чек-лист"
+          >
+            <Icons.List size={13} />
+          </Link>
+        </div>
       </div>
     </div>
   );
@@ -74,8 +86,19 @@ function KanbanCard({ shot, isDragging }: { shot: KanbanShot; isDragging?: boole
 export default function KanbanBoard({ initialShots }: { initialShots: KanbanShot[] }) {
   const [shots, setShots] = useState<KanbanShot[]>(initialShots);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [projectFilter, setProjectFilter] = useState<string>('');
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
+
+  const projects = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const s of initialShots) map.set(s.projectId, s.projectTitle);
+    return Array.from(map.entries()).map(([id, title]) => ({ id, title }));
+  }, [initialShots]);
+
+  const visibleShots = projectFilter
+    ? shots.filter((s) => s.projectId === projectFilter)
+    : shots;
 
   const handleDragStart = (e: DragStartEvent) => setActiveId(e.active.id as string);
 
@@ -105,50 +128,72 @@ export default function KanbanBoard({ initialShots }: { initialShots: KanbanShot
   const activeShot = shots.find((s) => s.id === activeId);
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
-    >
-      <div className={styles.board}>
-        {COLUMNS.map((col) => {
-          const colShots = shots.filter((s) => s.status === col.id);
-          return (
-            <div key={col.id} className={styles.column} id={col.id}>
-              <div className={styles.columnHeader}>
-                <div className={styles.columnTitle}>
-                  <Badge kind={col.kind} size="sm" dot>{col.label}</Badge>
-                  <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--fg-subtle)' }}>
-                    {colShots.length}
-                  </span>
+    <div>
+      {projects.length > 1 && (
+        <div className={styles.filters}>
+          <button
+            className={[styles.filterBtn, !projectFilter ? styles.filterActive : ''].join(' ')}
+            onClick={() => setProjectFilter('')}
+          >
+            Все проекты
+          </button>
+          {projects.map((p) => (
+            <button
+              key={p.id}
+              className={[styles.filterBtn, projectFilter === p.id ? styles.filterActive : ''].join(' ')}
+              onClick={() => setProjectFilter(p.id)}
+            >
+              {p.title}
+            </button>
+          ))}
+        </div>
+      )}
+
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+      >
+        <div className={styles.board}>
+          {COLUMNS.map((col) => {
+            const colShots = visibleShots.filter((s) => s.status === col.id);
+            return (
+              <div key={col.id} className={styles.column} id={col.id}>
+                <div className={styles.columnHeader}>
+                  <div className={styles.columnTitle}>
+                    <Badge kind={col.kind} size="sm" dot>{col.label}</Badge>
+                    <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--fg-subtle)' }}>
+                      {colShots.length}
+                    </span>
+                  </div>
+                  <Button variant="ghost" size="sm" icon={<Icons.Plus size={13} />} aria-label="Добавить" />
                 </div>
-                <Button variant="ghost" size="sm" icon={<Icons.Plus size={13} />} aria-label="Добавить" />
-              </div>
 
-              <div className={styles.columnCards}>
-                <SortableContext items={colShots.map((s) => s.id)} strategy={verticalListSortingStrategy}>
-                  {colShots.map((shot) => (
-                    <KanbanCard key={shot.id} shot={shot} isDragging={shot.id === activeId} />
-                  ))}
-                </SortableContext>
-                {colShots.length === 0 && (
-                  <div className={[styles.card, styles.drop].join(' ')} style={{ minHeight: 60 }} />
-                )}
+                <div className={styles.columnCards}>
+                  <SortableContext items={colShots.map((s) => s.id)} strategy={verticalListSortingStrategy}>
+                    {colShots.map((shot) => (
+                      <KanbanCard key={shot.id} shot={shot} isDragging={shot.id === activeId} />
+                    ))}
+                  </SortableContext>
+                  {colShots.length === 0 && (
+                    <div className={[styles.card, styles.drop].join(' ')} style={{ minHeight: 60 }} />
+                  )}
+                </div>
               </div>
+            );
+          })}
+        </div>
+
+        <DragOverlay>
+          {activeShot && (
+            <div className={[styles.card, styles.dragging].join(' ')}>
+              <div className={styles.project}>{activeShot.projectTitle}</div>
+              <div className={styles.shotTitle}>{activeShot.title}</div>
             </div>
-          );
-        })}
-      </div>
-
-      <DragOverlay>
-        {activeShot && (
-          <div className={[styles.card, styles.dragging].join(' ')}>
-            <div className={styles.project}>{activeShot.projectTitle}</div>
-            <div className={styles.shotTitle}>{activeShot.title}</div>
-          </div>
-        )}
-      </DragOverlay>
-    </DndContext>
+          )}
+        </DragOverlay>
+      </DndContext>
+    </div>
   );
 }
