@@ -240,6 +240,38 @@
   flex-shrink: 0;
 }
 
+.avatarWrap {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+}
+
+.avatarImg {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.avatarOverlay {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  opacity: 0;
+  transition: opacity 0.15s;
+  cursor: pointer;
+  border: none;
+  font-size: 13px;
+}
+
+.avatarWrap:hover .avatarOverlay { opacity: 1; }
+
 .avatarRow {
   display: flex;
   align-items: center;

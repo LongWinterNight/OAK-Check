@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+import { toast } from '@/components/ui/Toast/toastStore';
 import styles from './tab.module.css';
 
 type User = { id: string; name: string; online: boolean; createdAt: string };
@@ -10,11 +12,21 @@ interface SystemTabProps {
 }
 
 export default function SystemTab({ stats, users }: SystemTabProps) {
+  const [cacheLoading, setCacheLoading] = useState(false);
   const onlineCount = users.filter(u => u.online).length;
   const newestUser = users.slice().sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0];
 
-  function clearCache() {
-    alert('Для очистки кэша Next.js перезапустите сервер разработки.');
+  async function clearCache() {
+    setCacheLoading(true);
+    try {
+      const res = await fetch('/api/admin/revalidate', { method: 'POST' });
+      if (res.ok) toast.success('Кэш очищен');
+      else toast.error('Не удалось очистить кэш');
+    } catch {
+      toast.error('Не удалось очистить кэш');
+    } finally {
+      setCacheLoading(false);
+    }
   }
 
   return (
@@ -102,7 +114,7 @@ export default function SystemTab({ stats, users }: SystemTabProps) {
               </tr>
               <tr>
                 <td style={{ fontWeight: 500 }}>Хранилище файлов</td>
-                <td>Локальный диск · /public/uploads</td>
+                <td>Google Drive · D:\AI\Oak3CRM\uploads</td>
               </tr>
               <tr>
                 <td style={{ fontWeight: 500 }}>Реальное время</td>
@@ -123,7 +135,9 @@ export default function SystemTab({ stats, users }: SystemTabProps) {
         </div>
         <div className={styles.sectionBody}>
           <div style={{ display: 'flex', gap: 'var(--spacing-3)', flexWrap: 'wrap' }}>
-            <button className={styles.btnPrimary} onClick={clearCache}>Очистить кэш Next.js</button>
+            <button className={styles.btnPrimary} onClick={clearCache} disabled={cacheLoading}>
+              {cacheLoading ? 'Очистка...' : 'Очистить кэш Next.js'}
+            </button>
           </div>
           <div className={styles.hint} style={{ marginTop: 4 }}>
             Очистка кэша может помочь при проблемах с отображением актуальных данных.

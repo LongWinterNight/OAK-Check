@@ -108,6 +108,7 @@ export const UpdateMeSchema = z.object({
   name: z.string().min(1).max(100).optional(),
   newPassword: z.string().min(6).optional(),
   currentPassword: z.string().optional(),
+  avatarUrl: z.string().url().nullable().optional(),
 });
 
 // Авторизация / регистрация

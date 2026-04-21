@@ -128,7 +128,7 @@ export default function ProjectDetailClient({
   };
 
   const canEdit = can.manageChecklist(userRole);
-  const canDelete = userRole === 'ADMIN';
+  const canDelete = can.deleteShot(userRole);
 
   return (
     <>

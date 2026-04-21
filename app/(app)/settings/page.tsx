@@ -26,11 +26,16 @@ export default async function SettingsPage() {
 
   const [totalShots, totalItems, totalComments, totalVersions] = stats;
 
+  const currentUserDb = session?.user?.id
+    ? users.find(u => u.id === session.user.id) ?? null
+    : null;
+
   const currentUser = session?.user ? {
     id: session.user.id,
     name: session.user.name ?? '',
     email: session.user.email ?? '',
     role: session.user.role,
+    avatarUrl: currentUserDb?.avatarUrl ?? null,
   } : null;
 
   return (

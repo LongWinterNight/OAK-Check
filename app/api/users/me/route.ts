@@ -30,10 +30,11 @@ export async function PATCH(req: NextRequest) {
     const parsed = UpdateMeSchema.safeParse(body);
     if (!parsed.success) return NextResponse.json({ error: 'Невалидные данные' }, { status: 400 });
 
-    const { name, newPassword, currentPassword } = parsed.data;
-    const updateData: Record<string, string> = {};
+    const { name, newPassword, currentPassword, avatarUrl } = parsed.data;
+    const updateData: Record<string, string | null> = {};
 
     if (name) updateData.name = name;
+    if (avatarUrl !== undefined) updateData.avatarUrl = avatarUrl;
 
     if (newPassword) {
       if (!currentPassword) {
