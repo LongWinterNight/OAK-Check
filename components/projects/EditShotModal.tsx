@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Button, Modal } from '@/components/ui';
+import { Button, Modal, DatePicker } from '@/components/ui';
 import styles from './NewProjectModal.module.css';
 
 interface ShotData {
@@ -118,12 +118,7 @@ export function EditShotModal({ shot, onClose, onUpdated }: EditShotModalProps) 
 
         <div className={styles.field}>
           <label className={styles.label}>Дедлайн</label>
-          <input
-            type="date"
-            className={styles.input}
-            value={dueDate}
-            onChange={(e) => setDueDate(e.target.value)}
-          />
+          <DatePicker value={dueDate} onChange={setDueDate} />
         </div>
 
         {errors.form && <div className={styles.formError}>{errors.form}</div>}

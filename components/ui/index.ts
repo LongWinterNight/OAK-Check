@@ -29,3 +29,5 @@ export type { ModalProps } from './Modal/Modal';
 export { ConfirmDialog } from './Modal/ConfirmDialog';
 
 export { Skeleton, SkeletonText, SkeletonCard } from './Skeleton/Skeleton';
+
+export { default as DatePicker } from './DatePicker/DatePicker';

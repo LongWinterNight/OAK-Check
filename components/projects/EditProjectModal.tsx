@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Button, Modal } from '@/components/ui';
+import { Button, Modal, DatePicker } from '@/components/ui';
 import styles from './NewProjectModal.module.css';
 
 type ProjectStatus = 'ACTIVE' | 'PAUSED' | 'DONE' | 'ARCHIVED';
@@ -124,12 +124,7 @@ export function EditProjectModal({ project, onClose, onUpdated }: EditProjectMod
 
         <div className={styles.field}>
           <label className={styles.label}>Дедлайн</label>
-          <input
-            type="date"
-            className={styles.input}
-            value={dueDate}
-            onChange={(e) => setDueDate(e.target.value)}
-          />
+          <DatePicker value={dueDate} onChange={setDueDate} />
         </div>
 
         {errors.form && <div className={styles.formError}>{errors.form}</div>}
