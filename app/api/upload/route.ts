@@ -35,11 +35,11 @@ export async function POST(req: NextRequest) {
     }
 
     const filename = `${randomUUID()}${ext}`;
-    const uploadsDir = join(process.cwd(), 'public', 'uploads');
+    const uploadsDir = process.env.UPLOAD_DIR ?? join(process.cwd(), 'public', 'uploads');
     await mkdir(uploadsDir, { recursive: true });
     await writeFile(join(uploadsDir, filename), Buffer.from(await file.arrayBuffer()));
 
-    return NextResponse.json({ url: `/uploads/${filename}`, name: file.name, size: file.size });
+    return NextResponse.json({ url: `/api/files/${filename}`, name: file.name, size: file.size });
   } catch (e) {
     logger.error('POST /api/upload:', e);
     return NextResponse.json({ error: 'Ошибка загрузки' }, { status: 500 });
