@@ -11,9 +11,15 @@ export async function GET(req: NextRequest) {
   const page = Math.max(1, parseInt(url.searchParams.get('page') ?? '1'));
   const limit = Math.min(100, Math.max(1, parseInt(url.searchParams.get('limit') ?? '20')));
   const shotId = url.searchParams.get('shotId') ?? undefined;
+  const userId = url.searchParams.get('userId') ?? undefined;
+  const type = url.searchParams.get('type') ?? undefined;
 
   try {
-    const where = shotId ? { shotId } : undefined;
+    const where = {
+      ...(shotId ? { shotId } : {}),
+      ...(userId ? { userId } : {}),
+      ...(type ? { type: type as import('@prisma/client').ActivityType } : {}),
+    };
     const [activities, total] = await Promise.all([
       prisma.activity.findMany({
         where,

@@ -31,6 +31,15 @@ const TYPE_ICON: Record<ActivityType, React.ReactNode> = {
   MEMBER_ADDED: <Icons.Users size={13} />,
 };
 
+const TYPE_FILTERS: { value: ActivityType | ''; label: string }[] = [
+  { value: '', label: 'Все' },
+  { value: 'ITEM_STATE_CHANGED', label: 'Чеклист' },
+  { value: 'SHOT_STATUS_CHANGED', label: 'Статус шота' },
+  { value: 'COMMENT_ADDED', label: 'Комментарии' },
+  { value: 'VERSION_UPLOADED', label: 'Рендеры' },
+  { value: 'MEMBER_ADDED', label: 'Команда' },
+];
+
 function ActivityRow({ entry }: { entry: ActivityEntry }) {
   const date = new Date(entry.createdAt);
   const timeStr = date.toLocaleTimeString('ru', { hour: '2-digit', minute: '2-digit' });
@@ -77,12 +86,15 @@ export function ActivityFeedInfinite() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [typeFilter, setTypeFilter] = useState<ActivityType | ''>('');
   const sentinelRef = useRef<HTMLDivElement>(null);
 
-  const loadPage = useCallback(async (p: number) => {
+  const loadPage = useCallback(async (p: number, type: string) => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/activity?page=${p}&limit=20`);
+      const params = new URLSearchParams({ page: String(p), limit: '20' });
+      if (type) params.set('type', type);
+      const res = await fetch(`/api/activity?${params}`);
       const json = await res.json();
       setEntries((prev) => (p === 1 ? json.data : [...prev, ...json.data]));
       setHasMore(json.hasMore);
@@ -93,7 +105,12 @@ export function ActivityFeedInfinite() {
     }
   }, []);
 
-  useEffect(() => { loadPage(1); }, [loadPage]);
+  useEffect(() => {
+    setEntries([]);
+    setPage(1);
+    setHasMore(true);
+    loadPage(1, typeFilter);
+  }, [typeFilter, loadPage]);
 
   useEffect(() => {
     const el = sentinelRef.current;
@@ -104,7 +121,7 @@ export function ActivityFeedInfinite() {
         if (entries[0].isIntersecting && !loading) {
           setPage((p) => {
             const next = p + 1;
-            loadPage(next);
+            loadPage(next, typeFilter);
             return next;
           });
         }
@@ -114,39 +131,51 @@ export function ActivityFeedInfinite() {
 
     observer.observe(el);
     return () => observer.disconnect();
-  }, [hasMore, loading, loadPage]);
+  }, [hasMore, loading, loadPage, typeFilter]);
 
   const groups = groupByDate(entries);
 
-  if (!loading && entries.length === 0) {
-    return (
-      <div className={styles.empty}>
-        <Icons.Oak size={32} color="var(--fg-subtle)" />
-        <span>Нет активности</span>
-      </div>
-    );
-  }
-
   return (
-    <div className={styles.feed}>
-      {groups.map((group) => (
-        <div key={group.date} className={styles.group}>
-          <div className={styles.groupDate}>{group.date}</div>
-          <div className={styles.groupItems}>
-            {group.items.map((entry) => (
-              <ActivityRow key={entry.id} entry={entry} />
-            ))}
-          </div>
-        </div>
-      ))}
+    <div>
+      <div className={styles.toolbar}>
+        {TYPE_FILTERS.map((f) => (
+          <button
+            key={f.value}
+            className={[styles.filterBtn, typeFilter === f.value ? styles.filterActive : ''].join(' ')}
+            onClick={() => setTypeFilter(f.value)}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
 
-      {loading && (
-        <div className={styles.loader}>
-          <span className={styles.spin} />
+      {!loading && entries.length === 0 ? (
+        <div className={styles.empty}>
+          <Icons.Oak size={32} color="var(--fg-subtle)" />
+          <span>Нет активности</span>
+        </div>
+      ) : (
+        <div className={styles.feed}>
+          {groups.map((group) => (
+            <div key={group.date} className={styles.group}>
+              <div className={styles.groupDate}>{group.date}</div>
+              <div className={styles.groupItems}>
+                {group.items.map((entry) => (
+                  <ActivityRow key={entry.id} entry={entry} />
+                ))}
+              </div>
+            </div>
+          ))}
+
+          {loading && (
+            <div className={styles.loader}>
+              <span className={styles.spin} />
+            </div>
+          )}
+
+          <div ref={sentinelRef} style={{ height: 1 }} />
         </div>
       )}
-
-      <div ref={sentinelRef} style={{ height: 1 }} />
     </div>
   );
 }
