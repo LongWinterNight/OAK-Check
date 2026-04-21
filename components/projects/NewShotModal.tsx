@@ -6,11 +6,12 @@ import styles from './NewProjectModal.module.css';
 
 interface NewShotModalProps {
   projectId: string;
+  defaultStatus?: string;
   onClose: () => void;
   onCreated: (shot: { id: string; code: string; title: string; status: string; owner: null; progress: number }) => void;
 }
 
-export function NewShotModal({ projectId, onClose, onCreated }: NewShotModalProps) {
+export function NewShotModal({ projectId, defaultStatus, onClose, onCreated }: NewShotModalProps) {
   const [title, setTitle] = useState('');
   const [code, setCode] = useState('');
   const [software, setSoftware] = useState('3dsmax 2024 · V-Ray 6.2');
@@ -45,6 +46,7 @@ export function NewShotModal({ projectId, onClose, onCreated }: NewShotModalProp
           software: software.trim() || undefined,
           resolution: resolution.trim() || undefined,
           dueDate: dueDate || undefined,
+          status: defaultStatus || undefined,
         }),
       });
       if (!res.ok) {

@@ -21,6 +21,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { Icons } from '@/components/icons';
 import { Badge, Button, Avatar, ProgressBar } from '@/components/ui';
 import { toast } from '@/components/ui/Toast/toastStore';
+import { NewShotModal } from '@/components/projects/NewShotModal';
 import styles from './KanbanBoard.module.css';
 
 type ShotStatus = 'TODO' | 'WIP' | 'REVIEW' | 'DONE';
@@ -93,6 +94,7 @@ export default function KanbanBoard({
   const [shots, setShots] = useState<KanbanShot[]>(initialShots);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [projectFilter, setProjectFilter] = useState<string>('');
+  const [newShotColumn, setNewShotColumn] = useState<ShotStatus | null>(null);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: canChangeStatus ? 5 : Infinity } }));
 
@@ -176,7 +178,21 @@ export default function KanbanBoard({
                       {colShots.length}
                     </span>
                   </div>
-                  <Button variant="ghost" size="sm" icon={<Icons.Plus size={13} />} aria-label="Добавить" />
+                  {canChangeStatus && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      icon={<Icons.Plus size={13} />}
+                      aria-label="Добавить шот"
+                      onClick={() => {
+                        if (!projectFilter) {
+                          toast.error('Выберите проект для добавления шота');
+                          return;
+                        }
+                        setNewShotColumn(col.id);
+                      }}
+                    />
+                  )}
                 </div>
 
                 <div className={styles.columnCards}>
@@ -203,6 +219,27 @@ export default function KanbanBoard({
           )}
         </DragOverlay>
       </DndContext>
+
+      {newShotColumn && projectFilter && (
+        <NewShotModal
+          projectId={projectFilter}
+          defaultStatus={newShotColumn}
+          onClose={() => setNewShotColumn(null)}
+          onCreated={(shot) => {
+            const project = projects.find(p => p.id === projectFilter);
+            setShots(prev => [...prev, {
+              ...shot,
+              projectId: projectFilter,
+              projectTitle: project?.title ?? '',
+              ownerName: null,
+              dueDate: null,
+              progress: 0,
+              status: newShotColumn,
+            }]);
+            setNewShotColumn(null);
+          }}
+        />
+      )}
     </div>
   );
 }
