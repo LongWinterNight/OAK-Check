@@ -1,5 +1,8 @@
+import { auth } from '@/auth';
 import TopBar from '@/components/layout/TopBar/TopBar';
 import { LibraryClient } from '@/components/library/LibraryClient';
+import { can } from '@/lib/roles';
+import type { Role } from '@/lib/roles';
 import styles from './page.module.css';
 
 async function getTemplates() {
@@ -27,7 +30,9 @@ async function getShots() {
 }
 
 export default async function LibraryPage() {
-  const [rawTemplates, rawShots] = await Promise.all([getTemplates(), getShots()]);
+  const [rawTemplates, rawShots, session] = await Promise.all([getTemplates(), getShots(), auth()]);
+  const userRole = (session?.user?.role ?? 'ARTIST') as Role;
+  const canManage = can.manageChecklist(userRole);
 
   const templates = rawTemplates.map((t) => ({
     ...t,
@@ -40,7 +45,7 @@ export default async function LibraryPage() {
     <>
       <TopBar breadcrumbs={[{ label: 'Библиотека шаблонов' }]} />
       <div className={styles.content}>
-        <LibraryClient templates={templates} shots={shots} />
+        <LibraryClient templates={templates} shots={shots} canManage={canManage} />
       </div>
     </>
   );

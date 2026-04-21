@@ -6,6 +6,7 @@ import { Button } from '@/components/ui';
 import { TemplateCard } from './TemplateCard';
 import { ApplyTemplateModal } from './ApplyTemplateModal';
 import { NewTemplateModal } from './NewTemplateModal';
+import { toast } from '@/components/ui/Toast/toastStore';
 import styles from './LibraryClient.module.css';
 
 interface TemplateItem {
@@ -32,11 +33,12 @@ interface Shot {
 interface LibraryClientProps {
   templates: Template[];
   shots: Shot[];
+  canManage?: boolean;
 }
 
 const CATEGORIES = ['Все'];
 
-export function LibraryClient({ templates: initialTemplates, shots }: LibraryClientProps) {
+export function LibraryClient({ templates: initialTemplates, shots, canManage }: LibraryClientProps) {
   const [templates, setTemplates] = useState(initialTemplates);
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('Все');
@@ -57,6 +59,17 @@ export function LibraryClient({ templates: initialTemplates, shots }: LibraryCli
     });
   }, [templates, activeCategory, search]);
 
+  const handleDelete = async (id: string, name: string) => {
+    try {
+      const res = await fetch(`/api/templates/${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error();
+      setTemplates((prev) => prev.filter((t) => t.id !== id));
+      toast.success(`Шаблон «${name}» удалён`);
+    } catch {
+      toast.error('Не удалось удалить шаблон');
+    }
+  };
+
   return (
     <div className={styles.root}>
       <div className={styles.toolbar}>
@@ -75,9 +88,11 @@ export function LibraryClient({ templates: initialTemplates, shots }: LibraryCli
           )}
         </div>
 
-        <Button variant="secondary" size="sm" icon={<Icons.Plus size={13} />} onClick={() => setShowNew(true)}>
-          Новый шаблон
-        </Button>
+        {canManage && (
+          <Button variant="secondary" size="sm" icon={<Icons.Plus size={13} />} onClick={() => setShowNew(true)}>
+            Новый шаблон
+          </Button>
+        )}
       </div>
 
       <div className={styles.cats}>
@@ -100,7 +115,13 @@ export function LibraryClient({ templates: initialTemplates, shots }: LibraryCli
       ) : (
         <div className={styles.grid}>
           {filtered.map((t) => (
-            <TemplateCard key={t.id} template={t} onApply={setApplyTarget} />
+            <TemplateCard
+              key={t.id}
+              template={t}
+              canManage={canManage}
+              onApply={setApplyTarget}
+              onDelete={handleDelete}
+            />
           ))}
         </div>
       )}
