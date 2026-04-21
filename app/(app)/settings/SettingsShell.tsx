@@ -11,12 +11,12 @@ import styles from './SettingsShell.module.css';
 
 type TabId = 'profile' | 'team' | 'projects' | 'appearance' | 'system';
 
-const TABS: { id: TabId; label: string; icon: React.ReactNode; desc: string }[] = [
+const ALL_TABS: { id: TabId; label: string; icon: React.ReactNode; desc: string; adminOnly?: boolean }[] = [
   { id: 'profile',    label: 'Профиль',       icon: <Icons.User size={15} />,     desc: 'Личные данные и пароль' },
-  { id: 'team',       label: 'Команда',        icon: <Icons.Users size={15} />,    desc: 'Участники и роли' },
+  { id: 'team',       label: 'Команда',        icon: <Icons.Users size={15} />,    desc: 'Участники и роли',      adminOnly: true },
   { id: 'projects',   label: 'Проекты',        icon: <Icons.Folder size={15} />,   desc: 'Управление проектами' },
   { id: 'appearance', label: 'Внешний вид',    icon: <Icons.Grid size={15} />,     desc: 'Тема и интерфейс' },
-  { id: 'system',     label: 'Система',        icon: <Icons.Settings size={15} />, desc: 'Статистика и данные' },
+  { id: 'system',     label: 'Система',        icon: <Icons.Settings size={15} />, desc: 'Статистика и данные',   adminOnly: true },
 ];
 
 interface SettingsShellProps {
@@ -35,9 +35,11 @@ interface SettingsShellProps {
 }
 
 export default function SettingsShell({ currentUser, users, projects, systemStats }: SettingsShellProps) {
+  const isAdmin = currentUser?.role === 'ADMIN';
+  const tabs = ALL_TABS.filter((t) => !t.adminOnly || isAdmin);
   const [activeTab, setActiveTab] = useState<TabId>('profile');
 
-  const isAdmin = currentUser?.role === 'ADMIN';
+  const safeTab = tabs.find((t) => t.id === activeTab) ? activeTab : 'profile';
 
   return (
     <div className={styles.shell}>
@@ -45,11 +47,11 @@ export default function SettingsShell({ currentUser, users, projects, systemStat
       <aside className={styles.sidebar}>
         <div className={styles.sidebarHeader}>Настройки</div>
         <nav className={styles.nav}>
-          {TABS.map((tab) => (
+          {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={[styles.navItem, activeTab === tab.id ? styles.navActive : ''].join(' ')}
+              className={[styles.navItem, safeTab === tab.id ? styles.navActive : ''].join(' ')}
             >
               <span className={styles.navIcon}>{tab.icon}</span>
               <div className={styles.navText}>
@@ -63,11 +65,11 @@ export default function SettingsShell({ currentUser, users, projects, systemStat
 
       {/* Контент таба */}
       <main className={styles.main}>
-        {activeTab === 'profile' && <ProfileTab currentUser={currentUser} />}
-        {activeTab === 'team' && <TeamTab users={users} isAdmin={isAdmin} currentUserId={currentUser?.id ?? ''} />}
-        {activeTab === 'projects' && <ProjectsTab projects={projects} isAdmin={isAdmin} />}
-        {activeTab === 'appearance' && <AppearanceTab />}
-        {activeTab === 'system' && <SystemTab stats={systemStats} users={users} />}
+        {safeTab === 'profile' && <ProfileTab currentUser={currentUser} />}
+        {safeTab === 'team' && isAdmin && <TeamTab users={users} isAdmin={isAdmin} currentUserId={currentUser?.id ?? ''} />}
+        {safeTab === 'projects' && <ProjectsTab projects={projects} isAdmin={isAdmin} />}
+        {safeTab === 'appearance' && <AppearanceTab />}
+        {safeTab === 'system' && isAdmin && <SystemTab stats={systemStats} users={users} />}
       </main>
     </div>
   );

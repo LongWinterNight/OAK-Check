@@ -102,6 +102,10 @@
   cursor: grabbing;
 }
 
+.readonly {
+  cursor: default;
+}
+
 .project {
   font-size: 10.5px;
   font-family: var(--font-mono);

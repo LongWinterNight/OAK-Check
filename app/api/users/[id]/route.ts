@@ -19,6 +19,11 @@ export async function PATCH(
     const parsed = UpdateUserRoleSchema.safeParse(body);
     if (!parsed.success) return apiError('VALIDATION_ERROR', parsed.error.issues[0].message);
 
+    // Только ADMIN может менять роль — любой другой запрос с role игнорируется/отклоняется
+    if (parsed.data.role !== undefined && user.role !== 'ADMIN') {
+      return apiError('FORBIDDEN', 'Только администратор может изменять роли');
+    }
+
     const updated = await prisma.user.update({
       where: { id },
       data: parsed.data,
@@ -48,6 +53,8 @@ export async function DELETE(
   if (error) return error;
 
   const { id } = await params;
+  if (user.id === id) return apiError('FORBIDDEN', 'Нельзя удалить самого себя');
+
   try {
     const target = await prisma.user.findUnique({ where: { id }, select: { name: true } });
     if (!target) return apiError('NOT_FOUND', 'Пользователь не найден');

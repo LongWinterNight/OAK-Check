@@ -33,19 +33,21 @@ export async function POST(req: NextRequest) {
 
     const passwordHash = await bcrypt.hash(password, 12);
 
-    const user = await prisma.user.create({
-      data: {
-        email: invitation.email,
-        name: name.trim(),
-        role: invitation.role,
-        passwordHash,
-      },
-    });
-
-    await prisma.invitation.update({
-      where: { id: invitation.id },
-      data: { usedAt: new Date() },
-    });
+    // Атомарная транзакция: отметить инвайт использованным и создать пользователя одновременно
+    const [user] = await prisma.$transaction([
+      prisma.user.create({
+        data: {
+          email: invitation.email,
+          name: name.trim(),
+          role: invitation.role,
+          passwordHash,
+        },
+      }),
+      prisma.invitation.update({
+        where: { id: invitation.id },
+        data: { usedAt: new Date() },
+      }),
+    ]);
 
     await prisma.activity.create({
       data: {
@@ -56,7 +58,11 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ ok: true }, { status: 201 });
-  } catch (e) {
+  } catch (e: unknown) {
+    // Уникальное ограничение БД — email уже занят (race condition)
+    if (e && typeof e === 'object' && 'code' in e && (e as { code: string }).code === 'P2002') {
+      return NextResponse.json({ error: 'Пользователь с этим email уже зарегистрирован' }, { status: 409 });
+    }
     logger.error('POST /api/auth/register:', e);
     return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 });
   }

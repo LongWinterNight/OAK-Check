@@ -1,10 +1,17 @@
+import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { computeProgress } from '@/lib/utils';
+import { can } from '@/lib/roles';
+import type { Role } from '@/lib/roles';
 import TopBar from '@/components/layout/TopBar/TopBar';
 import KanbanBoard, { type KanbanShot } from '@/components/kanban/KanbanBoard';
 import styles from './page.module.css';
 
 export default async function KanbanPage() {
+  const session = await auth();
+  const userRole = (session?.user?.role ?? 'ARTIST') as Role;
+  const canChangeStatus = can.changeStatus(userRole);
+
   const shots = await prisma.shot.findMany({
     include: {
       project: { select: { id: true, title: true } },
@@ -30,7 +37,7 @@ export default async function KanbanPage() {
     <>
       <TopBar breadcrumbs={[{ label: 'Канбан' }]} />
       <div className={styles.content}>
-        <KanbanBoard initialShots={kanbanShots} />
+        <KanbanBoard initialShots={kanbanShots} canChangeStatus={canChangeStatus} />
       </div>
     </>
   );

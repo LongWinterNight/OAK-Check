@@ -44,7 +44,7 @@ const COLUMNS: { id: ShotStatus; label: string; kind: 'neutral' | 'info' | 'wip'
   { id: 'DONE', label: 'Сдано', kind: 'done' },
 ];
 
-function KanbanCard({ shot, isDragging }: { shot: KanbanShot; isDragging?: boolean }) {
+function KanbanCard({ shot, isDragging, canDrag }: { shot: KanbanShot; isDragging?: boolean; canDrag?: boolean }) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: shot.id });
 
   const due = shot.dueDate
@@ -56,8 +56,8 @@ function KanbanCard({ shot, isDragging }: { shot: KanbanShot; isDragging?: boole
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
       {...attributes}
-      {...listeners}
-      className={[styles.card, isDragging ? styles.dragging : ''].join(' ')}
+      {...(canDrag ? listeners : {})}
+      className={[styles.card, isDragging ? styles.dragging : '', !canDrag ? styles.readonly : ''].join(' ')}
     >
       <div className={styles.project}>{shot.projectTitle}</div>
       <div className={styles.shotTitle}>{shot.title}</div>
@@ -83,12 +83,18 @@ function KanbanCard({ shot, isDragging }: { shot: KanbanShot; isDragging?: boole
   );
 }
 
-export default function KanbanBoard({ initialShots }: { initialShots: KanbanShot[] }) {
+export default function KanbanBoard({
+  initialShots,
+  canChangeStatus = false,
+}: {
+  initialShots: KanbanShot[];
+  canChangeStatus?: boolean;
+}) {
   const [shots, setShots] = useState<KanbanShot[]>(initialShots);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [projectFilter, setProjectFilter] = useState<string>('');
 
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: canChangeStatus ? 5 : Infinity } }));
 
   const projects = useMemo(() => {
     const map = new Map<string, string>();
@@ -100,12 +106,15 @@ export default function KanbanBoard({ initialShots }: { initialShots: KanbanShot
     ? shots.filter((s) => s.projectId === projectFilter)
     : shots;
 
-  const handleDragStart = (e: DragStartEvent) => setActiveId(e.active.id as string);
+  const handleDragStart = (e: DragStartEvent) => {
+    if (!canChangeStatus) return;
+    setActiveId(e.active.id as string);
+  };
 
   const handleDragEnd = (e: DragEndEvent) => {
     const { active, over } = e;
     setActiveId(null);
-    if (!over || active.id === over.id) return;
+    if (!canChangeStatus || !over || active.id === over.id) return;
 
     const targetColumn = COLUMNS.find((c) => c.id === over.id);
     if (!targetColumn) return;
@@ -173,7 +182,7 @@ export default function KanbanBoard({ initialShots }: { initialShots: KanbanShot
                 <div className={styles.columnCards}>
                   <SortableContext items={colShots.map((s) => s.id)} strategy={verticalListSortingStrategy}>
                     {colShots.map((shot) => (
-                      <KanbanCard key={shot.id} shot={shot} isDragging={shot.id === activeId} />
+                      <KanbanCard key={shot.id} shot={shot} isDragging={shot.id === activeId} canDrag={canChangeStatus} />
                     ))}
                   </SortableContext>
                   {colShots.length === 0 && (
