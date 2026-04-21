@@ -8,6 +8,7 @@ import { Badge, Button, ProgressBar, ConfirmDialog } from '@/components/ui';
 import { shotStatusBadgeKind } from '@/lib/utils';
 import { toast } from '@/components/ui/Toast/toastStore';
 import { NewProjectModal } from './NewProjectModal';
+import { EditProjectModal } from './EditProjectModal';
 import { can, type Role } from '@/lib/roles';
 import styles from './ProjectsGrid.module.css';
 
@@ -53,12 +54,16 @@ function projectGradient(id: string) {
 
 function ProjectCard({
   project,
-  onDelete,
+  canEdit,
   canDelete,
+  onEdit,
+  onDelete,
 }: {
   project: Project;
-  onDelete: (id: string) => void;
+  canEdit: boolean;
   canDelete: boolean;
+  onEdit: () => void;
+  onDelete: (id: string) => void;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -79,6 +84,8 @@ function ProjectCard({
       setConfirmDelete(false);
     }
   };
+
+  const showMenu = canEdit || canDelete;
 
   return (
     <>
@@ -116,7 +123,7 @@ function ProjectCard({
           </div>
         </Link>
 
-        {canDelete && (
+        {showMenu && (
           <div className={styles.menuWrap}>
             <button
               className={styles.menuBtn}
@@ -129,13 +136,24 @@ function ProjectCard({
               <>
                 <div className={styles.menuBackdrop} onClick={() => setMenuOpen(false)} />
                 <div className={styles.menu}>
-                  <button
-                    className={[styles.menuItem, styles.menuDanger].join(' ')}
-                    onClick={() => { setMenuOpen(false); setConfirmDelete(true); }}
-                  >
-                    <Icons.X size={13} />
-                    Удалить
-                  </button>
+                  {canEdit && (
+                    <button
+                      className={styles.menuItem}
+                      onClick={() => { setMenuOpen(false); onEdit(); }}
+                    >
+                      <Icons.Pen size={13} />
+                      Редактировать
+                    </button>
+                  )}
+                  {canDelete && (
+                    <button
+                      className={[styles.menuItem, styles.menuDanger].join(' ')}
+                      onClick={() => { setMenuOpen(false); setConfirmDelete(true); }}
+                    >
+                      <Icons.X size={13} />
+                      Удалить
+                    </button>
+                  )}
                 </div>
               </>
             )}
@@ -166,6 +184,7 @@ interface ProjectsGridProps {
 export function ProjectsGrid({ initialProjects, userRole }: ProjectsGridProps) {
   const [projects, setProjects] = useState(initialProjects);
   const [showModal, setShowModal] = useState(false);
+  const [editTarget, setEditTarget] = useState<Project | null>(null);
   const [search, setSearch] = useState('');
   const router = useRouter();
 
@@ -183,9 +202,17 @@ export function ProjectsGrid({ initialProjects, userRole }: ProjectsGridProps) {
     router.refresh();
   };
 
+  const handleUpdated = (updated: Project) => {
+    setProjects((prev) => prev.map((p) => p.id === updated.id ? { ...p, ...updated } : p));
+    toast.success(`Проект «${updated.title}» обновлён`);
+  };
+
   const handleDelete = (id: string) => {
     setProjects((prev) => prev.filter((p) => p.id !== id));
   };
+
+  const canEdit = can.editProject(userRole);
+  const canDelete = can.deleteProject(userRole);
 
   return (
     <div className={styles.root}>
@@ -219,7 +246,14 @@ export function ProjectsGrid({ initialProjects, userRole }: ProjectsGridProps) {
       ) : (
         <div className={styles.grid}>
           {filtered.map((p) => (
-            <ProjectCard key={p.id} project={p} onDelete={handleDelete} canDelete={can.deleteProject(userRole)} />
+            <ProjectCard
+              key={p.id}
+              project={p}
+              canEdit={canEdit}
+              canDelete={canDelete}
+              onEdit={() => setEditTarget(p)}
+              onDelete={handleDelete}
+            />
           ))}
         </div>
       )}
@@ -228,6 +262,14 @@ export function ProjectsGrid({ initialProjects, userRole }: ProjectsGridProps) {
         <NewProjectModal
           onClose={() => setShowModal(false)}
           onCreated={handleCreated}
+        />
+      )}
+
+      {editTarget && (
+        <EditProjectModal
+          project={editTarget}
+          onClose={() => setEditTarget(null)}
+          onUpdated={(u) => { handleUpdated({ ...editTarget, ...u }); setEditTarget(null); }}
         />
       )}
     </div>
