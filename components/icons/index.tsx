@@ -139,6 +139,11 @@ export const Icons = {
   Pen: (p: IconProps) => (
     <Ico {...p}><path d="M13 4l3 3-9 9-4 1 1-4 9-9z" /></Ico>
   ),
+  Trash: (p: IconProps) => (
+    <Ico {...p}>
+      <path d="M4 7h12M9 3h2M7 7v9a1 1 0 001 1h4a1 1 0 001-1V7" />
+    </Ico>
+  ),
   More: (p: IconProps) => (
     <Ico {...p} strokeWidth={0}>
       <circle cx="5" cy="10" r="1.2" fill="currentColor" />

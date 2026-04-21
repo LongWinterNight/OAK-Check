@@ -43,7 +43,51 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
+  flex-wrap: wrap;
 }
+
+/* Search */
+.searchWrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  min-width: 150px;
+  transition: border-color 0.12s;
+}
+
+.searchWrap:focus-within {
+  border-color: var(--accent);
+}
+
+.searchInput {
+  border: none;
+  background: none;
+  outline: none;
+  font-size: 12px;
+  color: var(--fg);
+  font-family: var(--font-sans);
+  width: 100%;
+  min-width: 0;
+}
+
+.searchInput::placeholder { color: var(--fg-subtle); }
+
+.searchClear {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: var(--fg-subtle);
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.searchClear:hover { color: var(--fg); }
 
 /* Список пунктов */
 .list {

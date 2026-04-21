@@ -45,6 +45,7 @@ export const CreateCheckItemSchema = z.object({
 
 export const UpdateCheckItemSchema = z.object({
   state: z.enum(['TODO', 'WIP', 'DONE', 'BLOCKED']).optional(),
+  title: z.string().min(1).max(500).optional(),
   note: z.string().max(1000).nullable().optional(),
   ownerId: z.string().cuid().nullable().optional(),
 });

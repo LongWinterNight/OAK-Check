@@ -1,13 +1,14 @@
 .row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 10px;
-  padding: 12px 14px;
+  padding: 10px 14px;
   border-radius: var(--radius);
   border: 1px solid transparent;
   cursor: pointer;
   transition: background 0.12s;
   outline: none;
+  position: relative;
 }
 
 .row:hover {
@@ -23,9 +24,16 @@
   box-shadow: var(--shadow-focus);
 }
 
+/* Show action buttons on hover */
+.row .actionBtn { opacity: 0; }
+.row:hover .actionBtn { opacity: 1; }
+.deleteBtn { color: var(--fg-subtle); transition: color 0.1s, opacity 0.1s; }
+.deleteBtn:hover { color: var(--blocked) !important; }
+
 .content {
   flex: 1;
   min-width: 0;
+  padding-top: 1px;
 }
 
 .title {
@@ -40,23 +48,149 @@
   color: var(--fg-muted);
 }
 
+.titleInput {
+  width: 100%;
+  font-size: 13px;
+  color: var(--fg);
+  background: var(--surface-3);
+  border: 1.5px solid var(--accent);
+  border-radius: var(--radius-sm);
+  padding: 2px 6px;
+  outline: none;
+  font-family: var(--font-sans);
+  line-height: 1.4;
+}
+
 .note {
   display: flex;
   align-items: center;
   gap: 4px;
-  margin-top: 3px;
+  margin-top: 4px;
   font-size: 11px;
   font-family: var(--font-mono);
   color: var(--fg-muted);
+  cursor: text;
 }
 
 .noteBlocked {
   color: var(--blocked);
 }
 
+.noteInput {
+  margin-top: 4px;
+  width: 100%;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--fg);
+  background: var(--surface-3);
+  border: 1.5px solid var(--accent);
+  border-radius: var(--radius-sm);
+  padding: 4px 6px;
+  outline: none;
+  resize: none;
+  line-height: 1.4;
+}
+
 .right {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   flex-shrink: 0;
+  padding-top: 1px;
+}
+
+/* Action buttons */
+.actionBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: 3px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--fg-subtle);
+  transition: background 0.1s, color 0.1s, opacity 0.1s;
+}
+
+.actionBtn:hover {
+  background: var(--surface-3);
+  color: var(--fg);
+}
+
+.assignBtn {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1.5px dashed var(--border);
+}
+
+/* Dropdown for assign */
+.dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  min-width: 160px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  z-index: 50;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.dropItem {
+  width: 100%;
+  text-align: left;
+  padding: 6px 10px;
+  font-size: 12.5px;
+  border: none;
+  background: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--fg);
+  transition: background 0.1s;
+}
+
+.dropItem:hover { background: var(--surface-2); }
+.dropActive { color: var(--accent); font-weight: 500; }
+
+/* Inline confirm delete */
+.confirmRow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  animation: fadeIn 0.1s;
+}
+
+@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+
+.confirmText {
+  font-size: 11px;
+  color: var(--blocked);
+  white-space: nowrap;
+}
+
+.confirmYes {
+  font-size: 11px;
+  font-weight: 600;
+  color: white;
+  background: var(--blocked);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 2px 7px;
+  cursor: pointer;
+}
+
+.confirmNo {
+  font-size: 11px;
+  color: var(--fg-subtle);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 2px 7px;
+  cursor: pointer;
 }

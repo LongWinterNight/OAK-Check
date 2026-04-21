@@ -75,6 +75,8 @@ export default function ChecklistClient({
   const totalProgress = computeProgress(totalItems);
   const activeChapter = chapters.find((c) => c.id === activeChapterId) ?? chapters[0];
 
+  const canManage = can.manageChecklist(userRole);
+
   const handleStateChange = async (itemId: string, state: 'TODO' | 'WIP' | 'DONE' | 'BLOCKED') => {
     applyStateChange(itemId, state);
     try {
@@ -86,6 +88,57 @@ export default function ChecklistClient({
     } catch {
       toast.error('Не удалось сохранить изменение');
     }
+  };
+
+  const handleItemDeleted = (itemId: string, chapterId: string) => {
+    setChapters((prev) => prev.map((ch) => {
+      if (ch.id !== chapterId) return ch;
+      const items = ch.items.filter((i) => i.id !== itemId);
+      return { ...ch, items, ...computeChapterStats(items) };
+    }));
+  };
+
+  const handleItemRenamed = (itemId: string, title: string) => {
+    setChapters((prev) => prev.map((ch) => ({
+      ...ch,
+      items: ch.items.map((i) => i.id === itemId ? { ...i, title } : i),
+    })));
+  };
+
+  const handleNoteChanged = (itemId: string, note: string | null) => {
+    setChapters((prev) => prev.map((ch) => ({
+      ...ch,
+      items: ch.items.map((i) => i.id === itemId ? { ...i, note } : i),
+    })));
+  };
+
+  const handleItemAssigned = (
+    itemId: string,
+    ownerId: string | null,
+    user: Pick<User, 'id' | 'name'> | null
+  ) => {
+    setChapters((prev) => prev.map((ch) => ({
+      ...ch,
+      items: ch.items.map((i) =>
+        i.id === itemId
+          ? { ...i, ownerId, owner: user ? { ...user, email: '', role: 'ARTIST' as const, avatarUrl: null, online: false, createdAt: '' } : null }
+          : i
+      ),
+    })));
+  };
+
+  const handleChapterDeleted = (id: string) => {
+    setChapters((prev) => {
+      const next = prev.filter((c) => c.id !== id);
+      if (activeChapterId === id && next.length > 0) {
+        setActiveChapterId(next[0].id);
+      }
+      return next;
+    });
+  };
+
+  const handleChapterRenamed = (id: string, title: string) => {
+    setChapters((prev) => prev.map((c) => c.id === id ? { ...c, title } : c));
   };
 
   const handleAssign = async (assigneeId: string | null) => {
@@ -183,13 +236,16 @@ export default function ChecklistClient({
               setChapters((prev) => [...prev, chapter]);
               setActiveChapterId(chapter.id);
             }}
-            canManage={can.manageChecklist(userRole)}
+            onChapterDeleted={handleChapterDeleted}
+            onChapterRenamed={handleChapterRenamed}
+            canManage={canManage}
           />
           {activeChapter && (
             <ItemsList
               chapter={activeChapter}
               shotId={shot.id}
               currentUserId={currentUser.id}
+              users={users}
               onStateChange={handleStateChange}
               onItemCreated={(item) => {
                 setChapters((prev) => prev.map((ch) =>
@@ -198,7 +254,11 @@ export default function ChecklistClient({
                     : ch
                 ));
               }}
-              canManage={can.manageChecklist(userRole)}
+              onItemDeleted={handleItemDeleted}
+              onItemRenamed={handleItemRenamed}
+              onNoteChanged={handleNoteChanged}
+              onItemAssigned={handleItemAssigned}
+              canManage={canManage}
             />
           )}
           <RightPanel
