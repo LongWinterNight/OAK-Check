@@ -2,6 +2,7 @@
 
 import { signOut } from 'next-auth/react';
 import { useState } from 'react';
+import Link from 'next/link';
 import Avatar from '@/components/ui/Avatar/Avatar';
 import { Icons } from '@/components/icons';
 import styles from './UserRow.module.css';
@@ -29,8 +30,13 @@ export function UserRow({ name, role }: UserRowProps) {
         <>
           <div className={styles.backdrop} onClick={() => setMenuOpen(false)} />
           <div className={styles.menu}>
+            <Link href="/settings" className={styles.menuItem} onClick={() => setMenuOpen(false)}>
+              <Icons.Settings size={13} />
+              Настройки
+            </Link>
+            <div className={styles.menuDivider} />
             <button
-              className={styles.menuItem}
+              className={[styles.menuItem, styles.menuDanger].join(' ')}
               onClick={() => signOut({ callbackUrl: '/login' })}
             >
               <Icons.X size={13} />
