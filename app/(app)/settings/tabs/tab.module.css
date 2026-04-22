@@ -327,6 +327,38 @@
 }
 .filterRow::-webkit-scrollbar { display: none; }
 
+/* ── Tablet: table fits narrow content area ───────────────── */
+@media (min-width: 768px) and (max-width: 1023px) {
+  /* Section card: let table scroll horizontally if needed */
+  .section {
+    overflow-x: auto;
+  }
+
+  .table {
+    min-width: 480px;
+  }
+
+  .table th,
+  .table td {
+    padding: 8px 10px;
+  }
+
+  .table td.truncate {
+    max-width: 140px;
+  }
+
+  /* Team table: hide Date column (5th), keep others */
+  .table th:nth-child(5),
+  .table td:nth-child(5) {
+    display: none;
+  }
+
+  .sectionHead {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}
+
 /* ── Mobile ───────────────────────────────────────────────── */
 @media (max-width: 767px) {
   /* Section header stacks on mobile */
@@ -359,5 +391,13 @@
 
   .table td.truncate {
     max-width: 120px;
+  }
+
+  /* Hide date + status columns (keep name, email, role, actions) */
+  .table th:nth-child(4),
+  .table td:nth-child(4),
+  .table th:nth-child(5),
+  .table td:nth-child(5) {
+    display: none;
   }
 }
