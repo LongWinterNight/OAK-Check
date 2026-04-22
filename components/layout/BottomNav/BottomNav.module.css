@@ -1,0 +1,84 @@
+.nav {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .nav {
+    display: flex;
+    align-items: center;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 68px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    z-index: 100;
+    padding: 0 4px;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}
+
+.tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--fg-subtle);
+  text-decoration: none;
+  transition: color 0.15s;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tab:active {
+  opacity: 0.7;
+}
+
+.tab.active {
+  color: var(--accent);
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.01em;
+}
+
+/* Center upload button */
+.uploadWrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.uploadBtn {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+  transition: transform 0.15s, box-shadow 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
+}
+
+.uploadBtn:active {
+  transform: scale(0.94);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.2);
+}

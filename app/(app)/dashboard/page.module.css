@@ -25,3 +25,14 @@
   flex-direction: column;
   gap: 20px;
 }
+
+@media (max-width: 767px) {
+  .content { padding: 16px 12px; gap: 14px; }
+  .grid { grid-template-columns: 1fr; }
+  .right { display: none; } /* Activity и MyDay скрыты — они в /tasks */
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .content { padding: 20px 16px; }
+  .grid { grid-template-columns: 1fr 280px; gap: 14px; }
+}

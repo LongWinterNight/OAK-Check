@@ -1,4 +1,5 @@
 import Sidebar from '@/components/layout/Sidebar/Sidebar';
+import BottomNav from '@/components/layout/BottomNav/BottomNav';
 import styles from './layout.module.css';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -6,6 +7,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <div className={styles.shell}>
       <Sidebar />
       <div className={styles.main}>{children}</div>
+      <BottomNav />
     </div>
   );
 }

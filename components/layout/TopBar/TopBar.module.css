@@ -9,6 +9,27 @@
   flex-shrink: 0;
 }
 
+/* Mobile: compact header */
+@media (max-width: 767px) {
+  .topbar { padding: 0 16px; gap: 0; }
+  .breadcrumbs { display: none; }
+  .search { display: none; }
+  .mobileTitle {
+    flex: 1;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--fg);
+    letter-spacing: -0.2px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .actions { margin-left: auto; }
+}
+
+/* Desktop: hide mobile-only elements */
+.mobileTitle { display: none; }
+
 .breadcrumbs {
   display: flex;
   align-items: center;
