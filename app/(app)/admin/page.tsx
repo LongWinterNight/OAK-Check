@@ -44,6 +44,8 @@ export default async function AdminPage() {
     recentLogins,
     pendingInvitations,
     storageResult,
+    blockedShots,
+    topUsers,
   ] = await prisma.$transaction([
     prisma.user.count(),
     prisma.user.groupBy({ by: ['role'], _count: { _all: true }, orderBy: { role: 'asc' } }),
@@ -54,6 +56,19 @@ export default async function AdminPage() {
     prisma.user.count({ where: { lastLoginAt: { gte: sevenDaysAgo } } }),
     prisma.invitation.count({ where: { usedAt: null, expiresAt: { gte: new Date() } } }),
     prisma.renderVersion.aggregate({ _sum: { fileSize: true } }),
+    prisma.shot.findMany({
+      where: { items: { some: { state: 'BLOCKED' } } },
+      include: { project: { select: { id: true, title: true } } },
+      take: 6,
+      orderBy: { updatedAt: 'desc' },
+    }),
+    prisma.activity.groupBy({
+      by: ['userId'],
+      where: { createdAt: { gte: sevenDaysAgo } },
+      _count: { _all: true },
+      orderBy: { _count: { userId: 'desc' } },
+      take: 5,
+    }),
   ]);
 
   const storageUsedBytes = storageResult._sum.fileSize ?? 0;
@@ -61,6 +76,16 @@ export default async function AdminPage() {
   const roleMap = Object.fromEntries(usersByRole.map((r) => [r.role, (r._count as any)?._all ?? 0]));
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const statusMap = Object.fromEntries(shotsByStatus.map((s) => [s.status, (s._count as any)?._all ?? 0]));
+
+  // Fetch names for top active users
+  const topUserIds = topUsers.map((u) => u.userId);
+  const topUserNames = topUserIds.length > 0
+    ? await prisma.user.findMany({
+        where: { id: { in: topUserIds } },
+        select: { id: true, name: true },
+      })
+    : [];
+  const nameById = Object.fromEntries(topUserNames.map((u) => [u.id, u.name]));
 
   return (
     <>
@@ -125,6 +150,50 @@ export default async function AdminPage() {
             <div className={styles.cardSub}>ожидают принятия</div>
             <a href="/settings?tab=team" className={styles.cardLink}>Управление командой →</a>
           </div>
+
+        </div>
+
+        {/* Second row: blocked shots + top users */}
+        <div className={styles.twoCol}>
+
+          {/* Blocked shots */}
+          {blockedShots.length > 0 && (
+            <div className={styles.wideCard}>
+              <div className={styles.wideCardHead}>
+                <span className={styles.wideCardTitle}>Шоты с блокерами</span>
+                <span className={styles.wideCardSub}>{blockedShots.length} требуют внимания</span>
+              </div>
+              <div className={styles.tableWrap}>
+                {blockedShots.map((shot) => (
+                  <a key={shot.id} href={`/projects/${shot.project.id}/${shot.id}/checklist`} className={styles.tableRow}>
+                    <span className={styles.blockedDot} />
+                    <span className={styles.tableCode}>{shot.code}</span>
+                    <span className={styles.tableTitle}>{shot.title}</span>
+                    <span className={styles.tableProject}>{shot.project.title}</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Top active users */}
+          {topUsers.length > 0 && (
+            <div className={styles.wideCard}>
+              <div className={styles.wideCardHead}>
+                <span className={styles.wideCardTitle}>Топ активности за 7 дней</span>
+              </div>
+              <div className={styles.tableWrap}>
+                {topUsers.map((u, i) => (
+                  <div key={u.userId} className={styles.tableRow} style={{ cursor: 'default' }}>
+                    <span className={styles.tableRank}>#{i + 1}</span>
+                    <span className={styles.tableTitle}>{nameById[u.userId] ?? u.userId}</span>
+                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                    <span className={styles.tableCount}>{(u._count as any)?._all ?? 0} действий</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
         </div>
       </div>

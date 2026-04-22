@@ -2,6 +2,106 @@
   flex: 1;
   overflow-y: auto;
   padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.twoCol {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.wideCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.wideCardHead {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.wideCardTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg);
+}
+
+.wideCardSub {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--fg-subtle);
+}
+
+.tableWrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.tableRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 18px;
+  border-bottom: 1px solid var(--border);
+  text-decoration: none;
+  color: var(--fg);
+  font-size: 13px;
+  transition: background 0.1s;
+}
+.tableRow:last-child { border-bottom: none; }
+a.tableRow:hover { background: var(--surface-2); }
+
+.blockedDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--blocked);
+  flex-shrink: 0;
+}
+
+.tableCode {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--fg-subtle);
+  flex-shrink: 0;
+}
+
+.tableTitle {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tableProject {
+  font-size: 10.5px;
+  font-family: var(--font-mono);
+  color: var(--fg-subtle);
+  flex-shrink: 0;
+}
+
+.tableRank {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fg-subtle);
+  width: 24px;
+  flex-shrink: 0;
+}
+
+.tableCount {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--accent);
+  flex-shrink: 0;
 }
 
 .grid {

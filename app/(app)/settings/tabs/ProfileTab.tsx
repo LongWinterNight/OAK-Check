@@ -5,7 +5,7 @@ import { Icons } from '@/components/icons';
 import styles from './tab.module.css';
 
 interface ProfileTabProps {
-  currentUser: { id: string; name: string; email: string; role: string; avatarUrl: string | null } | null;
+  currentUser: { id: string; name: string; email: string; role: string; avatarUrl: string | null; lastLoginAt: string | null } | null;
 }
 
 export default function ProfileTab({ currentUser }: ProfileTabProps) {
@@ -180,6 +180,37 @@ export default function ProfileTab({ currentUser }: ProfileTabProps) {
               Сменить пароль
             </button>
           </div>
+        </div>
+      </div>
+
+      {/* Security */}
+      <div className={styles.section}>
+        <div className={styles.sectionHead}>
+          <div>
+            <div className={styles.sectionTitle}>Безопасность</div>
+            <div className={styles.sectionDesc}>Информация о последней активности</div>
+          </div>
+        </div>
+        <div className={styles.sectionBody}>
+          <table className={styles.table}>
+            <tbody>
+              <tr>
+                <td style={{ fontWeight: 500, width: '40%' }}>Последний вход</td>
+                <td>
+                  {currentUser?.lastLoginAt
+                    ? new Date(currentUser.lastLoginAt).toLocaleString('ru-RU', {
+                        day: 'numeric', month: 'long', year: 'numeric',
+                        hour: '2-digit', minute: '2-digit',
+                      })
+                    : '—'}
+                </td>
+              </tr>
+              <tr>
+                <td style={{ fontWeight: 500 }}>Роль</td>
+                <td>{currentUser?.role ?? '—'}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </>

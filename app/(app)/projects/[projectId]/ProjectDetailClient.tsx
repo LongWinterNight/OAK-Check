@@ -129,6 +129,7 @@ export default function ProjectDetailClient({
 
   const canEdit = can.manageChecklist(userRole);
   const canDelete = can.deleteShot(userRole);
+  const canExport = can.deleteProject(userRole); // PM + ADMIN
 
   return (
     <>
@@ -138,16 +139,28 @@ export default function ProjectDetailClient({
           { label: projectTitle },
         ]}
         action={
-          canEdit ? (
-            <Button
-              variant="primary"
-              size="sm"
-              icon={<Icons.Plus size={14} />}
-              onClick={() => setShowNew(true)}
-            >
-              Новый шот
-            </Button>
-          ) : undefined
+          <div style={{ display: 'flex', gap: 8 }}>
+            {canExport && (
+              <Button
+                variant="ghost"
+                size="sm"
+                icon={<Icons.Paper size={14} />}
+                onClick={() => window.open(`/api/projects/${projectId}/export`, '_blank')}
+              >
+                Экспорт CSV
+              </Button>
+            )}
+            {canEdit && (
+              <Button
+                variant="primary"
+                size="sm"
+                icon={<Icons.Plus size={14} />}
+                onClick={() => setShowNew(true)}
+              >
+                Новый шот
+              </Button>
+            )}
+          </div>
         }
       />
 
