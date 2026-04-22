@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { CreateRenderVersionSchema } from '@/lib/zod-schemas';
 import { requireAuth } from '@/lib/auth-guard';
 import { logger } from '@/lib/logger';
+import { rateLimit } from '@/lib/rate-limit';
 
 export async function GET(
   _req: NextRequest,
@@ -16,6 +17,7 @@ export async function GET(
     const versions = await prisma.renderVersion.findMany({
       where: { shotId },
       orderBy: { createdAt: 'asc' },
+      take: 50,
     });
     return NextResponse.json(versions);
   } catch (e) {
@@ -28,8 +30,12 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { error } = await requireAuth();
+  const { user, error } = await requireAuth();
   if (error) return error;
+
+  if (!rateLimit(`upload:${user.id}`, 20, 60 * 60_000)) {
+    return NextResponse.json({ error: 'Лимит загрузок на сегодня исчерпан. Попробуйте позже.' }, { status: 429 });
+  }
 
   const { id: shotId } = await params;
   try {

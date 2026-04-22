@@ -3,6 +3,8 @@ import { auth } from '@/auth';
 
 export const dynamic = 'force-dynamic';
 
+const MAX_CONNECTION_MS = 10 * 60_000; // 10 minutes — client reconnects automatically
+
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ projectId: string }> }
@@ -17,27 +19,46 @@ export async function GET(
 
   const { projectId } = await params;
 
+  let keepalive: ReturnType<typeof setInterval> | undefined;
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+  let unsubscribe: (() => void) | undefined;
+
   const stream = new ReadableStream({
     start(controller) {
       controller.enqueue(new TextEncoder().encode(': ping\n\n'));
 
-      const unsubscribe = subscribe(projectId, controller);
+      unsubscribe = subscribe(projectId, controller);
 
-      const interval = setInterval(() => {
+      keepalive = setInterval(() => {
         try {
           controller.enqueue(new TextEncoder().encode(': keepalive\n\n'));
         } catch {
-          clearInterval(interval);
-          unsubscribe();
+          cleanup();
         }
       }, 25_000);
 
-      return () => {
-        clearInterval(interval);
-        unsubscribe();
-      };
+      // Close after MAX_CONNECTION_MS — EventSource reconnects automatically.
+      timeout = setTimeout(() => {
+        try { controller.close(); } catch { /* already closed */ }
+        cleanup();
+      }, MAX_CONNECTION_MS);
+
+      // Handle client disconnect via AbortSignal.
+      req.signal?.addEventListener('abort', () => {
+        cleanup();
+      });
+    },
+    cancel() {
+      cleanup();
     },
   });
+
+  function cleanup() {
+    if (keepalive !== undefined) { clearInterval(keepalive); keepalive = undefined; }
+    if (timeout !== undefined) { clearTimeout(timeout); timeout = undefined; }
+    unsubscribe?.();
+    unsubscribe = undefined;
+  }
 
   return new Response(stream, {
     headers: {

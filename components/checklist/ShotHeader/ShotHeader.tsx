@@ -23,7 +23,7 @@ interface ShotHeaderProps {
 export default function ShotHeader({
   shot,
   progress,
-  latestVersion = 'v012',
+  latestVersion = '—',
   canChangeStatus = false,
   canAssign = false,
   assignee,

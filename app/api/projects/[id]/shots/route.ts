@@ -15,22 +15,20 @@ export async function GET(
   try {
     const shots = await prisma.shot.findMany({
       where: { projectId },
-      include: { owner: true },
+      include: {
+        owner: { select: { id: true, name: true, email: true, avatarUrl: true } },
+        items: { select: { state: true } },
+      },
       orderBy: { order: 'asc' },
     });
 
-    const shotsWithProgress = await Promise.all(
-      shots.map(async (shot) => {
-        const items = await prisma.checkItem.findMany({
-          where: { shotId: shot.id },
-          select: { state: true },
-        });
-        const progress = items.length === 0
-          ? 0
-          : Math.round(items.filter((i) => i.state === 'DONE').length / items.length * 100);
-        return { ...shot, progress };
-      })
-    );
+    const shotsWithProgress = shots.map((shot) => {
+      const { items, ...rest } = shot;
+      const progress = items.length === 0
+        ? 0
+        : Math.round(items.filter((i) => i.state === 'DONE').length / items.length * 100);
+      return { ...rest, progress };
+    });
 
     return NextResponse.json(shotsWithProgress);
   } catch (e) {

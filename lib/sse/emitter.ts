@@ -1,6 +1,3 @@
-// SSE брокер — хранит активные соединения в памяти процесса
-// Каждый проект имеет свой канал. При событии рассылаем всем подписчикам.
-
 type Subscriber = {
   controller: ReadableStreamDefaultController;
   projectId: string;
@@ -34,3 +31,15 @@ export function broadcast(projectId: string, event: SSEEvent) {
     }
   }
 }
+
+// Purge dead connections every 60 seconds.
+setInterval(() => {
+  const ping = new TextEncoder().encode(': ping\n\n');
+  for (const sub of subscribers) {
+    try {
+      sub.controller.enqueue(ping);
+    } catch {
+      subscribers.delete(sub);
+    }
+  }
+}, 60_000);
