@@ -21,7 +21,7 @@
   --info: #2563B0;
 
   /* Бренд */
-  --accent: #1E6FE0;
+  --accent: #8C5E1E;
   --oak: #8C5E1E;
   --oak-deep: #4A3616;
 
@@ -47,7 +47,7 @@
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.08);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
   --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.14), 0 2px 6px rgba(0, 0, 0, 0.08);
-  --shadow-focus: 0 0 0 3px rgba(30, 111, 224, 0.25);
+  --shadow-focus: 0 0 0 3px rgba(140, 94, 30, 0.25);
 }
 
 [data-theme="dark"] {
@@ -64,13 +64,13 @@
   --wip: #E8B04B;
   --blocked: #E26B5A;
   --info: #7CB8FF;
-  --accent: #58A6FF;
+  --accent: #C89B54;
   --oak: #C89B54;
   --oak-deep: #7A5A2E;
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35), 0 1px 2px rgba(0, 0, 0, 0.2);
   --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.25);
-  --shadow-focus: 0 0 0 3px rgba(88, 166, 255, 0.25);
+  --shadow-focus: 0 0 0 3px rgba(200, 155, 84, 0.25);
 }
 
 /* Акцентные варианты темы */

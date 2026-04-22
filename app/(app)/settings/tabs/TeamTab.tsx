@@ -137,7 +137,7 @@ export default function TeamTab({ users: initial, isAdmin, currentUserId }: Team
           </div>
           {isAdmin && (
             <button
-              className={styles.btnPrimary}
+              className={[styles.btnPrimary, styles.inviteBtn].join(' ')}
               onClick={() => { setShowInvite(v => !v); setInviteError(null); setInviteSuccess(null); }}
             >
               {showInvite ? 'Отмена' : '+ Пригласить'}

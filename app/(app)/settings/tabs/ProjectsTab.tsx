@@ -51,14 +51,14 @@ export default function ProjectsTab({ projects: initial, isAdmin }: ProjectsTabP
           <div className={styles.sectionTitle}>Проекты</div>
           <div className={styles.sectionDesc}>{projects.length} проектов в системе</div>
         </div>
-        <div style={{ display: 'flex', gap: 6 }}>
+        <div className={styles.filterRow}>
           {['ALL', ...STATUSES].map(s => (
             <button
               key={s}
               onClick={() => setFilter(s)}
               style={{
                 padding: '4px 10px', borderRadius: 'var(--radius)', fontSize: 11, fontWeight: 600,
-                border: '1px solid var(--border)', cursor: 'pointer',
+                border: '1px solid var(--border)', cursor: 'pointer', flexShrink: 0,
                 background: filter === s ? 'var(--accent)' : 'var(--surface-2)',
                 color: filter === s ? '#fff' : 'var(--fg)',
               }}

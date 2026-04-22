@@ -261,3 +261,14 @@
 .menuDanger:hover {
   background: color-mix(in srgb, var(--blocked) 8%, var(--surface));
 }
+
+@media (max-width: 767px) {
+  .toolbar {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .searchWrap {
+    max-width: 100%;
+    flex: 1 1 100%;
+  }
+}

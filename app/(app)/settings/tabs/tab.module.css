@@ -314,3 +314,50 @@
   background: var(--surface-2);
   flex-wrap: wrap;
 }
+
+/* Scrollable filter row in Projects tab header */
+.filterRow {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  flex-wrap: nowrap;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 2px;
+  flex-shrink: 0;
+}
+.filterRow::-webkit-scrollbar { display: none; }
+
+/* ── Mobile ───────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  /* Section header stacks on mobile */
+  .sectionHead {
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  /* Invite / action button goes full-width below title */
+  .inviteBtn {
+    width: 100%;
+    order: 2;
+  }
+
+  /* Table: scroll horizontally inside section card */
+  .section {
+    overflow-x: auto;
+  }
+
+  .table {
+    min-width: 480px;
+  }
+
+  /* Shrink table cells a bit */
+  .table th,
+  .table td {
+    padding: 8px 10px;
+  }
+
+  .table td.truncate {
+    max-width: 120px;
+  }
+}
