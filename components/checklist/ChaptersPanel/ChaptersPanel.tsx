@@ -16,11 +16,13 @@ interface ChaptersPanelProps {
   onChapterDeleted?: (id: string) => void;
   onChapterRenamed?: (id: string, title: string) => void;
   canManage?: boolean;
+  className?: string;
 }
 
 export default function ChaptersPanel({
   chapters, activeId, shotId, onSelect,
   onChapterCreated, onChapterDeleted, onChapterRenamed, canManage = false,
+  className,
 }: ChaptersPanelProps) {
   const [addingChapter, setAddingChapter] = useState(false);
   const [newTitle, setNewTitle] = useState('');
@@ -99,7 +101,7 @@ export default function ChaptersPanel({
 
   return (
     <>
-      <aside className={styles.panel}>
+      <aside className={[styles.panel, className ?? ''].join(' ')}>
         <div className={styles.header}>Этапы</div>
 
         <div className={styles.list} role="tablist" aria-label="Этапы чек-листа">

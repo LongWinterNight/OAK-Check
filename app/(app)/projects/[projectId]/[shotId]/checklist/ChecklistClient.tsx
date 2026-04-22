@@ -45,6 +45,10 @@ export default function ChecklistClient({
   const [showUpload, setShowUpload] = useState(false);
   const [shotStatus, setShotStatus] = useState(shot.status);
   const [assignee, setAssignee] = useState(shot.assignee ?? null);
+  // Mobile panel tab: QA defaults to 'media', others to 'checklist'
+  const [mobilePanel, setMobilePanel] = useState<'chapters' | 'checklist' | 'media'>(
+    userRole === 'QA' ? 'media' : 'checklist'
+  );
 
   const applyStateChange = useCallback((itemId: string, state: string) => {
     setChapters((prev) =>
@@ -240,19 +244,49 @@ export default function ChecklistClient({
           onSendReview={handleSendReview}
           onAssign={handleAssign}
         />
+
+        {/* Mobile: tab bar for switching between panels */}
+        <div className={styles.mobilePanelTabs} role="tablist">
+          {[
+            { id: 'chapters',  label: 'Главы' },
+            { id: 'checklist', label: 'Чеклист' },
+            { id: 'media',     label: 'Медиа' },
+          ].map(({ id, label }) => (
+            <button
+              key={id}
+              role="tab"
+              aria-selected={mobilePanel === id}
+              className={[
+                styles.mobilePanelTab,
+                mobilePanel === id ? styles.panelActive : '',
+              ].join(' ')}
+              onClick={() => setMobilePanel(id as typeof mobilePanel)}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
         <div className={styles.body}>
           <ChaptersPanel
             chapters={chapters}
             activeId={activeChapterId}
             shotId={shot.id}
-            onSelect={setActiveChapterId}
+            onSelect={(id) => { setActiveChapterId(id); setMobilePanel('checklist'); }}
             onChapterCreated={(chapter) => {
               setChapters((prev) => [...prev, chapter]);
               setActiveChapterId(chapter.id);
+              setMobilePanel('checklist');
             }}
             onChapterDeleted={handleChapterDeleted}
             onChapterRenamed={handleChapterRenamed}
             canManage={canManage}
+            className={[
+              // Mobile: hide unless chapters tab active
+              mobilePanel !== 'chapters' ? styles.panelHidden : '',
+              // Tablet: always hidden (ChaptersPanel is a sidebar)
+              styles.chaptersHideTablet,
+            ].join(' ')}
           />
           {activeChapter && (
             <ItemsList
@@ -273,6 +307,7 @@ export default function ChecklistClient({
               onNoteChanged={handleNoteChanged}
               onItemAssigned={handleItemAssigned}
               canManage={canManage}
+              className={mobilePanel !== 'checklist' ? styles.panelHidden : ''}
             />
           )}
           <RightPanel
@@ -284,6 +319,7 @@ export default function ChecklistClient({
             onCommentDelete={handleCommentDelete}
             onVersionDeleted={(versionId) => setVersions((prev) => prev.filter((v) => v.id !== versionId))}
             shotId={shot.id}
+            className={mobilePanel !== 'media' ? styles.panelHidden : ''}
           />
         </div>
       </div>

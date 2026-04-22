@@ -12,6 +12,7 @@ interface RightPanelProps {
   onCommentDelete?: (commentId: string) => void;
   onVersionDeleted?: (versionId: string) => void;
   shotId?: string;
+  className?: string;
 }
 
 export default function RightPanel({
@@ -23,9 +24,10 @@ export default function RightPanel({
   onCommentDelete,
   onVersionDeleted,
   shotId,
+  className,
 }: RightPanelProps) {
   return (
-    <aside className={styles.panel}>
+    <aside className={[styles.panel, className ?? ''].join(' ')}>
       <RenderPreview
         versions={versions}
         comments={comments}

@@ -11,16 +11,14 @@ export async function MobileHeader() {
   const avatarUrl = (user as { avatarUrl?: string | null })?.avatarUrl ?? null;
 
   return (
-    <>
-      <span className={styles.mobileTitle}>
+    <div className={styles.mobileBar}>
+      <div className={styles.mobileLogo}>
         <Icons.Oak size={16} color="var(--oak)" />
-        OAK·Check
-      </span>
-      <div className={styles.actions}>
-        <Link href="/settings" aria-label="Профиль">
-          <Avatar name={name} src={avatarUrl} size={32} />
-        </Link>
+        <span className={styles.mobileLogoText}>OAK·Check</span>
       </div>
-    </>
+      <Link href="/settings" className={styles.mobileAvatar} aria-label="Профиль">
+        <Avatar name={name} src={avatarUrl} size={32} />
+      </Link>
+    </div>
   );
 }

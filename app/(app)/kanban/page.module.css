@@ -4,6 +4,17 @@
   padding: 28px;
 }
 
+@media (max-width: 767px) {
+  .content {
+    padding: 16px 14px 0;
+    overflow-x: hidden;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .content { padding: 20px 16px; }
+}
+
 .title {
   font-size: 20px;
   font-weight: 600;

@@ -118,6 +118,111 @@
   color: var(--fg-subtle);
 }
 
+/* ── Mobile: card layout instead of table ──────────────── */
+@media (max-width: 767px) {
+  .content { padding: 12px; }
+
+  /* Hide table, show cards */
+  .table { display: none; }
+
+  .cardList {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .shotCard {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    text-decoration: none;
+    color: var(--fg);
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.1s;
+  }
+
+  .shotCard:active { background: var(--surface-2); }
+
+  .shotCardTop {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .shotCardCode {
+    font-size: 10.5px;
+    font-family: var(--font-mono);
+    color: var(--fg-subtle);
+    flex-shrink: 0;
+  }
+
+  .shotCardTitle {
+    flex: 1;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--fg);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .shotCardBottom {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .shotCardBar {
+    flex: 1;
+    height: 4px;
+    background: var(--surface-3);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .shotCardBarFill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.3s;
+  }
+
+  .shotCardPct {
+    font-size: 10.5px;
+    font-family: var(--font-mono);
+    color: var(--fg-subtle);
+    flex-shrink: 0;
+    width: 30px;
+    text-align: right;
+  }
+
+  .shotCardOwner {
+    font-size: 11px;
+    color: var(--fg-muted);
+    flex-shrink: 0;
+    max-width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+/* On desktop: hide card list */
+.cardList { display: none; }
+
+/* ── Tablet: hide some columns ─────────────────────────── */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .content { padding: 16px; }
+  /* Hide software and resolution columns (4th, 5th) */
+  .th:nth-child(4), .th:nth-child(5),
+  .td:nth-child(4), .td:nth-child(5) { display: none; }
+  .tdProgress { min-width: 120px; }
+}
+
 /* Shot action menu */
 .menuBtn {
   display: flex;

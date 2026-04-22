@@ -172,6 +172,7 @@ export default function ProjectDetailClient({
           </div>
         </div>
 
+        {/* Desktop table */}
         <table className={styles.table}>
           <thead>
             <tr>
@@ -224,6 +225,35 @@ export default function ProjectDetailClient({
             )}
           </tbody>
         </table>
+
+        {/* Mobile card list */}
+        <div className={styles.cardList}>
+          {shots.length === 0 && (
+            <div className={styles.emptyRow}>Шоты не добавлены</div>
+          )}
+          {shots.map((shot) => (
+            <Link
+              key={shot.id}
+              href={`/projects/${projectId}/${shot.id}/checklist`}
+              className={styles.shotCard}
+            >
+              <div className={styles.shotCardTop}>
+                <span className={styles.shotCardCode}>{shot.code}</span>
+                <span className={styles.shotCardTitle}>{shot.title}</span>
+                <Badge kind={shotStatusBadgeKind(shot.status as 'TODO' | 'WIP' | 'REVIEW' | 'DONE')} size="sm" dot>
+                  {SHOT_STATUS_LABELS[shot.status] ?? shot.status}
+                </Badge>
+              </div>
+              <div className={styles.shotCardBottom}>
+                <div className={styles.shotCardBar}>
+                  <div className={styles.shotCardBarFill} style={{ width: `${Math.round(shot.progress)}%` }} />
+                </div>
+                <span className={styles.shotCardPct}>{Math.round(shot.progress)}%</span>
+                {shot.owner && <span className={styles.shotCardOwner}>{shot.owner}</span>}
+              </div>
+            </Link>
+          ))}
+        </div>
       </div>
 
       {showNew && (

@@ -227,3 +227,34 @@
   flex-direction: column;
   gap: 6px;
 }
+
+/* ── Mobile: compact header ─────────────────────────────── */
+@media (max-width: 767px) {
+  .header {
+    padding: 10px 14px;
+    gap: 10px;
+  }
+
+  /* Hide thumb, assignee block, progress ring on mobile */
+  .thumb { display: none; }
+  .assigneeBlock { display: none; }
+  .progressBlock { display: none; }
+  .infoRow { display: none; }
+
+  .title { font-size: 16px; }
+
+  /* Actions: row instead of column, compact */
+  .right { gap: 8px; }
+  .actions {
+    flex-direction: row;
+    gap: 6px;
+  }
+}
+
+/* ── Tablet: slightly more compact ──────────────────────── */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .header { padding: 12px 16px; gap: 12px; }
+  .thumb { width: 72px; height: 48px; }
+  .title { font-size: 18px; }
+  .assigneeBlock { min-width: 110px; }
+}

@@ -29,12 +29,13 @@ interface ItemsListProps {
   onNoteChanged?: (itemId: string, note: string | null) => void;
   onItemAssigned?: (itemId: string, ownerId: string | null, user: Pick<User, 'id' | 'name'> | null) => void;
   canManage?: boolean;
+  className?: string;
 }
 
 export default function ItemsList({
   chapter, shotId, currentUserId, users = [], onStateChange,
   onItemCreated, onItemDeleted, onItemRenamed, onNoteChanged, onItemAssigned,
-  canManage = false,
+  canManage = false, className,
 }: ItemsListProps) {
   const [filter, setFilter] = useState<Filter>('all');
   const [search, setSearch] = useState('');
@@ -166,7 +167,7 @@ export default function ItemsList({
   };
 
   return (
-    <div className={styles.panel}>
+    <div className={[styles.panel, className ?? ''].join(' ')}>
       {/* Toolbar */}
       <div className={styles.toolbar}>
         <div className={styles.toolbarTop}>

@@ -12,3 +12,49 @@
   overflow: hidden;
   min-height: 0;
 }
+
+/* ── Mobile: panel tab-switcher ─────────────────────────── */
+
+/* Tab bar sits below ShotHeader on mobile */
+.mobilePanelTabs {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .mobilePanelTabs {
+    display: flex;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .mobilePanelTab {
+    flex: 1;
+    height: 40px;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--fg-muted);
+    transition: color 0.15s, border-color 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mobilePanelTab.panelActive {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  /* In body flex: only active panel is visible */
+  .body { overflow: hidden; }
+
+  .panelHidden { display: none !important; }
+}
+
+/* ── Tablet: hide ChaptersPanel, keep ItemsList + RightPanel ── */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .chaptersHideTablet { display: none !important; }
+  .mobilePanelTabs { display: none; }
+}

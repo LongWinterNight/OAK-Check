@@ -18,12 +18,19 @@ interface TopBarProps {
 export default function TopBar({ breadcrumbs = [], action }: TopBarProps) {
   return (
     <header className={styles.topbar}>
-      {/* Mobile: logo + avatar (hidden on desktop via CSS) */}
-      <Suspense fallback={<span className={styles.mobileTitle}>OAK·Check</span>}>
+      {/* Mobile: logo + avatar — hidden on desktop via CSS */}
+      <Suspense fallback={
+        <div className={styles.mobileBar}>
+          <div className={styles.mobileLogo}>
+            <Icons.Oak size={16} color="var(--oak)" />
+            <span className={styles.mobileLogoText}>OAK·Check</span>
+          </div>
+        </div>
+      }>
         <MobileHeader />
       </Suspense>
 
-      {/* Desktop: breadcrumbs */}
+      {/* Desktop: breadcrumbs — hidden on mobile via CSS */}
       <nav className={styles.breadcrumbs} aria-label="Навигация">
         <Link href="/dashboard" className={styles.crumb}>OAK·Check</Link>
         {breadcrumbs.map((crumb, i) => (
@@ -38,7 +45,7 @@ export default function TopBar({ breadcrumbs = [], action }: TopBarProps) {
         ))}
       </nav>
 
-      {/* Desktop: search */}
+      {/* Desktop: search — hidden on mobile via CSS */}
       <Input
         size="sm"
         placeholder="Поиск по шотам, задачам, версиям…"
@@ -47,7 +54,7 @@ export default function TopBar({ breadcrumbs = [], action }: TopBarProps) {
         aria-label="Глобальный поиск"
       />
 
-      {/* Desktop: actions */}
+      {/* Desktop: actions — hidden on mobile via CSS */}
       <div className={styles.actions}>
         <Button variant="ghost" size="sm" icon={<Icons.Bell size={16} />} aria-label="Уведомления" />
         {action}

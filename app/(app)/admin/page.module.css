@@ -188,3 +188,19 @@ a.tableRow:hover { background: var(--surface-2); }
 .cardLink:hover {
   text-decoration: underline;
 }
+
+/* ── Mobile ───────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .content { padding: 16px 12px; gap: 14px; }
+  .twoCol { grid-template-columns: 1fr; }
+  .grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .card { padding: 14px; }
+  .cardValue { font-size: 24px; }
+}
+
+/* ── Tablet ───────────────────────────────────────────────── */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .content { padding: 20px 16px; }
+  .twoCol { grid-template-columns: 1fr; }
+  .grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+}
