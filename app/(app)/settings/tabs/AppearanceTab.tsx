@@ -4,11 +4,11 @@ import { useThemeStore } from '@/store/useThemeStore';
 import styles from './tab.module.css';
 
 const ACCENTS = [
-  { id: 'blue' as const,  color: '#3b82f6', label: 'Синий' },
-  { id: 'oak'  as const,  color: '#8b5cf6', label: 'Дуб' },
-  { id: 'amber'as const,  color: '#f59e0b', label: 'Янтарный' },
-  { id: 'green'as const,  color: '#22c55e', label: 'Зелёный' },
-  { id: 'lime' as const,  color: '#84cc16', label: 'Лайм' },
+  { id: 'oak'  as const,  color: '#8C5E1E', label: 'Дуб' },
+  { id: 'blue' as const,  color: '#1E6FE0', label: 'Синий' },
+  { id: 'amber'as const,  color: '#B87A14', label: 'Янтарный' },
+  { id: 'green'as const,  color: '#3F8C4A', label: 'Зелёный' },
+  { id: 'lime' as const,  color: '#6A8A0D', label: 'Лайм' },
 ];
 
 const RADII = [

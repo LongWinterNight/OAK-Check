@@ -73,15 +73,15 @@
   --shadow-focus: 0 0 0 3px rgba(200, 155, 84, 0.25);
 }
 
-/* Акцентные варианты темы */
-[data-accent="oak"] { --accent: #8C5E1E; }
-[data-accent="oak"][data-theme="dark"] { --accent: #C89B54; }
+/* Акцентные варианты темы (oak — дефолт через :root, остальные через data-accent) */
+[data-accent="blue"]  { --accent: #1E6FE0; }
+[data-accent="blue"][data-theme="dark"]  { --accent: #58A6FF; }
 [data-accent="amber"] { --accent: #B87A14; }
 [data-accent="amber"][data-theme="dark"] { --accent: #E8B04B; }
 [data-accent="green"] { --accent: #3F8C4A; }
 [data-accent="green"][data-theme="dark"] { --accent: #7BC47F; }
-[data-accent="lime"] { --accent: #6A8A0D; }
-[data-accent="lime"][data-theme="dark"] { --accent: #C6E84B; }
+[data-accent="lime"]  { --accent: #6A8A0D; }
+[data-accent="lime"][data-theme="dark"]  { --accent: #C6E84B; }
 
 /* Кастомный скроллбар */
 ::-webkit-scrollbar { width: 10px; height: 10px; }

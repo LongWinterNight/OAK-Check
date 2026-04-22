@@ -19,7 +19,7 @@ export const useThemeStore = create<ThemeStore>()(
   persist(
     (set, get) => ({
       dark: false,
-      accent: 'blue',
+      accent: 'oak',
       radius: 8,
 
       toggle: () => {
@@ -45,7 +45,7 @@ export const useThemeStore = create<ThemeStore>()(
         } else {
           html.removeAttribute('data-theme');
         }
-        if (accent === 'blue') {
+        if (accent === 'oak') {
           html.removeAttribute('data-accent');
         } else {
           html.setAttribute('data-accent', accent);
