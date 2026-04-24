@@ -54,9 +54,11 @@ export async function POST(req: NextRequest) {
     if (!parsed.success) {
       return apiError('VALIDATION_ERROR', parsed.error.issues[0].message);
     }
-    const project = await prisma.project.create({
-      data: { ...parsed.data, createdById: user.id },
-    });
+    const { dueDate, ...rest } = parsed.data;
+    const data: Record<string, unknown> = { ...rest, createdById: user.id };
+    if (dueDate) data.dueDate = new Date(dueDate);
+
+    const project = await prisma.project.create({ data });
     return NextResponse.json(project, { status: 201 });
   } catch (e) {
     logger.error('POST /api/projects:', e);

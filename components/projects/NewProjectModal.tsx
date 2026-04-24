@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Button, Modal, DatePicker } from '@/components/ui';
+import { CoverPicker } from './CoverPicker';
+import { DEFAULT_GRADIENT } from './projectCovers';
 import styles from './NewProjectModal.module.css';
 
 type ProjectStatus = 'ACTIVE' | 'PAUSED' | 'DONE' | 'ARCHIVED';
@@ -16,6 +18,8 @@ export function NewProjectModal({ onClose, onCreated }: NewProjectModalProps) {
   const [client, setClient] = useState('');
   const [status, setStatus] = useState<ProjectStatus>('ACTIVE');
   const [dueDate, setDueDate] = useState('');
+  const [coverGradient, setCoverGradient] = useState(DEFAULT_GRADIENT);
+  const [coverImage, setCoverImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const titleRef = useRef<HTMLInputElement>(null);
@@ -44,6 +48,8 @@ export function NewProjectModal({ onClose, onCreated }: NewProjectModalProps) {
           client: client.trim(),
           status,
           dueDate: dueDate || undefined,
+          coverGradient,
+          coverImage,
         }),
       });
       if (!res.ok) throw new Error();
@@ -109,6 +115,16 @@ export function NewProjectModal({ onClose, onCreated }: NewProjectModalProps) {
             <label className={styles.label}>Дедлайн</label>
             <DatePicker value={dueDate} onChange={setDueDate} />
           </div>
+        </div>
+
+        <div className={styles.field}>
+          <label className={styles.label}>Обложка</label>
+          <CoverPicker
+            coverGradient={coverGradient}
+            coverImage={coverImage}
+            onGradientChange={setCoverGradient}
+            onImageChange={setCoverImage}
+          />
         </div>
 
         {errors.form && <div className={styles.formError}>{errors.form}</div>}

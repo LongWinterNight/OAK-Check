@@ -4,7 +4,10 @@ import { z } from 'zod';
 export const CreateProjectSchema = z.object({
   title: z.string().min(1).max(100),
   client: z.string().min(1).max(100),
-  coverGradient: z.string().optional(),
+  status: z.enum(['ACTIVE', 'PAUSED', 'DONE', 'ARCHIVED']).optional(),
+  dueDate: z.string().nullable().optional(),
+  coverGradient: z.string().max(500).optional(),
+  coverImage: z.string().max(1000).nullable().optional(),
 });
 
 export const UpdateProjectSchema = z.object({
@@ -12,7 +15,8 @@ export const UpdateProjectSchema = z.object({
   client: z.string().min(1).max(100).optional(),
   status: z.enum(['ACTIVE', 'PAUSED', 'DONE', 'ARCHIVED']).optional(),
   dueDate: z.string().nullable().optional(),
-  coverGradient: z.string().optional(),
+  coverGradient: z.string().max(500).optional(),
+  coverImage: z.string().max(1000).nullable().optional(),
 });
 
 // Шоты

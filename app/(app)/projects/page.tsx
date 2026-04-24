@@ -37,6 +37,8 @@ async function getProjects() {
         client: p.client,
         status: p.status,
         dueDate: p.dueDate?.toISOString() ?? null,
+        coverGradient: p.coverGradient,
+        coverImage: p.coverImage,
         shots,
         totalProgress,
       };

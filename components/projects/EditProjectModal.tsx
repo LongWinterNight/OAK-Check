@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { Button, Modal, DatePicker } from '@/components/ui';
+import { CoverPicker } from './CoverPicker';
+import { DEFAULT_GRADIENT } from './projectCovers';
 import styles from './NewProjectModal.module.css';
 
 type ProjectStatus = 'ACTIVE' | 'PAUSED' | 'DONE' | 'ARCHIVED';
@@ -12,6 +14,8 @@ interface ProjectData {
   client: string;
   status: ProjectStatus;
   dueDate: string | null;
+  coverGradient?: string | null;
+  coverImage?: string | null;
 }
 
 interface EditProjectModalProps {
@@ -34,6 +38,8 @@ export function EditProjectModal({ project, onClose, onUpdated }: EditProjectMod
   const [dueDate, setDueDate] = useState(
     project.dueDate ? new Date(project.dueDate).toISOString().split('T')[0] : ''
   );
+  const [coverGradient, setCoverGradient] = useState(project.coverGradient || DEFAULT_GRADIENT);
+  const [coverImage, setCoverImage] = useState<string | null>(project.coverImage ?? null);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -59,6 +65,8 @@ export function EditProjectModal({ project, onClose, onUpdated }: EditProjectMod
           client: client.trim(),
           status,
           dueDate: dueDate || null,
+          coverGradient,
+          coverImage,
         }),
       });
       if (!res.ok) {
@@ -125,6 +133,16 @@ export function EditProjectModal({ project, onClose, onUpdated }: EditProjectMod
         <div className={styles.field}>
           <label className={styles.label}>Дедлайн</label>
           <DatePicker value={dueDate} onChange={setDueDate} />
+        </div>
+
+        <div className={styles.field}>
+          <label className={styles.label}>Обложка</label>
+          <CoverPicker
+            coverGradient={coverGradient}
+            coverImage={coverImage}
+            onGradientChange={setCoverGradient}
+            onImageChange={setCoverImage}
+          />
         </div>
 
         {errors.form && <div className={styles.formError}>{errors.form}</div>}

@@ -9,6 +9,7 @@ import { shotStatusBadgeKind } from '@/lib/utils';
 import { toast } from '@/components/ui/Toast/toastStore';
 import { NewProjectModal } from './NewProjectModal';
 import { EditProjectModal } from './EditProjectModal';
+import { coverStyle } from './projectCovers';
 import { can, type Role } from '@/lib/roles';
 import styles from './ProjectsGrid.module.css';
 
@@ -27,6 +28,8 @@ interface Project {
   client: string;
   status: ProjectStatus;
   dueDate: string | null;
+  coverGradient?: string | null;
+  coverImage?: string | null;
   shots: ShotSummary[];
   totalProgress: number;
 }
@@ -37,20 +40,6 @@ const STATUS_LABELS: Record<ProjectStatus, string> = {
   DONE: 'Завершён',
   ARCHIVED: 'Архив',
 };
-
-const PROJECT_COLORS = [
-  ['#4F6EBD', '#2A3E7A'],
-  ['#8C5E1E', '#4A3616'],
-  ['#3F8C4A', '#1F4A26'],
-  ['#B87A14', '#6B4600'],
-  ['#7B4FBD', '#3E2A6A'],
-];
-
-function projectGradient(id: string) {
-  const idx = id.charCodeAt(0) % PROJECT_COLORS.length;
-  const [a, b] = PROJECT_COLORS[idx];
-  return `linear-gradient(135deg, ${a}, ${b})`;
-}
 
 function ProjectCard({
   project,
@@ -94,7 +83,7 @@ function ProjectCard({
           <div className={styles.cardHeader}>
             <div
               className={styles.thumb}
-              style={{ background: projectGradient(project.id) }}
+              style={coverStyle(project.coverImage, project.coverGradient)}
               aria-hidden="true"
             />
             <div className={styles.cardMeta}>
