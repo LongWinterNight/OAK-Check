@@ -11,6 +11,7 @@ export default async function KanbanPage() {
   const session = await auth();
   const userRole = (session?.user?.role ?? 'ARTIST') as Role;
   const canChangeStatus = can.changeStatus(userRole);
+  const canCreateShot = can.createShot(userRole);
 
   const shots = await prisma.shot.findMany({
     include: {
@@ -37,7 +38,11 @@ export default async function KanbanPage() {
     <>
       <TopBar breadcrumbs={[{ label: 'Канбан' }]} />
       <div className={styles.content}>
-        <KanbanBoard initialShots={kanbanShots} canChangeStatus={canChangeStatus} />
+        <KanbanBoard
+          initialShots={kanbanShots}
+          canChangeStatus={canChangeStatus}
+          canCreateShot={canCreateShot}
+        />
       </div>
     </>
   );

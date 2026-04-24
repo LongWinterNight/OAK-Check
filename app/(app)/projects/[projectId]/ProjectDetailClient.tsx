@@ -127,8 +127,9 @@ export default function ProjectDetailClient({
     }
   };
 
-  const canEdit = can.manageChecklist(userRole);
+  const canEdit = can.editShot(userRole);
   const canDelete = can.deleteShot(userRole);
+  const canCreate = can.createShot(userRole);
   const canExport = can.deleteProject(userRole); // PM + ADMIN
 
   return (
@@ -150,7 +151,7 @@ export default function ProjectDetailClient({
                 Экспорт CSV
               </Button>
             )}
-            {canEdit && (
+            {canCreate && (
               <Button
                 variant="primary"
                 size="sm"

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { CreateShotSchema } from '@/lib/zod-schemas';
 import { requireAuth, requireRole } from '@/lib/auth-guard';
+import { apiError } from '@/lib/api-error';
 import { logger } from '@/lib/logger';
 
 export async function GET(
@@ -33,7 +34,7 @@ export async function GET(
     return NextResponse.json(shotsWithProgress);
   } catch (e) {
     logger.error('GET /api/projects/[id]/shots:', e);
-    return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 });
+    return apiError('SERVER_ERROR');
   }
 }
 
@@ -41,29 +42,33 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { error } = await requireRole(['LEAD', 'ADMIN']);
+  const { error } = await requireRole(['LEAD', 'PM', 'ADMIN']);
   if (error) return error;
 
   const { id: projectId } = await params;
   try {
     const project = await prisma.project.findUnique({ where: { id: projectId } });
-    if (!project) return NextResponse.json({ error: 'Проект не найден' }, { status: 404 });
+    if (!project) return apiError('NOT_FOUND', 'Проект не найден');
 
     const body = await req.json();
     const parsed = CreateShotSchema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json({ error: 'Невалидные данные' }, { status: 400 });
+      return apiError('VALIDATION_ERROR', parsed.error.issues[0].message);
     }
 
+    const { dueDate, ...rest } = parsed.data;
     const count = await prisma.shot.count({ where: { projectId } });
+    const data: Record<string, unknown> = { projectId, order: count, ...rest };
+    if (dueDate) data.dueDate = new Date(dueDate);
+
     const shot = await prisma.shot.create({
-      data: { projectId, order: count, ...parsed.data },
+      data,
       include: { owner: true },
     });
 
     return NextResponse.json(shot, { status: 201 });
   } catch (e) {
     logger.error('POST /api/projects/[id]/shots:', e);
-    return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 });
+    return apiError('SERVER_ERROR');
   }
 }

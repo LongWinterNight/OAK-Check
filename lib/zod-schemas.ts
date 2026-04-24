@@ -23,8 +23,9 @@ export const UpdateProjectSchema = z.object({
 export const CreateShotSchema = z.object({
   title: z.string().min(1).max(200),
   code: z.string().min(1).max(50),
+  status: z.enum(['TODO', 'WIP', 'REVIEW', 'DONE']).optional(),
   assigneeId: z.string().cuid().optional(),
-  dueDate: z.string().datetime().optional(),
+  dueDate: z.string().nullable().optional(),
   software: z.string().optional(),
   resolution: z.string().optional(),
 });
@@ -34,7 +35,7 @@ export const UpdateShotSchema = z.object({
   code: z.string().min(1).max(50).optional(),
   status: z.enum(['TODO', 'WIP', 'REVIEW', 'DONE']).optional(),
   assigneeId: z.string().cuid().nullable().optional(),
-  dueDate: z.string().datetime().nullable().optional(),
+  dueDate: z.string().nullable().optional(),
   software: z.string().optional(),
   resolution: z.string().optional(),
   order: z.number().int().optional(),

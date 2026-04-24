@@ -87,9 +87,11 @@ function KanbanCard({ shot, isDragging, canDrag }: { shot: KanbanShot; isDraggin
 export default function KanbanBoard({
   initialShots,
   canChangeStatus = false,
+  canCreateShot = false,
 }: {
   initialShots: KanbanShot[];
   canChangeStatus?: boolean;
+  canCreateShot?: boolean;
 }) {
   const [shots, setShots] = useState<KanbanShot[]>(initialShots);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -178,7 +180,7 @@ export default function KanbanBoard({
                       {colShots.length}
                     </span>
                   </div>
-                  {canChangeStatus && (
+                  {canCreateShot && (
                     <Button
                       variant="ghost"
                       size="sm"

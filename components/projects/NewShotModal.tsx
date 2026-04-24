@@ -1,8 +1,15 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Button, Modal, DatePicker } from '@/components/ui';
+import { Button, Modal, DatePicker, Badge } from '@/components/ui';
 import styles from './NewProjectModal.module.css';
+
+const STATUS_META: Record<string, { label: string; kind: 'neutral' | 'info' | 'wip' | 'done' }> = {
+  TODO:   { label: 'Бэклог',   kind: 'neutral' },
+  WIP:    { label: 'В работе', kind: 'info' },
+  REVIEW: { label: 'На ревью', kind: 'wip' },
+  DONE:   { label: 'Сдано',    kind: 'done' },
+};
 
 interface NewShotModalProps {
   projectId: string;
@@ -73,9 +80,17 @@ export function NewShotModal({ projectId, defaultStatus, onClose, onCreated }: N
     </>
   );
 
+  const statusMeta = defaultStatus ? STATUS_META[defaultStatus] : null;
+
   return (
     <Modal title="Новый шот" onClose={onClose} footer={footer} size="md">
       <form id="new-shot-form" className={styles.form} onSubmit={handleSubmit}>
+        {statusMeta && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--fg-muted)' }}>
+            <span>Будет создан в колонке</span>
+            <Badge kind={statusMeta.kind} size="sm" dot>{statusMeta.label}</Badge>
+          </div>
+        )}
         <div className={styles.row}>
           <div className={styles.field} style={{ flex: '0 0 110px' }}>
             <label className={styles.label}>Код *</label>
