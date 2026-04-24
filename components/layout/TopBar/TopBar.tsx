@@ -1,4 +1,5 @@
-import { Suspense } from 'react';
+'use client';
+
 import Link from 'next/link';
 import { Icons } from '@/components/icons';
 import { Button, Input } from '@/components/ui';
@@ -19,16 +20,7 @@ export default function TopBar({ breadcrumbs = [], action }: TopBarProps) {
   return (
     <header className={styles.topbar}>
       {/* Mobile: logo + avatar — hidden on desktop via CSS */}
-      <Suspense fallback={
-        <div className={styles.mobileBar}>
-          <div className={styles.mobileLogo}>
-            <Icons.Oak size={16} color="var(--oak)" />
-            <span className={styles.mobileLogoText}>OAK·Check</span>
-          </div>
-        </div>
-      }>
-        <MobileHeader />
-      </Suspense>
+      <MobileHeader />
 
       {/* Desktop: breadcrumbs — hidden on mobile via CSS */}
       <nav className={styles.breadcrumbs} aria-label="Навигация">
