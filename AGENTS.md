@@ -3,3 +3,14 @@
 
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
 <!-- END:nextjs-agent-rules -->
+
+# Точка входа для AI-агентов
+
+**Прежде чем писать код — открыть [docs/README.md](./docs/README.md).** Там собраны правила работы, дизайн-система и план разработки:
+
+- [docs/ai-rules/nextjs.md](./docs/ai-rules/nextjs.md) — расширенная версия этого файла с конкретными граблями проекта (App Router, Server/Client boundaries, middleware как `proxy.ts`, `params: Promise<...>`)
+- [docs/ai-rules/git-workflow.md](./docs/ai-rules/git-workflow.md) — коммит+пуш в `origin/main` после каждого изменения, сообщения **на русском**
+- [docs/ai-rules/coding-standards.md](./docs/ai-rules/coding-standards.md) — CSS Modules (без Tailwind), брейкпоинты, RBAC через `can.*`, `apiError`, `logActivity`
+- [docs/design-system/](./docs/design-system/) — токены, компоненты, экраны
+- [docs/plans/README.md](./docs/plans/README.md) — история закрытых планов 01–11
+- [docs/plan-12-responsive/README.md](./docs/plan-12-responsive/README.md) — **активный план** (адаптив mobile/tablet), структура по 16 dev-ролям

@@ -1,36 +1,57 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# OAK·Check
 
-## Getting Started
+Внутренний CRM студии архитектурной визуализации OAK3D для управления производственными чек-листами по шотам (3ds Max · V-Ray / Corona). Используется 3D-артистами, лидами, QA, пост-продакшеном, PM'ами и админами.
 
-First, run the development server:
+## Стек
+
+- **Next.js 16** (App Router, Turbopack в dev)
+- **React 19** + **TypeScript**
+- **CSS Modules** + CSS custom properties (без Tailwind)
+- **Prisma 7** + **PostgreSQL**
+- **NextAuth 5** (Credentials + JWT + invite-flow)
+- **Zustand** (client state), **TanStack Query** (server state)
+- **SSE** для real-time (свой emitter без Pusher/Redis)
+
+## Быстрый старт
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
+cp .env.example .env.local  # заполнить DATABASE_URL, NEXTAUTH_SECRET, etc.
+pnpm db:migrate
+pnpm db:seed
+pnpm dev                     # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Документация
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+**Первая точка входа — [docs/README.md](./docs/README.md).**
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **[docs/ai-rules/](./docs/ai-rules/)** — правила работы с кодовой базой (обязательно читать перед первым кодом)
+  - [nextjs.md](./docs/ai-rules/nextjs.md) — Next.js breaking changes
+  - [git-workflow.md](./docs/ai-rules/git-workflow.md) — коммит+пуш после каждого изменения (русский)
+  - [coding-standards.md](./docs/ai-rules/coding-standards.md) — CSS/React/API стандарты
+- **[docs/design-system/](./docs/design-system/)** — токены, компоненты, экраны
+- **[docs/plans/](./docs/plans/)** — история планов 01–11
+- **[docs/plan-12-responsive/](./docs/plan-12-responsive/)** — активный план (адаптив), структурирован по 16 dev-ролям
 
-## Learn More
+## CRM-роли (end-users)
 
-To learn more about Next.js, take a look at the following resources:
+`ARTIST · LEAD · QA · POST · PM · ADMIN` — источник правды [lib/roles.ts](./lib/roles.ts).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Команды
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+pnpm dev          # dev-сервер
+pnpm build        # production build
+pnpm start        # production start
+pnpm lint         # eslint
+pnpm test         # vitest
+pnpm db:migrate   # prisma migrate dev
+pnpm db:seed      # seed data
+pnpm db:studio    # prisma studio
+```
 
-## Deploy on Vercel
+## Repo
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- GitHub: [LongWinterNight/OAK-Check](https://github.com/LongWinterNight/OAK-Check)
+- Ветка: `main`
