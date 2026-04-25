@@ -8,7 +8,9 @@ const subscribers = new Set<Subscriber>();
 export type SSEEvent =
   | { type: 'checklist:updated'; shotId: string; itemId: string; state: string; userId: string }
   | { type: 'comment:added'; shotId: string; comment: unknown }
+  | { type: 'comment:updated'; shotId: string; comment: unknown }
   | { type: 'render:uploaded'; shotId: string; version: unknown }
+  | { type: 'version:uploaded'; shotId: string; versionId: string; version: string }
   | { type: 'shot:status'; shotId: string; status: string };
 
 export function subscribe(projectId: string, controller: ReadableStreamDefaultController) {

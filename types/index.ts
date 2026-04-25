@@ -86,6 +86,7 @@ export interface Comment {
   pinY: number | null;
   parentId: string | null;
   createdAt: string;
+  editedAt?: string | null;
   user: User;
   replies?: Comment[];
 }

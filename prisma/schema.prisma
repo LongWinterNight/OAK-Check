@@ -158,6 +158,7 @@ model Comment {
   pinY      Float?
   parentId  String?
   createdAt DateTime @default(now())
+  editedAt  DateTime?
 
   shot    Shot      @relation(fields: [shotId], references: [id], onDelete: Cascade)
   user    User      @relation(fields: [userId], references: [id])

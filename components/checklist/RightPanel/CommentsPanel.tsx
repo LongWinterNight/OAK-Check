@@ -17,7 +17,65 @@ interface CommentsPanelProps {
   onHighlight?: (commentId: string | null) => void;
   onSubmit?: (body: string) => void;
   onDelete?: (commentId: string) => void;
+  onReply?: (parentId: string, body: string) => void;
+  onEdit?: (commentId: string, body: string) => void;
   shotId?: string;
+}
+
+function formatTime(dateStr: string) {
+  const d = new Date(dateStr);
+  return d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+}
+
+interface InlineFormProps {
+  initial?: string;
+  placeholder: string;
+  submitLabel: string;
+  onSubmit: (body: string) => void;
+  onCancel: () => void;
+  autoFocus?: boolean;
+}
+
+function InlineForm({ initial = '', placeholder, submitLabel, onSubmit, onCancel, autoFocus }: InlineFormProps) {
+  const [text, setText] = useState(initial);
+  const ref = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (autoFocus) {
+      ref.current?.focus();
+      const len = ref.current?.value.length ?? 0;
+      ref.current?.setSelectionRange(len, len);
+    }
+  }, [autoFocus]);
+
+  const submit = () => {
+    if (!text.trim()) return;
+    onSubmit(text.trim());
+    setText('');
+  };
+
+  return (
+    <div className={styles.inlineForm}>
+      <textarea
+        ref={ref}
+        className={styles.inlineInput}
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        placeholder={placeholder}
+        rows={2}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(); }
+          if (e.key === 'Escape') { e.preventDefault(); onCancel(); }
+        }}
+      />
+      <div className={styles.inlineActions}>
+        <button type="button" className={styles.inlineCancel} onClick={onCancel}>Отмена</button>
+        <Button variant="primary" size="sm" disabled={!text.trim()} onClick={submit}>
+          {submitLabel}
+        </Button>
+      </div>
+    </div>
+  );
 }
 
 export default function CommentsPanel({
@@ -30,13 +88,16 @@ export default function CommentsPanel({
   onHighlight,
   onSubmit,
   onDelete,
+  onReply,
+  onEdit,
 }: CommentsPanelProps) {
   const [draft, setDraft] = useState('');
   const [linkPopover, setLinkPopover] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
+  const [replyOpenFor, setReplyOpenFor] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // When user sets a pending pin — focus textarea so they can type the comment immediately
   useEffect(() => {
     if (pendingPin) {
       textareaRef.current?.focus();
@@ -78,11 +139,6 @@ export default function CommentsPanel({
     textareaRef.current?.focus();
   };
 
-  const formatTime = (dateStr: string) => {
-    const d = new Date(dateStr);
-    return d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-  };
-
   const pinnedIndex = (commentId: string) => {
     const pinned = comments.filter((c) => c.pinX !== null);
     const idx = pinned.findIndex((c) => c.id === commentId);
@@ -92,12 +148,108 @@ export default function CommentsPanel({
   const pinnedCount = comments.filter(c => c.pinX !== null).length;
   const headerLabel = `Комментарии${comments.length > 0 ? ` (${comments.length})` : ''}`;
 
+  const renderComment = (comment: Comment, isReply = false) => {
+    const pinNum = !isReply ? pinnedIndex(comment.id) : null;
+    const canMutate = currentUserId && comment.userId === currentUserId;
+    const isHighlighted = highlightedCommentId === comment.id;
+    const isEditing = editingId === comment.id;
+
+    return (
+      <div
+        key={comment.id}
+        className={[styles.comment, isReply ? styles.reply : '', isHighlighted ? styles.commentHighlighted : ''].join(' ')}
+        data-comment-id={comment.id}
+        onMouseEnter={() => pinNum && onHighlight?.(comment.id)}
+        onMouseLeave={() => pinNum && onHighlight?.(null)}
+      >
+        <Avatar name={comment.user.name} size={isReply ? 22 : 26} />
+        <div className={styles.commentBody}>
+          <div className={styles.commentHead}>
+            <span className={styles.name}>{comment.user.name.split(' ')[0]}</span>
+            <span className={styles.time}>{formatTime(comment.createdAt)}</span>
+            {comment.editedAt && (
+              <span className={styles.editedTag} title={`изменено в ${formatTime(comment.editedAt)}`}>(изм.)</span>
+            )}
+            {pinNum && (
+              <button
+                type="button"
+                className={[styles.pinBadge, isHighlighted ? styles.pinBadgeActive : ''].join(' ')}
+                title="Найти пин на рендере"
+                onClick={() => {
+                  onHighlight?.(comment.id);
+                  window.setTimeout(() => onHighlight?.(null), 1500);
+                }}
+              >
+                {pinNum}
+              </button>
+            )}
+            <div className={styles.commentActions}>
+              {canMutate && onEdit && !isEditing && (
+                <button
+                  className={styles.iconBtn}
+                  title="Редактировать"
+                  onClick={() => { setEditingId(comment.id); setReplyOpenFor(null); }}
+                >
+                  <Icons.Pen size={11} />
+                </button>
+              )}
+              {canMutate && onDelete && (
+                <button
+                  className={[styles.iconBtn, styles.iconBtnDanger].join(' ')}
+                  title="Удалить"
+                  onClick={() => onDelete(comment.id)}
+                >
+                  <Icons.X size={11} />
+                </button>
+              )}
+            </div>
+          </div>
+
+          {isEditing && onEdit ? (
+            <InlineForm
+              initial={comment.body}
+              placeholder="Изменить комментарий…"
+              submitLabel="Сохранить"
+              autoFocus
+              onSubmit={(body) => { onEdit(comment.id, body); setEditingId(null); }}
+              onCancel={() => setEditingId(null)}
+            />
+          ) : (
+            <div className={[styles.text, /\p{L}|\p{N}/u.test(comment.body) ? '' : styles.textEmpty].join(' ')}>
+              {/\p{L}|\p{N}/u.test(comment.body) ? comment.body : 'Без описания'}
+            </div>
+          )}
+
+          {/* Reply — только на верхнем уровне (макс 1 уровень вложенности) */}
+          {!isReply && !isEditing && onReply && (
+            <button
+              className={styles.replyBtn}
+              onClick={() => { setReplyOpenFor(replyOpenFor === comment.id ? null : comment.id); setEditingId(null); }}
+            >
+              <Icons.Msg size={11} /> {pinNum ? `Ответить на пин #${pinNum}` : 'Ответить'}
+            </button>
+          )}
+
+          {!isReply && replyOpenFor === comment.id && onReply && (
+            <InlineForm
+              placeholder={pinNum ? `Ответ на пин #${pinNum}…` : 'Ваш ответ…'}
+              submitLabel="Ответить"
+              autoFocus
+              onSubmit={(body) => { onReply(comment.id, body); setReplyOpenFor(null); }}
+              onCancel={() => setReplyOpenFor(null)}
+            />
+          )}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className={styles.panel}>
       <div className={styles.header}>
         {headerLabel}
         {pinnedCount > 0 && (
-          <span className={styles.pinCount} title={`${pinnedCount} пина на рендере`}>
+          <span className={styles.pinCount} title={`${pinnedCount} пин(ов) на рендере`}>
             <Icons.Dot size={6} /> {pinnedCount} пин.
           </span>
         )}
@@ -107,78 +259,12 @@ export default function CommentsPanel({
         {topLevel.length === 0 && (
           <div className={styles.empty}>Комментариев пока нет</div>
         )}
-        {topLevel.map((comment) => {
-          const pinNum = pinnedIndex(comment.id);
-          const replies = getReplies(comment.id);
-          const canDelete = currentUserId && (comment.userId === currentUserId);
-          const isHighlighted = highlightedCommentId === comment.id;
-          return (
-            <div key={comment.id}>
-              <div
-                className={[styles.comment, isHighlighted ? styles.commentHighlighted : ''].join(' ')}
-                data-comment-id={comment.id}
-                onMouseEnter={() => pinNum && onHighlight?.(comment.id)}
-                onMouseLeave={() => pinNum && onHighlight?.(null)}
-              >
-                <Avatar name={comment.user.name} size={26} />
-                <div className={styles.commentBody}>
-                  <div className={styles.commentHead}>
-                    <span className={styles.name}>{comment.user.name.split(' ')[0]}</span>
-                    <span className={styles.time}>{formatTime(comment.createdAt)}</span>
-                    {pinNum && (
-                      <button
-                        type="button"
-                        className={[styles.pinBadge, isHighlighted ? styles.pinBadgeActive : ''].join(' ')}
-                        title="Найти пин на рендере"
-                        onClick={() => {
-                          onHighlight?.(comment.id);
-                          window.setTimeout(() => onHighlight?.(null), 1500);
-                        }}
-                      >
-                        {pinNum}
-                      </button>
-                    )}
-                    {canDelete && (
-                      <button
-                        className={styles.deleteBtn}
-                        title="Удалить комментарий"
-                        onClick={() => onDelete?.(comment.id)}
-                      >
-                        <Icons.X size={11} />
-                      </button>
-                    )}
-                  </div>
-                  <div className={styles.text}>{comment.body}</div>
-                </div>
-              </div>
-
-              {replies.map((reply) => {
-                const canDeleteReply = currentUserId && (reply.userId === currentUserId);
-                return (
-                  <div key={reply.id} className={[styles.comment, styles.reply].join(' ')}>
-                    <Avatar name={reply.user.name} size={22} />
-                    <div className={styles.commentBody}>
-                      <div className={styles.commentHead}>
-                        <span className={styles.name}>{reply.user.name.split(' ')[0]}</span>
-                        <span className={styles.time}>{formatTime(reply.createdAt)}</span>
-                        {canDeleteReply && (
-                          <button
-                            className={styles.deleteBtn}
-                            title="Удалить"
-                            onClick={() => onDelete?.(reply.id)}
-                          >
-                            <Icons.X size={11} />
-                          </button>
-                        )}
-                      </div>
-                      <div className={styles.text}>{reply.body}</div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          );
-        })}
+        {topLevel.map((comment) => (
+          <div key={comment.id} className={styles.thread}>
+            {renderComment(comment, false)}
+            {getReplies(comment.id).map((reply) => renderComment(reply, true))}
+          </div>
+        ))}
       </div>
 
       {/* Composer */}

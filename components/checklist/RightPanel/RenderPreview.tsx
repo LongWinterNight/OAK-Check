@@ -7,6 +7,13 @@ import { toast } from '@/components/ui/Toast/toastStore';
 import type { RenderVersion, Comment } from '@/types';
 import styles from './RenderPreview.module.css';
 
+// Если body состоит только из эмодзи/символов без слов — показывать заглушку.
+// Защищает от устаревших комментов с body='📍' от прошлой версии flow пинов.
+function tooltipText(body: string): string {
+  const hasLetters = /\p{L}|\p{N}/u.test(body);
+  return hasLetters ? body : 'Без описания';
+}
+
 interface RenderPreviewProps {
   versions: RenderVersion[];
   comments: Comment[];
@@ -90,7 +97,7 @@ function Lightbox({
               >
                 {i + 1}
                 {isActive && (
-                  <div className={styles.pinTooltip}>{c.body}</div>
+                  <div className={styles.pinTooltip}>{tooltipText(c.body)}</div>
                 )}
               </div>
             );
@@ -241,11 +248,11 @@ export default function RenderPreview({
                 onHighlight?.(comment.id);
                 window.setTimeout(() => onHighlight?.(null), 1500);
               }}
-              title={comment.body}
+              title={tooltipText(comment.body)}
             >
               {i + 1}
               {isActive && (
-                <div className={styles.pinTooltip}>{comment.body}</div>
+                <div className={styles.pinTooltip}>{tooltipText(comment.body)}</div>
               )}
             </div>
           );

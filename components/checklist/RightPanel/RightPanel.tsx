@@ -16,6 +16,8 @@ interface RightPanelProps {
   onPinClear?: () => void;
   onCommentSubmit?: (body: string) => void;
   onCommentDelete?: (commentId: string) => void;
+  onCommentReply?: (parentId: string, body: string) => void;
+  onCommentEdit?: (commentId: string, body: string) => void;
   onVersionDeleted?: (versionId: string) => void;
   shotId?: string;
   className?: string;
@@ -34,6 +36,8 @@ export default function RightPanel({
   onPinClear,
   onCommentSubmit,
   onCommentDelete,
+  onCommentReply,
+  onCommentEdit,
   onVersionDeleted,
   shotId,
   className,
@@ -62,6 +66,8 @@ export default function RightPanel({
         onPinClear={onPinClear}
         onSubmit={onCommentSubmit}
         onDelete={onCommentDelete}
+        onReply={onCommentReply}
+        onEdit={onCommentEdit}
         shotId={shotId}
       />
     </aside>
