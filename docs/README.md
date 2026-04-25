@@ -62,3 +62,13 @@
 | `memory/feedback_git_commits.md` | Коммит+пуш+русский | [ai-rules/git-workflow.md](./ai-rules/git-workflow.md) |
 | `memory/plan_01..11_*.md` | Планы 01–11 | [plans/01-..-11-*.md](./plans/) |
 | `design_handoff_oak_check/README.md` | Дизайн-токены и спеки | [design-system/](./design-system/) |
+
+---
+
+## Автор и правообладатель
+
+Проект разработан **Черненко Алексеем Руслановичем** ([chernenko.alex.r@gmail.com](mailto:chernenko.alex.r@gmail.com), GitHub: [@LongWinterNight](https://github.com/LongWinterNight)).
+
+Архитектура, разработка, дизайн-система, документация — всё единым автором с использованием современного AI-ассистированного стека (Claude Code как coding-партнёр).
+
+Лицензия — Proprietary (All Rights Reserved), см. [LICENSE](../LICENSE).

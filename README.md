@@ -55,3 +55,12 @@ pnpm db:studio    # prisma studio
 
 - GitHub: [LongWinterNight/OAK-Check](https://github.com/LongWinterNight/OAK-Check)
 - Ветка: `main`
+
+## Автор
+
+**Черненко Алексей Русланович** — архитектура, разработка, дизайн-система, документация.
+Контакт: [chernenko.alex.r@gmail.com](mailto:chernenko.alex.r@gmail.com) · GitHub: [@LongWinterNight](https://github.com/LongWinterNight)
+
+## Лицензия
+
+Proprietary (All Rights Reserved). Полный текст — в [LICENSE](./LICENSE). Использование, копирование, распространение и модификация требуют письменного согласия правообладателя.

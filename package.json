@@ -2,6 +2,25 @@
   "name": "oak-check",
   "version": "0.1.0",
   "private": true,
+  "license": "UNLICENSED",
+  "author": {
+    "name": "Chernenko Alexey Ruslanovich",
+    "email": "chernenko.alex.r@gmail.com"
+  },
+  "contributors": [
+    {
+      "name": "Chernenko Alexey Ruslanovich",
+      "email": "chernenko.alex.r@gmail.com",
+      "url": "https://github.com/LongWinterNight"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/LongWinterNight/OAK-Check.git"
+  },
+  "bugs": {
+    "email": "chernenko.alex.r@gmail.com"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
