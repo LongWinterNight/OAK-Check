@@ -63,7 +63,14 @@
 
 ## Задачи дизайнера
 
-- [ ] Пройти по списку touch-targets выше, зафиксировать нарушения
-- [ ] Согласовать с Frontend pattern для `ChecklistClient` drill-down на мобиле (критично для ARTIST flow)
-- [ ] Подготовить спеку bottom-sheet для `ConfirmDialog` (radius 16 top only, drag-handle, backdrop)
+- [x] Пройти по списку touch-targets выше, зафиксировать нарушения и пофиксить базовые компоненты:
+  - `Check3` — `::before` 44×44 hit area на мобиле (визуально 16×16)
+  - `Modal.closeBtn` — `::before` -8px inset на мобиле (28→44 hit area)
+  - `Input` — высоты `36/40/44`, `font-size: 16px` на мобиле (анти-zoom iOS)
+  - `NewProjectModal.input` — высота 42, font-size 16 на мобиле
+  - `ChecklistRow.actionBtn` — padding 8 + `::before` -4 inset на мобиле
+  - Hover-эффекты этих компонентов обёрнуты в `@media (hover: hover)`
+  - `Modal.modal` — `100vh` → `100dvh` для max-height
+- [ ] Согласовать с Frontend pattern для `ChecklistClient` drill-down на мобиле (критично для ARTIST flow) — **переходит в Frontend Milestone B**
+- [ ] Подготовить спеку bottom-sheet для `ConfirmDialog` (radius 16 top only, drag-handle, backdrop) — позже
 - [ ] Ревью мобильных скриншотов от Manual QA (после прохождения device matrix)

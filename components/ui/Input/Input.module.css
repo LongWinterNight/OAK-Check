@@ -30,6 +30,14 @@
 .md { height: 34px; font-size: 13px; }
 .lg { height: 40px; font-size: 14px; }
 
+/* На мобиле — минимум 16px font-size, иначе iOS Safari зумит viewport
+   при фокусе. Высоту слегка увеличиваем для нормального тач-нажатия. */
+@media (max-width: 767px) {
+  .sm { height: 36px; font-size: 16px; }
+  .md { height: 40px; font-size: 16px; }
+  .lg { height: 44px; font-size: 16px; }
+}
+
 /* Обёртка с иконками */
 .wrapper {
   display: flex;

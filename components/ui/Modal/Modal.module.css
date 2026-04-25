@@ -22,7 +22,7 @@
   box-shadow: var(--shadow-lg);
   display: flex;
   flex-direction: column;
-  max-height: calc(100vh - 64px);
+  max-height: calc(100dvh - 64px);
   max-width: calc(100vw - 32px);
   animation: slideUp 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
@@ -72,11 +72,23 @@
   cursor: pointer;
   border-radius: var(--radius);
   transition: background 0.1s, color 0.1s;
+  position: relative;
 }
 
-.closeBtn:hover {
-  background: var(--surface-2);
-  color: var(--fg);
+@media (hover: hover) {
+  .closeBtn:hover {
+    background: var(--surface-2);
+    color: var(--fg);
+  }
+}
+
+/* Расширение hit-area до 44×44 на мобиле (визуально остаётся 28px) */
+@media (max-width: 767px) {
+  .closeBtn::before {
+    content: '';
+    position: absolute;
+    inset: -8px;
+  }
 }
 
 .body {

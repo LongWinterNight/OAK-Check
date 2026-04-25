@@ -155,11 +155,26 @@
   cursor: pointer;
   color: var(--fg-subtle);
   transition: background 0.1s, color 0.1s, opacity 0.1s;
+  position: relative;
 }
 
-.actionBtn:hover {
-  background: var(--surface-3);
-  color: var(--fg);
+@media (hover: hover) {
+  .actionBtn:hover {
+    background: var(--surface-3);
+    color: var(--fg);
+  }
+}
+
+/* На мобиле: расширяем тач-зону до 44×44 (визуально кнопка остаётся компактной) */
+@media (max-width: 767px) {
+  .actionBtn {
+    padding: 8px;
+  }
+  .actionBtn::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+  }
 }
 
 .assignBtn {

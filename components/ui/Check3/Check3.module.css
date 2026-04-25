@@ -7,6 +7,21 @@
   transition: all 0.15s ease;
   outline: none;
   user-select: none;
+  position: relative;
+}
+
+/* Расширение touch-area до 44×44 на мобиле — визуально остаётся такой же,
+   но касание пальцем не промахивается мимо 16px-кружка (WCAG 2.5.5). */
+@media (max-width: 767px) {
+  .check::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: max(44px, 100%);
+    height: max(44px, 100%);
+  }
 }
 
 .check:focus-visible {
