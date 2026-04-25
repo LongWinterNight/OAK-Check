@@ -15,6 +15,8 @@
 /* desktop — по умолчанию */
 ```
 
+Источник правды для значений — переменные `--bp-mobile-max`, `--bp-tablet-min`, `--bp-tablet-max`, `--bp-desktop-min` в [app/globals.css](../../app/globals.css) (CSS custom properties не работают внутри `@media` напрямую — литералы дублируются в модулях вручную, при изменении нужно обновить и переменные, и `@media` правила).
+
 ### Media queries
 - Desktop-first: базовые правила → media queries overrides в конце файла модуля
 - Никаких `useWindowSize` / JS-рендеринга по ширине — только CSS. Исключение: заведомо разные компоненты (`BottomNav` vs `Sidebar`), рендерим оба, прячем через `display: none`.

@@ -57,9 +57,9 @@ CSS custom properties не работают в media queries напрямую �
 
 ## Задачи архитектора
 
-- [ ] Ввести breakpoint-референсы в [globals.css](../../app/globals.css) (комментарий + `:root` переменные)
-- [ ] Задокументировать правило `dvh/svh` в [AGENTS.md](../../AGENTS.md)
-- [ ] Задокументировать правило `@media (hover: hover)` в [AGENTS.md](../../AGENTS.md)
+- [x] Ввести breakpoint-референсы в [globals.css](../../app/globals.css) (комментарий + `:root` переменные `--bp-*` + расширенный комментарий с правилами)
+- [x] Задокументировать правило `dvh/svh` в [AGENTS.md](../../AGENTS.md) (блок «Архитектурные CSS-правила») и [coding-standards.md](../ai-rules/coding-standards.md)
+- [x] Задокументировать правило `@media (hover: hover)` в [AGENTS.md](../../AGENTS.md) и [coding-standards.md](../ai-rules/coding-standards.md)
 - [ ] (позже, если всплывёт боль от inline-styles) создать `Stack`/`Cluster` примитивы
 
 ## Вне scope, но на заметку

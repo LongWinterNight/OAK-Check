@@ -1,6 +1,36 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
+/*
+ * Breakpoint reference (источник правды для всего проекта).
+ * CSS custom properties не работают внутри @media — переменные ниже
+ * нужны как единый словарь и для документации/JS-чтения. В *.module.css
+ * писать @media (max-width: 767px) вручную, синхронизируясь с этими
+ * значениями. Если двигать планку — менять и здесь, и во всех местах.
+ *
+ *   Mobile  : ≤ 767px
+ *   Tablet  : 768–1023px
+ *   Desktop : ≥ 1024px
+ *
+ * Правила (полный текст: docs/ai-rules/coding-standards.md):
+ *   1. Высоты — только dvh/svh, никогда vh.
+ *      100dvh — основной layout (учитывает динамику URL-бара на iOS)
+ *      100svh — гарантированно-помещающиеся элементы
+ *   2. Hover-эффекты оборачивать в @media (hover: hover) — иначе
+ *      на тач-экранах hover «залипает» после тапа.
+ *   3. Touch-targets ≥ 44×44 px на мобиле (WCAG 2.5.5).
+ *   4. font-size ≥ 16px у inputs на мобиле — иначе iOS зумит
+ *      при фокусе.
+ *   5. Безопасные зоны: padding-bottom: max(var(--spacing-3),
+ *      env(safe-area-inset-bottom)) для BottomNav и full-screen sheets.
+ */
+
 :root {
+  /* Breakpoints (для чтения JS / документации; в @media — литералы) */
+  --bp-mobile-max:  767px;
+  --bp-tablet-min:  768px;
+  --bp-tablet-max:  1023px;
+  --bp-desktop-min: 1024px;
+
   /* Поверхности */
   --bg: #F7F4EE;
   --surface: #FFFFFF;
