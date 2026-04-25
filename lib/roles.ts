@@ -11,4 +11,5 @@ export const can = {
   changeStatus:    (r: Role) => ['LEAD', 'QA', 'PM', 'ADMIN'].includes(r),
   uploadRender:    (_r: Role) => true,
   assign:          (r: Role) => ['LEAD', 'ADMIN'].includes(r),
+  pinComment:      (r: Role) => ['QA', 'LEAD', 'POST', 'PM', 'ADMIN'].includes(r),
 };

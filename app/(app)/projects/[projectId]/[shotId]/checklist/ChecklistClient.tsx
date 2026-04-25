@@ -45,6 +45,10 @@ export default function ChecklistClient({
   const [showUpload, setShowUpload] = useState(false);
   const [shotStatus, setShotStatus] = useState(shot.status);
   const [assignee, setAssignee] = useState(shot.assignee ?? null);
+  // Pin flow: temporary pin → user types comment → submit attaches pin
+  const [pendingPin, setPendingPin] = useState<{ x: number; y: number } | null>(null);
+  // Bidirectional sync between render pins and comment list
+  const [highlightedCommentId, setHighlightedCommentId] = useState<string | null>(null);
   // Mobile panel tab: QA defaults to 'media', others to 'checklist'
   const [mobilePanel, setMobilePanel] = useState<'chapters' | 'checklist' | 'media'>(
     userRole === 'QA' ? 'media' : 'checklist'
@@ -182,17 +186,26 @@ export default function ChecklistClient({
     }
   };
 
-  const handleCommentSubmit = async (body: string, pinX?: number, pinY?: number) => {
-    if (!body.trim() && pinX === undefined) return;
+  const handleCommentSubmit = async (body: string) => {
+    const trimmed = body.trim();
+    if (!trimmed) return;
+    const pin = pendingPin;
     try {
       const res = await fetch(`/api/shots/${shot.id}/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ body: body || '📍', pinX, pinY }),
+        body: JSON.stringify({
+          body: trimmed,
+          ...(pin ? { pinX: pin.x, pinY: pin.y } : {}),
+        }),
       });
       if (res.ok) {
         const newComment = await res.json();
         setComments((prev) => [...prev, newComment]);
+        setPendingPin(null);
+      } else {
+        const d = await res.json().catch(() => ({}));
+        toast.error(d.message ?? 'Не удалось отправить комментарий');
       }
     } catch {
       toast.error('Не удалось отправить комментарий');
@@ -315,6 +328,12 @@ export default function ChecklistClient({
             comments={comments}
             currentUser={currentUser}
             canDeleteVersion={can.deleteShot(userRole)}
+            canPin={can.pinComment(userRole)}
+            pendingPin={pendingPin}
+            onPinSet={(x, y) => setPendingPin({ x, y })}
+            onPinClear={() => setPendingPin(null)}
+            highlightedCommentId={highlightedCommentId}
+            onHighlight={setHighlightedCommentId}
             onCommentSubmit={handleCommentSubmit}
             onCommentDelete={handleCommentDelete}
             onVersionDeleted={(versionId) => setVersions((prev) => prev.filter((v) => v.id !== versionId))}

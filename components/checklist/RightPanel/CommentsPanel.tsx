@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, KeyboardEvent } from 'react';
+import { useEffect, useRef, useState, KeyboardEvent } from 'react';
 import Avatar from '@/components/ui/Avatar/Avatar';
 import Button from '@/components/ui/Button/Button';
 import { Icons } from '@/components/icons';
@@ -11,18 +11,37 @@ interface CommentsPanelProps {
   comments: Comment[];
   currentUserId?: string;
   currentUser?: { name: string };
-  onSubmit?: (body: string, pinX?: number, pinY?: number) => void;
+  pendingPin?: { x: number; y: number } | null;
+  highlightedCommentId?: string | null;
+  onPinClear?: () => void;
+  onHighlight?: (commentId: string | null) => void;
+  onSubmit?: (body: string) => void;
   onDelete?: (commentId: string) => void;
   shotId?: string;
 }
 
 export default function CommentsPanel({
-  comments, currentUserId, currentUser, onSubmit, onDelete, shotId,
+  comments,
+  currentUserId,
+  currentUser,
+  pendingPin = null,
+  highlightedCommentId = null,
+  onPinClear,
+  onHighlight,
+  onSubmit,
+  onDelete,
 }: CommentsPanelProps) {
   const [draft, setDraft] = useState('');
   const [linkPopover, setLinkPopover] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // When user sets a pending pin — focus textarea so they can type the comment immediately
+  useEffect(() => {
+    if (pendingPin) {
+      textareaRef.current?.focus();
+    }
+  }, [pendingPin]);
 
   const topLevel = comments.filter((c) => !c.parentId);
   const getReplies = (id: string) => comments.filter((c) => c.parentId === id);
@@ -92,15 +111,33 @@ export default function CommentsPanel({
           const pinNum = pinnedIndex(comment.id);
           const replies = getReplies(comment.id);
           const canDelete = currentUserId && (comment.userId === currentUserId);
+          const isHighlighted = highlightedCommentId === comment.id;
           return (
             <div key={comment.id}>
-              <div className={styles.comment}>
+              <div
+                className={[styles.comment, isHighlighted ? styles.commentHighlighted : ''].join(' ')}
+                data-comment-id={comment.id}
+                onMouseEnter={() => pinNum && onHighlight?.(comment.id)}
+                onMouseLeave={() => pinNum && onHighlight?.(null)}
+              >
                 <Avatar name={comment.user.name} size={26} />
                 <div className={styles.commentBody}>
                   <div className={styles.commentHead}>
                     <span className={styles.name}>{comment.user.name.split(' ')[0]}</span>
                     <span className={styles.time}>{formatTime(comment.createdAt)}</span>
-                    {pinNum && <span className={styles.pinBadge}>{pinNum}</span>}
+                    {pinNum && (
+                      <button
+                        type="button"
+                        className={[styles.pinBadge, isHighlighted ? styles.pinBadgeActive : ''].join(' ')}
+                        title="Найти пин на рендере"
+                        onClick={() => {
+                          onHighlight?.(comment.id);
+                          window.setTimeout(() => onHighlight?.(null), 1500);
+                        }}
+                      >
+                        {pinNum}
+                      </button>
+                    )}
                     {canDelete && (
                       <button
                         className={styles.deleteBtn}
@@ -146,12 +183,26 @@ export default function CommentsPanel({
 
       {/* Composer */}
       <div className={styles.composer}>
+        {pendingPin && (
+          <div className={styles.pendingPinBar}>
+            <span className={styles.pendingPinDot} />
+            <span>Привязан к точке на рендере</span>
+            <button
+              type="button"
+              className={styles.pendingPinClear}
+              onClick={onPinClear}
+              title="Отвязать пин"
+            >
+              <Icons.X size={11} /> Отвязать
+            </button>
+          </div>
+        )}
         <div className={styles.composerTop}>
           <Avatar name={currentUser?.name ?? '?'} size={26} />
           <textarea
             ref={textareaRef}
             className={styles.composerInput}
-            placeholder="Написать комментарий… (Enter — отправить)"
+            placeholder={pendingPin ? 'Опишите проблему в этой точке…' : 'Написать комментарий… (Enter — отправить)'}
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -160,7 +211,6 @@ export default function CommentsPanel({
         </div>
         <div className={styles.composerBottom}>
           <div className={styles.composerActions}>
-            {/* Link insertion */}
             <div style={{ position: 'relative' }}>
               <button
                 title="Вставить ссылку"
@@ -193,7 +243,7 @@ export default function CommentsPanel({
             disabled={!draft.trim()}
             onClick={submit}
           >
-            Отправить
+            {pendingPin ? 'Отправить с пином' : 'Отправить'}
           </Button>
         </div>
       </div>

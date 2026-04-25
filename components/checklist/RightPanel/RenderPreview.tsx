@@ -11,14 +11,21 @@ interface RenderPreviewProps {
   versions: RenderVersion[];
   comments: Comment[];
   canDeleteVersion?: boolean;
+  canPin?: boolean;
+  pendingPin?: { x: number; y: number } | null;
+  highlightedCommentId?: string | null;
+  onHighlight?: (commentId: string | null) => void;
+  onPinSet?: (pinX: number, pinY: number) => void;
+  onPinClear?: () => void;
   onVersionDeleted?: (id: string) => void;
-  onAddPin?: (pinX: number, pinY: number) => void;
 }
 
 function Lightbox({
   versions,
   activeVersion,
   comments,
+  highlightedCommentId,
+  onHighlight,
   onClose,
   onPrev,
   onNext,
@@ -26,13 +33,14 @@ function Lightbox({
   versions: RenderVersion[];
   activeVersion: string;
   comments: Comment[];
+  highlightedCommentId?: string | null;
+  onHighlight?: (id: string | null) => void;
   onClose: () => void;
   onPrev: () => void;
   onNext: () => void;
 }) {
   const current = versions.find((v) => v.version === activeVersion);
   const pinnedComments = comments.filter((c) => c.pinX !== null && c.pinY !== null);
-  const [hovered, setHovered] = useState<string | null>(null);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -70,21 +78,23 @@ function Lightbox({
             <div className={styles.lightboxPlaceholder} />
           )}
 
-          {/* Пины в лайтбоксе */}
-          {pinnedComments.map((c, i) => (
-            <div
-              key={c.id}
-              className={styles.pin}
-              style={{ left: `${c.pinX}%`, top: `${c.pinY}%` }}
-              onMouseEnter={() => setHovered(c.id)}
-              onMouseLeave={() => setHovered(null)}
-            >
-              {i + 1}
-              {hovered === c.id && (
-                <div className={styles.pinTooltip}>{c.body}</div>
-              )}
-            </div>
-          ))}
+          {pinnedComments.map((c, i) => {
+            const isActive = highlightedCommentId === c.id;
+            return (
+              <div
+                key={c.id}
+                className={[styles.pin, isActive ? styles.pinActive : ''].join(' ')}
+                style={{ left: `${c.pinX}%`, top: `${c.pinY}%` }}
+                onMouseEnter={() => onHighlight?.(c.id)}
+                onMouseLeave={() => onHighlight?.(null)}
+              >
+                {i + 1}
+                {isActive && (
+                  <div className={styles.pinTooltip}>{c.body}</div>
+                )}
+              </div>
+            );
+          })}
         </div>
 
         <div className={styles.lightboxVersion}>{activeVersion}</div>
@@ -98,16 +108,19 @@ export default function RenderPreview({
   versions,
   comments,
   canDeleteVersion = false,
+  canPin = false,
+  pendingPin = null,
+  highlightedCommentId = null,
+  onHighlight,
+  onPinSet,
+  onPinClear,
   onVersionDeleted,
-  onAddPin,
 }: RenderPreviewProps) {
   const [activeVersion, setActiveVersion] = useState(
     versions.length > 0 ? versions[versions.length - 1].version : ''
   );
-  const [hoveredPin, setHoveredPin] = useState<string | null>(null);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [pinMode, setPinMode] = useState(false);
-  const [pendingPin, setPendingPin] = useState<{ x: number; y: number } | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const currentVersion = versions.find((v) => v.version === activeVersion);
@@ -125,13 +138,12 @@ export default function RenderPreview({
   };
 
   const handleImageClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!onAddPin) return;
+    if (!pinMode || !onPinSet) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const pinX = ((e.clientX - rect.left) / rect.width) * 100;
     const pinY = ((e.clientY - rect.top) / rect.height) * 100;
-    setPendingPin({ x: pinX, y: pinY });
+    onPinSet(pinX, pinY);
     setPinMode(false);
-    onAddPin(pinX, pinY);
   };
 
   const handleDeleteVersion = async (versionId: string, shotId: string) => {
@@ -141,7 +153,6 @@ export default function RenderPreview({
       const res = await fetch(`/api/shots/${shotId}/versions/${versionId}`, { method: 'DELETE' });
       if (res.ok) {
         onVersionDeleted?.(versionId);
-        // Switch to another version if active was deleted
         const remaining = versions.filter((v) => v.id !== versionId);
         if (remaining.length > 0) {
           setActiveVersion(remaining[remaining.length - 1].version);
@@ -162,7 +173,7 @@ export default function RenderPreview({
       <div
         className={[styles.preview, pinMode ? styles.pinModeActive : ''].join(' ')}
         onClick={pinMode ? handleImageClick : undefined}
-        title={pinMode ? 'Кликните на рендер чтобы добавить пин' : undefined}
+        title={pinMode ? 'Кликните на рендер чтобы поставить пин' : undefined}
       >
         {currentVersion?.url ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -182,41 +193,63 @@ export default function RenderPreview({
 
         <span className={styles.watermark}>{activeVersion} · OAK3D</span>
 
-        {/* Pin mode button */}
-        {onAddPin && (
+        {/* Pin mode toggle — visible only for reviewers (canPin) */}
+        {canPin && onPinSet && (
           <button
             className={[styles.pinModeBtn, pinMode ? styles.pinModeBtnActive : ''].join(' ')}
             onClick={(e) => { e.stopPropagation(); setPinMode((v) => !v); }}
-            title={pinMode ? 'Отменить добавление пина' : 'Добавить пин на рендер'}
+            title={pinMode ? 'Отменить добавление пина' : 'Поставить пин на рендер'}
           >
-            <Icons.Dot size={8} />
+            <Icons.Dot size={8} /> {pinMode ? 'Кликните на рендер' : 'Пин'}
           </button>
         )}
 
-        {/* Pending pin */}
+        {/* Pending pin (visible until comment submitted) */}
         {pendingPin && (
-          <div
-            className={[styles.pin, styles.pinPending].join(' ')}
-            style={{ left: `${pendingPin.x}%`, top: `${pendingPin.y}%` }}
-          />
+          <>
+            <div
+              className={[styles.pin, styles.pinPending].join(' ')}
+              style={{ left: `${pendingPin.x}%`, top: `${pendingPin.y}%` }}
+            />
+            <button
+              type="button"
+              className={styles.pinPendingClear}
+              style={{ left: `${pendingPin.x}%`, top: `${pendingPin.y}%` }}
+              onClick={(e) => { e.stopPropagation(); onPinClear?.(); }}
+              title="Снять временный пин"
+            >
+              <Icons.X size={9} />
+            </button>
+          </>
         )}
 
-        {/* Existing pins */}
-        {pinnedComments.map((comment, i) => (
-          <div
-            key={comment.id}
-            className={styles.pin}
-            style={{ left: `${comment.pinX}%`, top: `${comment.pinY}%` }}
-            onMouseEnter={() => setHoveredPin(comment.id)}
-            onMouseLeave={() => setHoveredPin(null)}
-            title={comment.body}
-          >
-            {i + 1}
-            {hoveredPin === comment.id && (
-              <div className={styles.pinTooltip}>{comment.body}</div>
-            )}
-          </div>
-        ))}
+        {/* Existing pins from comments */}
+        {pinnedComments.map((comment, i) => {
+          const isActive = highlightedCommentId === comment.id;
+          return (
+            <div
+              key={comment.id}
+              className={[styles.pin, isActive ? styles.pinActive : ''].join(' ')}
+              style={{ left: `${comment.pinX}%`, top: `${comment.pinY}%` }}
+              onMouseEnter={() => onHighlight?.(comment.id)}
+              onMouseLeave={() => onHighlight?.(null)}
+              onClick={(e) => {
+                e.stopPropagation();
+                // scroll to corresponding comment
+                const el = document.querySelector(`[data-comment-id="${comment.id}"]`);
+                el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                onHighlight?.(comment.id);
+                window.setTimeout(() => onHighlight?.(null), 1500);
+              }}
+              title={comment.body}
+            >
+              {i + 1}
+              {isActive && (
+                <div className={styles.pinTooltip}>{comment.body}</div>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       {/* Version switcher */}
@@ -255,6 +288,8 @@ export default function RenderPreview({
           versions={versions}
           activeVersion={activeVersion}
           comments={comments}
+          highlightedCommentId={highlightedCommentId}
+          onHighlight={onHighlight}
           onClose={() => setLightboxOpen(false)}
           onPrev={goPrev}
           onNext={goNext}

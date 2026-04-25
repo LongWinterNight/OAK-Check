@@ -8,7 +8,13 @@ interface RightPanelProps {
   comments: Comment[];
   currentUser?: { id: string; name: string };
   canDeleteVersion?: boolean;
-  onCommentSubmit?: (body: string, pinX?: number, pinY?: number) => void;
+  canPin?: boolean;
+  pendingPin?: { x: number; y: number } | null;
+  highlightedCommentId?: string | null;
+  onHighlight?: (commentId: string | null) => void;
+  onPinSet?: (pinX: number, pinY: number) => void;
+  onPinClear?: () => void;
+  onCommentSubmit?: (body: string) => void;
   onCommentDelete?: (commentId: string) => void;
   onVersionDeleted?: (versionId: string) => void;
   shotId?: string;
@@ -20,6 +26,12 @@ export default function RightPanel({
   comments,
   currentUser,
   canDeleteVersion,
+  canPin = false,
+  pendingPin,
+  highlightedCommentId,
+  onHighlight,
+  onPinSet,
+  onPinClear,
   onCommentSubmit,
   onCommentDelete,
   onVersionDeleted,
@@ -32,13 +44,22 @@ export default function RightPanel({
         versions={versions}
         comments={comments}
         canDeleteVersion={canDeleteVersion}
+        canPin={canPin}
+        pendingPin={pendingPin ?? null}
+        highlightedCommentId={highlightedCommentId ?? null}
+        onHighlight={onHighlight}
+        onPinSet={onPinSet}
+        onPinClear={onPinClear}
         onVersionDeleted={onVersionDeleted}
-        onAddPin={(pinX, pinY) => onCommentSubmit?.('', pinX, pinY)}
       />
       <CommentsPanel
         comments={comments}
         currentUserId={currentUser?.id}
         currentUser={currentUser}
+        pendingPin={pendingPin ?? null}
+        highlightedCommentId={highlightedCommentId ?? null}
+        onHighlight={onHighlight}
+        onPinClear={onPinClear}
         onSubmit={onCommentSubmit}
         onDelete={onCommentDelete}
         shotId={shotId}
