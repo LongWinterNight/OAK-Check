@@ -73,11 +73,11 @@ export const UpdateCommentSchema = z.object({
 
 // Версии рендеров
 export const CreateRenderVersionSchema = z.object({
-  url: z.string().url(),
-  version: z.string().min(1).max(20),
-  format: z.string().default('EXR'),
-  resolution: z.string().min(1),
-  thumbnailUrl: z.string().url().optional(),
+  url: z.string().min(1).max(500),
+  version: z.string().min(1).max(50),
+  format: z.string().max(20).default('EXR'),
+  resolution: z.string().min(1).max(50).optional(),
+  thumbnailUrl: z.string().min(1).max(500).optional(),
   fileSize: z.number().int().positive().optional(),
 });
 

@@ -10,7 +10,7 @@ const ALLOWED_TYPES = new Set([
   'image/x-exr', 'application/octet-stream',
 ]);
 const ALLOWED_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.tiff', '.tif', '.exr']);
-const MAX_SIZE = 100 * 1024 * 1024; // 100 MB
+const MAX_SIZE = 500 * 1024 * 1024; // 500 MB
 
 export async function POST(req: NextRequest) {
   const { error } = await requireAuth();
@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
 
     if (!file) return NextResponse.json({ error: 'Файл не найден' }, { status: 400 });
     if (file.size > MAX_SIZE) {
-      return NextResponse.json({ error: 'Файл слишком большой (макс. 100 МБ)' }, { status: 413 });
+      return NextResponse.json({ error: 'Файл слишком большой (макс. 500 МБ)' }, { status: 413 });
     }
 
     const ext = extname(file.name).toLowerCase();

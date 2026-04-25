@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { Button } from '@/components/ui';
+import { Button, Modal } from '@/components/ui';
 import { Icons } from '@/components/icons';
 import { toast } from '@/components/ui/Toast/toastStore';
 import type { RenderVersion } from '@/types';
+import formStyles from '@/components/projects/NewProjectModal.module.css';
 import styles from './UploadRenderModal.module.css';
 
 interface Props {
@@ -17,6 +18,7 @@ export function UploadRenderModal({ shotId, onUploaded, onClose }: Props) {
   const [file, setFile] = useState<File | null>(null);
   const [version, setVersion] = useState('');
   const [uploading, setUploading] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFile = (f: File) => {
@@ -29,12 +31,14 @@ export function UploadRenderModal({ shotId, onUploaded, onClose }: Props) {
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
+    setDragOver(false);
     const f = e.dataTransfer.files[0];
     if (f) handleFile(f);
   };
 
-  const handleSubmit = async () => {
-    if (!file || !version.trim()) return;
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!file || !version.trim() || uploading) return;
     setUploading(true);
 
     try {
@@ -61,26 +65,45 @@ export function UploadRenderModal({ shotId, onUploaded, onClose }: Props) {
       onUploaded({ ...newVersion, createdAt: newVersion.createdAt ?? new Date().toISOString() });
       toast.success(`Рендер ${version} загружен`);
       onClose();
-    } catch (e) {
-      toast.error((e as Error).message);
+    } catch (err) {
+      toast.error((err as Error).message);
     } finally {
       setUploading(false);
     }
   };
 
-  return (
-    <div className={styles.overlay} onClick={onClose}>
-      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-        <div className={styles.header}>
-          <span className={styles.title}>Загрузить рендер</span>
-          <button className={styles.close} onClick={onClose}><Icons.X size={14} /></button>
-        </div>
+  const footer = (
+    <>
+      <Button type="button" variant="ghost" size="md" onClick={onClose}>Отмена</Button>
+      <Button
+        type="submit"
+        form="upload-render-form"
+        variant="primary"
+        size="md"
+        loading={uploading}
+        disabled={!file || !version.trim()}
+        icon={<Icons.Upload size={14} />}
+      >
+        Загрузить
+      </Button>
+    </>
+  );
 
+  return (
+    <Modal title="Загрузить рендер" onClose={onClose} footer={footer} size="md">
+      <form id="upload-render-form" className={formStyles.form} onSubmit={handleSubmit}>
         <div
-          className={[styles.dropzone, file ? styles.dropzoneFilled : ''].join(' ')}
+          className={[
+            styles.dropzone,
+            file ? styles.dropzoneFilled : '',
+            dragOver ? styles.dropzoneActive : '',
+          ].join(' ')}
           onDrop={handleDrop}
-          onDragOver={(e) => e.preventDefault()}
+          onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+          onDragLeave={() => setDragOver(false)}
           onClick={() => inputRef.current?.click()}
+          role="button"
+          tabIndex={0}
         >
           <input
             ref={inputRef}
@@ -91,41 +114,36 @@ export function UploadRenderModal({ shotId, onUploaded, onClose }: Props) {
           />
           {file ? (
             <div className={styles.fileInfo}>
-              <Icons.Upload size={20} />
+              <Icons.Upload size={20} color="var(--accent)" />
               <span className={styles.fileName}>{file.name}</span>
               <span className={styles.fileSize}>{(file.size / 1024 / 1024).toFixed(1)} МБ</span>
+              <button
+                type="button"
+                className={styles.removeBtn}
+                onClick={(e) => { e.stopPropagation(); setFile(null); }}
+              >
+                <Icons.X size={11} /> Убрать
+              </button>
             </div>
           ) : (
             <div className={styles.dropHint}>
-              <Icons.Upload size={24} />
-              <span>Перетащите файл или нажмите</span>
+              <Icons.Upload size={24} color="var(--fg-muted)" />
+              <span className={styles.dropMain}>Перетащите файл или нажмите</span>
               <span className={styles.dropSub}>EXR, PNG, JPG, TIFF — до 100 МБ</span>
             </div>
           )}
         </div>
 
-        <div className={styles.field}>
-          <label className={styles.label}>Версия</label>
+        <div className={formStyles.field}>
+          <label className={formStyles.label}>Версия *</label>
           <input
-            className={styles.input}
+            className={formStyles.input}
             placeholder="v001"
             value={version}
             onChange={(e) => setVersion(e.target.value)}
           />
         </div>
-
-        <div className={styles.actions}>
-          <Button variant="ghost" onClick={onClose}>Отмена</Button>
-          <Button
-            variant="primary"
-            onClick={handleSubmit}
-            disabled={!file || !version.trim() || uploading}
-            icon={<Icons.Upload size={14} />}
-          >
-            {uploading ? 'Загрузка…' : 'Загрузить'}
-          </Button>
-        </div>
-      </div>
-    </div>
+      </form>
+    </Modal>
   );
 }
