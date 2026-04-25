@@ -133,6 +133,9 @@ export default function ChecklistClient({
     })));
   };
 
+  // Локальное обновление note без re-fetch — для синхронизации после флага
+  const handleNoteChangedLocal = handleNoteChanged;
+
   const handleItemAssigned = (
     itemId: string,
     ownerId: string | null,
@@ -368,6 +371,10 @@ export default function ChecklistClient({
               onItemRenamed={handleItemRenamed}
               onNoteChanged={handleNoteChanged}
               onItemAssigned={handleItemAssigned}
+              onItemFlagged={(itemId, blocked, note) => {
+                applyStateChange(itemId, blocked ? 'BLOCKED' : 'TODO');
+                if (note !== null) handleNoteChangedLocal(itemId, note);
+              }}
               canManage={canManage}
               className={mobilePanel !== 'checklist' ? styles.panelHidden : ''}
             />

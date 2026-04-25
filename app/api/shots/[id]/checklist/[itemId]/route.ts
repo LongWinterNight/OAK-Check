@@ -5,12 +5,17 @@ import { broadcast } from '@/lib/sse/emitter';
 import { requireAuth, requireRole } from '@/lib/auth-guard';
 import { apiError } from '@/lib/api-error';
 import { logger } from '@/lib/logger';
+import { logActivity } from '@/lib/activity';
+
+const STATE_LABELS: Record<string, string> = {
+  TODO: 'в бэклог', WIP: 'в работу', DONE: 'в готово', BLOCKED: 'на стоп',
+};
 
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string; itemId: string }> }
 ) {
-  const { error } = await requireAuth();
+  const { user, error } = await requireAuth();
   if (error) return error;
 
   const { id: shotId, itemId } = await params;
@@ -24,11 +29,34 @@ export async function PATCH(
     const item = await prisma.checkItem.findFirst({ where: { id: itemId, shotId } });
     if (!item) return apiError('NOT_FOUND', 'Пункт не найден');
 
+    // BLOCKED требует причину — либо в БД, либо пришла в этом же запросе.
+    if (parsed.data.state === 'BLOCKED') {
+      const noteIncoming = parsed.data.note;
+      const noteFinal = noteIncoming !== undefined ? noteIncoming : item.note;
+      if (!noteFinal || !noteFinal.trim()) {
+        return apiError('VALIDATION_ERROR', 'Укажите причину стопа в заметке');
+      }
+    }
+
     const updated = await prisma.checkItem.update({
       where: { id: itemId },
       data: parsed.data,
-      include: { owner: true, shot: { select: { projectId: true } } },
+      include: { owner: true, shot: { select: { projectId: true, code: true } } },
     });
+
+    // Логируем смену состояния (важно для ленты активности)
+    if (parsed.data.state && parsed.data.state !== item.state) {
+      const stateLabel = STATE_LABELS[parsed.data.state] ?? parsed.data.state;
+      const reason = parsed.data.state === 'BLOCKED' && updated.note
+        ? ` — «${updated.note}»`
+        : '';
+      await logActivity({
+        userId: user.id,
+        type: 'ITEM_STATE_CHANGED',
+        shotId,
+        message: `${user.name} перевёл «${updated.title}» ${stateLabel}${reason}`,
+      });
+    }
 
     broadcast(updated.shot.projectId, {
       type: 'checklist:updated',

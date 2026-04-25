@@ -62,7 +62,7 @@ export function shotStatusLabel(status: string): string {
     WIP: 'В работе',
     REVIEW: 'На ревью',
     APPROVED: 'Одобрено',
-    BLOCKED: 'Блокер',
+    BLOCKED: 'Стоп',
     DONE: 'Сдано',
   };
   return map[status] ?? status;

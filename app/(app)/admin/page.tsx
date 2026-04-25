@@ -160,7 +160,7 @@ export default async function AdminPage() {
           {blockedShots.length > 0 && (
             <div className={styles.wideCard}>
               <div className={styles.wideCardHead}>
-                <span className={styles.wideCardTitle}>Шоты с блокерами</span>
+                <span className={styles.wideCardTitle}>Шоты на стопе</span>
                 <span className={styles.wideCardSub}>{blockedShots.length} требуют внимания</span>
               </div>
               <div className={styles.tableWrap}>

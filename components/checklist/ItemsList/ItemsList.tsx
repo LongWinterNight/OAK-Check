@@ -14,7 +14,7 @@ const FILTER_OPTIONS: { value: Filter; label: string }[] = [
   { value: 'all', label: 'Все' },
   { value: 'open', label: 'Открытые' },
   { value: 'mine', label: 'Мои' },
-  { value: 'blocked', label: 'Блокеры' },
+  { value: 'blocked', label: 'На стопе' },
 ];
 
 interface ItemsListProps {
@@ -28,13 +28,14 @@ interface ItemsListProps {
   onItemRenamed?: (itemId: string, title: string) => void;
   onNoteChanged?: (itemId: string, note: string | null) => void;
   onItemAssigned?: (itemId: string, ownerId: string | null, user: Pick<User, 'id' | 'name'> | null) => void;
+  onItemFlagged?: (itemId: string, blocked: boolean, note: string | null) => void;
   canManage?: boolean;
   className?: string;
 }
 
 export default function ItemsList({
   chapter, shotId, currentUserId, users = [], onStateChange,
-  onItemCreated, onItemDeleted, onItemRenamed, onNoteChanged, onItemAssigned,
+  onItemCreated, onItemDeleted, onItemRenamed, onNoteChanged, onItemAssigned, onItemFlagged,
   canManage = false, className,
 }: ItemsListProps) {
   const [filter, setFilter] = useState<Filter>('all');
@@ -148,6 +149,30 @@ export default function ItemsList({
     }
   };
 
+  const handleFlag = async (itemId: string, blocked: boolean, reason?: string) => {
+    // Поставить на стоп → state=BLOCKED + note (причина обязательна на сервере)
+    // Снять стоп → state=TODO (note сохраняется как есть)
+    const body: Record<string, unknown> = blocked
+      ? { state: 'BLOCKED', ...(reason ? { note: reason } : {}) }
+      : { state: 'TODO' };
+    try {
+      const res = await fetch(`/api/shots/${shotId}/checklist/${itemId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        onItemFlagged?.(itemId, blocked, updated.note ?? null);
+      } else {
+        const d = await res.json().catch(() => ({}));
+        toast.error(d.message ?? d.error ?? 'Не удалось изменить статус');
+      }
+    } catch {
+      toast.error('Ошибка сети');
+    }
+  };
+
   const handleAssign = async (itemId: string, ownerId: string | null) => {
     try {
       const res = await fetch(`/api/shots/${shotId}/checklist/${itemId}`, {
@@ -225,6 +250,7 @@ export default function ItemsList({
               onRename={handleRename}
               onNoteChange={handleNoteChange}
               onAssign={handleAssign}
+              onFlag={handleFlag}
               onClick={() => setSelectedId(selectedId === item.id ? null : item.id)}
             />
           ))

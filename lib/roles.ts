@@ -12,4 +12,8 @@ export const can = {
   uploadRender:    (_r: Role) => true,
   assign:          (r: Role) => ['LEAD', 'ADMIN'].includes(r),
   pinComment:      (r: Role) => ['QA', 'LEAD', 'POST', 'PM', 'ADMIN'].includes(r),
+  // Поставить пункт на стоп может любой авторизованный пользователь —
+  // ставит тот, кто столкнулся с препятствием. Серверная проверка требует
+  // обязательную причину (note).
+  flagItem:        (_r: Role) => true,
 };

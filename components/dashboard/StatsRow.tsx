@@ -19,7 +19,7 @@ export default async function StatsRow() {
     { label: 'Всего шотов', value: String(totalShots), note: 'по всем проектам' },
     { label: 'В работе', value: String(wipShots), note: 'статус WIP' },
     { label: 'Готово сегодня', value: String(doneToday), note: 'пунктов чеклиста' },
-    { label: 'Блокеров', value: String(blockedItems), note: 'требуют внимания' },
+    { label: 'На стопе', value: String(blockedItems), note: 'пунктов ждут разблокировки' },
   ];
 
   return (

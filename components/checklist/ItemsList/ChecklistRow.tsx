@@ -19,27 +19,31 @@ interface ChecklistRowProps {
   onRename?: (itemId: string, title: string) => void;
   onNoteChange?: (itemId: string, note: string | null) => void;
   onAssign?: (itemId: string, ownerId: string | null) => void;
+  onFlag?: (itemId: string, blocked: boolean, reason?: string) => void;
   onClick?: () => void;
 }
 
 export default function ChecklistRow({
   item, owner, selected, canManage, users = [],
-  onStateChange, onDelete, onRename, onNoteChange, onAssign, onClick,
+  onStateChange, onDelete, onRename, onNoteChange, onAssign, onFlag, onClick,
 }: ChecklistRowProps) {
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState(item.title);
   const [editingNote, setEditingNote] = useState(false);
   const [noteDraft, setNoteDraft] = useState(item.note ?? '');
+  const [flaggingReason, setFlaggingReason] = useState<string | null>(null); // null = форма закрыта; string = открыта с черновиком
   const [showAssign, setShowAssign] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const titleInputRef = useRef<HTMLInputElement>(null);
   const noteInputRef = useRef<HTMLTextAreaElement>(null);
+  const flagInputRef = useRef<HTMLTextAreaElement>(null);
 
   const check3State = dbStateToCheck3(item.state);
   const isBlocked = item.state === 'BLOCKED';
   const isDone = item.state === 'DONE';
 
   const handleChange = (next: Check3State) => {
+    // Снимаем стоп если был, и переключаем по обычному циклу
     onStateChange(item.id, check3ToDbState(next));
   };
 
@@ -59,17 +63,43 @@ export default function ChecklistRow({
     setEditingNote(false);
   };
 
+  const startFlagging = () => {
+    if (isBlocked) {
+      // Снять стоп
+      onFlag?.(item.id, false);
+      return;
+    }
+    // Поставить на стоп — если есть причина в note, сразу применяем
+    if (item.note && item.note.trim()) {
+      onFlag?.(item.id, true);
+      return;
+    }
+    // Иначе открываем форму причины
+    setFlaggingReason('');
+    requestAnimationFrame(() => flagInputRef.current?.focus());
+  };
+
+  const commitFlag = () => {
+    const reason = (flaggingReason ?? '').trim();
+    if (!reason) {
+      setFlaggingReason(null);
+      return;
+    }
+    onFlag?.(item.id, true, reason);
+    setFlaggingReason(null);
+  };
+
   return (
     <div
-      className={[styles.row, selected ? styles.selected : ''].join(' ')}
-      onClick={!editingTitle && !editingNote ? onClick : undefined}
+      className={[styles.row, selected ? styles.selected : '', isBlocked ? styles.rowBlocked : ''].join(' ')}
+      onClick={!editingTitle && !editingNote && flaggingReason === null ? onClick : undefined}
       tabIndex={0}
-      onKeyDown={(e) => { if (e.key === 'Enter' && !editingTitle && !editingNote) onClick?.(); }}
+      onKeyDown={(e) => { if (e.key === 'Enter' && !editingTitle && !editingNote && flaggingReason === null) onClick?.(); }}
       role="row"
       aria-selected={selected}
     >
       {/* 3-state checkbox */}
-      <Check3 state={check3State} onChange={handleChange} size={16} />
+      <Check3 state={check3State} onChange={handleChange} size={16} disabled={isBlocked} />
 
       {/* Content */}
       <div className={styles.content}>
@@ -121,11 +151,29 @@ export default function ChecklistRow({
             {item.note}
           </div>
         ) : null}
+
+        {/* Inline-форма причины стопа */}
+        {flaggingReason !== null && (
+          <textarea
+            ref={flagInputRef}
+            className={styles.flagInput}
+            value={flaggingReason}
+            rows={2}
+            placeholder="Что мешает? Например: жду референс, не работает плагин…"
+            onChange={(e) => setFlaggingReason(e.target.value)}
+            onBlur={() => { if (!flaggingReason?.trim()) setFlaggingReason(null); }}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') { setFlaggingReason(null); }
+              if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); commitFlag(); }
+            }}
+            onClick={(e) => e.stopPropagation()}
+          />
+        )}
       </div>
 
       {/* Right side */}
       <div className={styles.right} onClick={(e) => e.stopPropagation()}>
-        {isBlocked && <Badge kind="blocked" size="sm">Блокер</Badge>}
+        {isBlocked && <Badge kind="blocked" size="sm">Стоп</Badge>}
 
         {/* Assign dropdown */}
         {canManage && (
@@ -169,7 +217,6 @@ export default function ChecklistRow({
           </div>
         )}
 
-        {!owner && !canManage && owner === null && null}
         {!canManage && owner && <Avatar name={owner.name} size={22} />}
 
         {/* Note toggle */}
@@ -180,6 +227,17 @@ export default function ChecklistRow({
             onClick={() => { setNoteDraft(''); setEditingNote(true); }}
           >
             <Icons.Msg size={13} />
+          </button>
+        )}
+
+        {/* Stop flag — все авторизованные могут поставить, причина обязательна */}
+        {onFlag && (
+          <button
+            className={[styles.actionBtn, styles.flagBtn, isBlocked ? styles.flagBtnActive : ''].join(' ')}
+            title={isBlocked ? 'Снять стоп' : 'Поставить на стоп (нужна причина)'}
+            onClick={startFlagging}
+          >
+            <Icons.Flag size={13} />
           </button>
         )}
 
