@@ -272,48 +272,6 @@ export default function ChecklistClient({
     }
   };
 
-  const handleCommentReply = async (parentId: string, body: string) => {
-    const trimmed = body.trim();
-    if (!trimmed) return;
-    try {
-      const res = await fetch(`/api/shots/${shot.id}/comments`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ body: trimmed, parentId }),
-      });
-      if (res.ok) {
-        const newComment = await res.json();
-        setComments((prev) => [...prev, newComment]);
-      } else {
-        const d = await res.json().catch(() => ({}));
-        toast.error(d.message ?? 'Не удалось ответить');
-      }
-    } catch {
-      toast.error('Ошибка сети');
-    }
-  };
-
-  const handleCommentEdit = async (commentId: string, body: string) => {
-    const trimmed = body.trim();
-    if (!trimmed) return;
-    try {
-      const res = await fetch(`/api/shots/${shot.id}/comments/${commentId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ body: trimmed }),
-      });
-      if (res.ok) {
-        const updated = await res.json();
-        setComments((prev) => prev.map((c) => c.id === commentId ? { ...c, ...updated } : c));
-      } else {
-        const d = await res.json().catch(() => ({}));
-        toast.error(d.message ?? 'Не удалось сохранить');
-      }
-    } catch {
-      toast.error('Ошибка сети');
-    }
-  };
-
   return (
     <>
       <TopBar
