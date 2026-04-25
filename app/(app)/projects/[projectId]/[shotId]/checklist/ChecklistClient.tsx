@@ -54,6 +54,20 @@ export default function ChecklistClient({
     userRole === 'QA' ? 'media' : 'checklist'
   );
 
+  // Идемпотентное добавление коммента в state — защита от race
+  // POST-ответ vs SSE-broadcast (оба происходят почти одновременно для автора).
+  const upsertComment = useCallback((c: Comment) => {
+    setComments((prev) => {
+      const idx = prev.findIndex((x) => x.id === c.id);
+      if (idx >= 0) {
+        const next = [...prev];
+        next[idx] = c;
+        return next;
+      }
+      return [...prev, c];
+    });
+  }, []);
+
   const applyStateChange = useCallback((itemId: string, state: string) => {
     setChapters((prev) =>
       prev.map((chapter) => {
@@ -71,18 +85,12 @@ export default function ChecklistClient({
       applyStateChange(event.itemId, event.state);
     }
     if (event.type === 'comment:added' && event.shotId === shot.id) {
-      setComments((prev) => {
-        const c = event.comment as Comment;
-        if (prev.find((x) => x.id === c.id)) return prev;
-        return [...prev, c];
-      });
+      upsertComment(event.comment as Comment);
     }
     if (event.type === 'comment:updated' && event.shotId === shot.id) {
-      setComments((prev) => prev.map((c) =>
-        c.id === (event.comment as Comment).id ? (event.comment as Comment) : c
-      ));
+      upsertComment(event.comment as Comment);
     }
-  }, [shot.id, applyStateChange]));
+  }, [shot.id, applyStateChange, upsertComment]));
 
   const totalItems = chapters.flatMap((c) => c.items);
   const totalProgress = computeProgress(totalItems);
@@ -206,7 +214,7 @@ export default function ChecklistClient({
       });
       if (res.ok) {
         const newComment = await res.json();
-        setComments((prev) => [...prev, newComment]);
+        upsertComment(newComment);
         setPendingPin(null);
       } else {
         const d = await res.json().catch(() => ({}));
@@ -241,7 +249,7 @@ export default function ChecklistClient({
       });
       if (res.ok) {
         const newReply = await res.json();
-        setComments((prev) => [...prev, newReply]);
+        upsertComment(newReply);
       } else {
         const d = await res.json().catch(() => ({}));
         toast.error(d.message ?? 'Не удалось ответить');
@@ -262,7 +270,7 @@ export default function ChecklistClient({
       });
       if (res.ok) {
         const updated = await res.json();
-        setComments((prev) => prev.map((c) => c.id === commentId ? updated : c));
+        upsertComment(updated);
       } else {
         const d = await res.json().catch(() => ({}));
         toast.error(d.message ?? 'Не удалось сохранить');

@@ -96,6 +96,7 @@ export default function CommentsPanel({
   const [linkUrl, setLinkUrl] = useState('');
   const [replyOpenFor, setReplyOpenFor] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const submittingRef = useRef(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -115,9 +116,13 @@ export default function CommentsPanel({
   };
 
   const submit = () => {
+    if (submittingRef.current) return;
     if (!draft.trim()) return;
+    submittingRef.current = true;
     onSubmit?.(draft.trim());
     setDraft('');
+    // освобождаем замок на следующем тике — после того как onSubmit инициировал fetch
+    window.setTimeout(() => { submittingRef.current = false; }, 600);
   };
 
   const insertLink = () => {
