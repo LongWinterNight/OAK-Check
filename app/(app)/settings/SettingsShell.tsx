@@ -19,14 +19,17 @@ const ALL_TABS: { id: TabId; label: string; icon: React.ReactNode; desc: string;
   { id: 'system',     label: 'Система',     icon: <Icons.Settings size={15} />, desc: 'Статистика и данные',  adminOnly: true },
 ];
 
+import type { StorageStatus } from '@/lib/storage';
+
 interface SettingsShellProps {
   currentUser: { id: string; name: string; email: string; role: string; avatarUrl: string | null; lastLoginAt: string | null } | null;
   users: { id: string; name: string; email: string; role: string; online: boolean; avatarUrl: string | null; createdAt: string }[];
   projects: { id: string; title: string; client: string; status: string; shotsCount: number; coverGradient: string; dueDate: string | null }[];
   systemStats: { totalShots: number; totalItems: number; totalComments: number; totalVersions: number };
+  storage: StorageStatus | null;
 }
 
-export default function SettingsShell({ currentUser, users, projects, systemStats }: SettingsShellProps) {
+export default function SettingsShell({ currentUser, users, projects, systemStats, storage }: SettingsShellProps) {
   const isAdmin = currentUser?.role === 'ADMIN';
   const tabs = ALL_TABS.filter((t) => !t.adminOnly || isAdmin);
 
@@ -48,7 +51,7 @@ export default function SettingsShell({ currentUser, users, projects, systemStat
       case 'team':       return isAdmin ? <TeamTab users={users} isAdmin={isAdmin} currentUserId={currentUser?.id ?? ''} /> : null;
       case 'projects':   return <ProjectsTab projects={projects} isAdmin={isAdmin} />;
       case 'appearance': return <AppearanceTab />;
-      case 'system':     return isAdmin ? <SystemTab stats={systemStats} users={users} /> : null;
+      case 'system':     return isAdmin ? <SystemTab stats={systemStats} users={users} storage={storage} /> : null;
     }
   };
 

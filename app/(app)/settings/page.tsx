@@ -1,13 +1,15 @@
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
+import { getStorageStatus } from '@/lib/storage';
 import TopBar from '@/components/layout/TopBar/TopBar';
 import SettingsShell from './SettingsShell';
 import styles from './page.module.css';
 
 export default async function SettingsPage() {
   const session = await auth();
+  const isAdmin = session?.user?.role === 'ADMIN';
 
-  const [users, projects, stats] = await Promise.all([
+  const [users, projects, stats, storage] = await Promise.all([
     prisma.user.findMany({
       orderBy: { name: 'asc' },
       select: { id: true, name: true, email: true, role: true, online: true, avatarUrl: true, createdAt: true, lastLoginAt: true },
@@ -22,6 +24,7 @@ export default async function SettingsPage() {
       prisma.comment.count(),
       prisma.renderVersion.count(),
     ]),
+    isAdmin ? getStorageStatus() : Promise.resolve(null),
   ]);
 
   const [totalShots, totalItems, totalComments, totalVersions] = stats;
@@ -56,6 +59,7 @@ export default async function SettingsPage() {
             dueDate: p.dueDate?.toISOString() ?? null,
           }))}
           systemStats={{ totalShots, totalItems, totalComments, totalVersions }}
+          storage={storage}
         />
       </div>
     </>
