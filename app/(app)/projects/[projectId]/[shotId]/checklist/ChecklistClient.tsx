@@ -199,10 +199,9 @@ export default function ChecklistClient({
     }
   };
 
-  const handleCommentSubmit = async (body: string) => {
+  const postComment = async (body: string, pin?: { x: number; y: number }, parentId?: string) => {
     const trimmed = body.trim();
-    if (!trimmed) return;
-    const pin = pendingPin;
+    if (!trimmed) return null;
     try {
       const res = await fetch(`/api/shots/${shot.id}/comments`, {
         method: 'POST',
@@ -210,19 +209,31 @@ export default function ChecklistClient({
         body: JSON.stringify({
           body: trimmed,
           ...(pin ? { pinX: pin.x, pinY: pin.y } : {}),
+          ...(parentId ? { parentId } : {}),
         }),
       });
       if (res.ok) {
         const newComment = await res.json();
         upsertComment(newComment);
-        setPendingPin(null);
-      } else {
-        const d = await res.json().catch(() => ({}));
-        toast.error(d.message ?? 'Не удалось отправить комментарий');
+        return newComment;
       }
+      const d = await res.json().catch(() => ({}));
+      toast.error(d.message ?? 'Не удалось отправить комментарий');
+      return null;
     } catch {
       toast.error('Не удалось отправить комментарий');
+      return null;
     }
+  };
+
+  const handleCommentSubmit = async (body: string) => {
+    const pin = pendingPin;
+    const result = await postComment(body, pin ?? undefined);
+    if (result) setPendingPin(null);
+  };
+
+  const handleLightboxPinSubmit = async (body: string, x: number, y: number) => {
+    return postComment(body, { x, y });
   };
 
   const handleCommentDelete = async (commentId: string) => {
@@ -239,24 +250,7 @@ export default function ChecklistClient({
   };
 
   const handleCommentReply = async (parentId: string, body: string) => {
-    const trimmed = body.trim();
-    if (!trimmed) return;
-    try {
-      const res = await fetch(`/api/shots/${shot.id}/comments`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ body: trimmed, parentId }),
-      });
-      if (res.ok) {
-        const newReply = await res.json();
-        upsertComment(newReply);
-      } else {
-        const d = await res.json().catch(() => ({}));
-        toast.error(d.message ?? 'Не удалось ответить');
-      }
-    } catch {
-      toast.error('Ошибка сети');
-    }
+    await postComment(body, undefined, parentId);
   };
 
   const handleCommentEdit = async (commentId: string, body: string) => {
@@ -393,6 +387,7 @@ export default function ChecklistClient({
             onCommentDelete={handleCommentDelete}
             onCommentReply={handleCommentReply}
             onCommentEdit={handleCommentEdit}
+            onLightboxPinSubmit={handleLightboxPinSubmit}
             onVersionDeleted={(versionId) => setVersions((prev) => prev.filter((v) => v.id !== versionId))}
             shotId={shot.id}
             className={mobilePanel !== 'media' ? styles.panelHidden : ''}

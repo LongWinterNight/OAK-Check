@@ -1,14 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { createPortal } from 'react-dom';
+import { useState } from 'react';
 import { Icons } from '@/components/icons';
 import { toast } from '@/components/ui/Toast/toastStore';
 import type { RenderVersion, Comment } from '@/types';
+import LightboxView from './LightboxView';
 import styles from './RenderPreview.module.css';
 
 // Если body состоит только из эмодзи/символов без слов — показывать заглушку.
-// Защищает от устаревших комментов с body='📍' от прошлой версии flow пинов.
 function tooltipText(body: string): string {
   const hasLetters = /\p{L}|\p{N}/u.test(body);
   return hasLetters ? body : 'Без описания';
@@ -24,91 +23,8 @@ interface RenderPreviewProps {
   onHighlight?: (commentId: string | null) => void;
   onPinSet?: (pinX: number, pinY: number) => void;
   onPinClear?: () => void;
+  onLightboxPinSubmit?: (body: string, x: number, y: number) => Promise<unknown>;
   onVersionDeleted?: (id: string) => void;
-}
-
-function Lightbox({
-  versions,
-  activeVersion,
-  comments,
-  highlightedCommentId,
-  onHighlight,
-  onClose,
-  onPrev,
-  onNext,
-}: {
-  versions: RenderVersion[];
-  activeVersion: string;
-  comments: Comment[];
-  highlightedCommentId?: string | null;
-  onHighlight?: (id: string | null) => void;
-  onClose: () => void;
-  onPrev: () => void;
-  onNext: () => void;
-}) {
-  const current = versions.find((v) => v.version === activeVersion);
-  const pinnedComments = comments.filter((c) => c.pinX !== null && c.pinY !== null);
-
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-      if (e.key === 'ArrowLeft') onPrev();
-      if (e.key === 'ArrowRight') onNext();
-    };
-    document.addEventListener('keydown', handler);
-    return () => document.removeEventListener('keydown', handler);
-  }, [onClose, onPrev, onNext]);
-
-  return createPortal(
-    <div className={styles.lightboxOverlay} onClick={onClose}>
-      <div className={styles.lightboxContent} onClick={(e) => e.stopPropagation()}>
-        <button className={styles.lightboxClose} onClick={onClose} title="Закрыть (Esc)">
-          <Icons.X size={18} />
-        </button>
-
-        {versions.length > 1 && (
-          <>
-            <button className={[styles.lightboxNav, styles.lightboxNavL].join(' ')} onClick={onPrev} title="Предыдущая (←)">
-              <Icons.ChevL size={20} />
-            </button>
-            <button className={[styles.lightboxNav, styles.lightboxNavR].join(' ')} onClick={onNext} title="Следующая (→)">
-              <Icons.ChevR size={20} />
-            </button>
-          </>
-        )}
-
-        <div className={styles.lightboxImgWrap}>
-          {current?.url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={current.url} alt={activeVersion} className={styles.lightboxImg} />
-          ) : (
-            <div className={styles.lightboxPlaceholder} />
-          )}
-
-          {pinnedComments.map((c, i) => {
-            const isActive = highlightedCommentId === c.id;
-            return (
-              <div
-                key={c.id}
-                className={[styles.pin, isActive ? styles.pinActive : ''].join(' ')}
-                style={{ left: `${c.pinX}%`, top: `${c.pinY}%` }}
-                onMouseEnter={() => onHighlight?.(c.id)}
-                onMouseLeave={() => onHighlight?.(null)}
-              >
-                {i + 1}
-                {isActive && (
-                  <div className={styles.pinTooltip}>{tooltipText(c.body)}</div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-
-        <div className={styles.lightboxVersion}>{activeVersion}</div>
-      </div>
-    </div>,
-    document.body
-  );
 }
 
 export default function RenderPreview({
@@ -121,6 +37,7 @@ export default function RenderPreview({
   onHighlight,
   onPinSet,
   onPinClear,
+  onLightboxPinSubmit,
   onVersionDeleted,
 }: RenderPreviewProps) {
   const [activeVersion, setActiveVersion] = useState(
@@ -242,7 +159,6 @@ export default function RenderPreview({
               onMouseLeave={() => onHighlight?.(null)}
               onClick={(e) => {
                 e.stopPropagation();
-                // scroll to corresponding comment
                 const el = document.querySelector(`[data-comment-id="${comment.id}"]`);
                 el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 onHighlight?.(comment.id);
@@ -289,17 +205,19 @@ export default function RenderPreview({
         </div>
       )}
 
-      {/* Lightbox */}
+      {/* Lightbox with zoom + pin support */}
       {lightboxOpen && (
-        <Lightbox
+        <LightboxView
           versions={versions}
           activeVersion={activeVersion}
           comments={comments}
+          canPin={canPin}
           highlightedCommentId={highlightedCommentId}
           onHighlight={onHighlight}
           onClose={() => setLightboxOpen(false)}
           onPrev={goPrev}
           onNext={goNext}
+          onPinSubmit={onLightboxPinSubmit}
         />
       )}
     </div>
