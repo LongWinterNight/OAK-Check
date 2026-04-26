@@ -10,6 +10,7 @@ import styles from './CommentsPanel.module.css';
 interface CommentsPanelProps {
   comments: Comment[];
   currentUserId?: string;
+  currentUserRole?: string;
   currentUser?: { name: string };
   pendingPin?: { x: number; y: number } | null;
   highlightedCommentId?: string | null;
@@ -81,6 +82,7 @@ function InlineForm({ initial = '', placeholder, submitLabel, onSubmit, onCancel
 export default function CommentsPanel({
   comments,
   currentUserId,
+  currentUserRole,
   currentUser,
   pendingPin = null,
   highlightedCommentId = null,
@@ -153,9 +155,13 @@ export default function CommentsPanel({
   const pinnedCount = comments.filter(c => c.pinX !== null).length;
   const headerLabel = `Комментарии${comments.length > 0 ? ` (${comments.length})` : ''}`;
 
+  const isAdmin = currentUserRole === 'ADMIN';
+
   const renderComment = (comment: Comment, isReply = false) => {
     const pinNum = !isReply ? pinnedIndex(comment.id) : null;
-    const canMutate = currentUserId && comment.userId === currentUserId;
+    const isOwner = currentUserId && comment.userId === currentUserId;
+    const canEdit = isOwner;            // редактировать может только автор
+    const canDelete = isOwner || isAdmin; // удалить — автор или ADMIN
     const isHighlighted = highlightedCommentId === comment.id;
     const isEditing = editingId === comment.id;
 
@@ -189,7 +195,7 @@ export default function CommentsPanel({
               </button>
             )}
             <div className={styles.commentActions}>
-              {canMutate && onEdit && !isEditing && (
+              {canEdit && onEdit && !isEditing && (
                 <button
                   className={styles.iconBtn}
                   title="Редактировать"
@@ -198,10 +204,10 @@ export default function CommentsPanel({
                   <Icons.Pen size={11} />
                 </button>
               )}
-              {canMutate && onDelete && (
+              {canDelete && onDelete && (
                 <button
                   className={[styles.iconBtn, styles.iconBtnDanger].join(' ')}
-                  title="Удалить"
+                  title={isOwner ? 'Удалить' : 'Удалить (как админ)'}
                   onClick={() => onDelete(comment.id)}
                 >
                   <Icons.X size={11} />

@@ -10,7 +10,9 @@ export async function DELETE(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string; versionId: string }> }
 ) {
-  const { error } = await requireRole(['LEAD', 'ADMIN']);
+  // PM управляет проектом (вкл. правом удалять шот) — логично разрешить
+  // удалить и версию рендера. Сужать до LEAD/ADMIN не нужно.
+  const { error } = await requireRole(['LEAD', 'PM', 'ADMIN']);
   if (error) return error;
 
   const { versionId } = await params;

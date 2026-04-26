@@ -383,6 +383,7 @@ export default function ChecklistClient({
             versions={versions}
             comments={comments}
             currentUser={currentUser}
+            currentUserRole={userRole}
             canDeleteVersion={can.deleteShot(userRole)}
             canPin={can.pinComment(userRole)}
             pendingPin={pendingPin}

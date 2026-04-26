@@ -7,6 +7,7 @@ interface RightPanelProps {
   versions: RenderVersion[];
   comments: Comment[];
   currentUser?: { id: string; name: string };
+  currentUserRole?: string;
   canDeleteVersion?: boolean;
   canPin?: boolean;
   pendingPin?: { x: number; y: number } | null;
@@ -28,6 +29,7 @@ export default function RightPanel({
   versions,
   comments,
   currentUser,
+  currentUserRole,
   canDeleteVersion,
   canPin = false,
   pendingPin,
@@ -62,6 +64,7 @@ export default function RightPanel({
       <CommentsPanel
         comments={comments}
         currentUserId={currentUser?.id}
+        currentUserRole={currentUserRole}
         currentUser={currentUser}
         pendingPin={pendingPin ?? null}
         highlightedCommentId={highlightedCommentId ?? null}

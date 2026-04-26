@@ -6,6 +6,7 @@ import { requireAuth, requireRole } from '@/lib/auth-guard';
 import { apiError } from '@/lib/api-error';
 import { logger } from '@/lib/logger';
 import { logActivity } from '@/lib/activity';
+import { can } from '@/lib/roles';
 
 const STATE_LABELS: Record<string, string> = {
   TODO: 'в бэклог', WIP: 'в работу', DONE: 'в готово', BLOCKED: 'на стоп',
@@ -28,6 +29,18 @@ export async function PATCH(
 
     const item = await prisma.checkItem.findFirst({ where: { id: itemId, shotId } });
     if (!item) return apiError('NOT_FOUND', 'Пункт не найден');
+
+    // RBAC по полям (защита от mass-assignment через DevTools/прямой fetch):
+    //   state, note, order  — все авторизованные (исполнитель меняет статус,
+    //                          отмечает себе заметку, перетаскивает в списке)
+    //   title, ownerId       — только manageChecklist (LEAD, ADMIN). ARTIST
+    //                          не должен переименовывать чужие пункты или
+    //                          переназначать исполнителя.
+    const wantsTitle = parsed.data.title !== undefined;
+    const wantsOwner = parsed.data.ownerId !== undefined;
+    if ((wantsTitle || wantsOwner) && !can.manageChecklist(user.role)) {
+      return apiError('FORBIDDEN', 'Изменять название и исполнителя могут только LEAD или ADMIN');
+    }
 
     // BLOCKED требует причину — либо в БД, либо пришла в этом же запросе.
     if (parsed.data.state === 'BLOCKED') {
