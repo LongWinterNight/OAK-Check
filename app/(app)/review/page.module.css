@@ -41,11 +41,17 @@
   border-bottom: 1px solid var(--border);
   text-decoration: none;
   color: var(--fg);
-  transition: background 0.1s;
+  transition: background 0.1s, border-color 0.12s;
 }
 
 .card:active {
   background: var(--surface-2);
+}
+
+@media (hover: hover) {
+  .card:hover {
+    background: var(--surface-2);
+  }
 }
 
 .thumb {

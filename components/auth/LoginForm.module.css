@@ -105,6 +105,36 @@
   outline: none;
 }
 
+/* iOS не зумит viewport если font-size >= 16px при фокусе input */
+@media (max-width: 767px) {
+  .input {
+    font-size: 16px;
+  }
+  .card {
+    width: 100%;
+    max-width: 100%;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 24px 20px max(24px, env(safe-area-inset-bottom));
+    flex: 1;
+    justify-content: flex-start;
+  }
+  .inputWrap {
+    height: 44px;
+  }
+  .btn {
+    height: 48px;
+  }
+}
+
+@media (hover: hover) {
+  .eyeBtn:hover { color: var(--fg); }
+}
+@media (hover: none) {
+  .eyeBtn:hover { color: inherit; }
+}
+
 .input::placeholder {
   color: var(--fg-subtle);
 }

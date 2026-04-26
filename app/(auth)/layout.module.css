@@ -1,7 +1,15 @@
 .root {
-  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
   background: var(--bg);
+  padding: 16px;
+}
+
+@media (max-width: 767px) {
+  .root {
+    align-items: stretch;
+    padding: 0;
+  }
 }

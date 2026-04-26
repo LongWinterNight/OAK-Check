@@ -6,6 +6,22 @@
   background: var(--bg);
 }
 
+/* Страница исторически делалась mobile-first для ARTIST.
+   На десктопе/планшете ограничиваем ширину контента и центрируем,
+   чтобы не растягивать список на 1920px. */
+@media (min-width: 768px) {
+  .page > .dayWidget,
+  .page > .tabs,
+  .page > .tabContent > * {
+    max-width: 720px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .page > .tabContent {
+    padding: 16px 0;
+  }
+}
+
 /* Day widget */
 .dayWidget {
   display: flex;
