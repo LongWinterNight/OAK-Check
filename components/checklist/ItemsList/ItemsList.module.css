@@ -18,6 +18,20 @@
   background: var(--surface);
 }
 
+@media (max-width: 767px) {
+  .toolbar {
+    padding: 10px 12px 8px;
+  }
+  .toolbarBottom {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .searchWrap {
+    width: 100%;
+  }
+}
+
 .toolbarTop {
   display: flex;
   align-items: flex-start;

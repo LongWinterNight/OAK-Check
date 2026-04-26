@@ -367,3 +367,27 @@
   padding: 4px 10px;
   cursor: pointer;
 }
+
+/* На мобиле composer прилипает к низу с учётом safe-area-inset-bottom
+   (для PWA на iPhone с home-indicator). Список занимает всё доступное место. */
+@media (max-width: 767px) {
+  .panel { padding: 0 12px; }
+  .header { padding: 12px 0 6px; }
+  .list { padding-bottom: 8px; }
+
+  .composer {
+    position: sticky;
+    bottom: 0;
+    margin-top: 8px;
+    margin-bottom: 0;
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
+    background: var(--surface);
+    border-radius: var(--radius) var(--radius) 0 0;
+    box-shadow: 0 -4px 16px color-mix(in srgb, var(--fg) 8%, transparent);
+    z-index: 5;
+  }
+
+  .composerInput {
+    font-size: 16px; /* iOS anti-zoom */
+  }
+}

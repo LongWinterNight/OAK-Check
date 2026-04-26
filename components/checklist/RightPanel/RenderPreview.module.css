@@ -48,7 +48,15 @@
   opacity: 0;
   transition: opacity 0.15s, background 0.15s, border-color 0.15s;
 }
-.preview:hover .pinModeBtn { opacity: 1; }
+/* На устройствах с hover — показываем при наведении.
+   На тач-экранах (hover: none) кнопка должна быть всегда видна,
+   иначе её невозможно нажать. */
+@media (hover: hover) {
+  .preview:hover .pinModeBtn { opacity: 1; }
+}
+@media (hover: none) {
+  .pinModeBtn { opacity: 1; }
+}
 
 .pinModeBtnActive {
   background: var(--accent) !important;
@@ -100,6 +108,24 @@
   transform: translate(-50%, -50%) scale(1.25);
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 30%, transparent), var(--shadow-md);
   z-index: 6;
+}
+
+/* На мобиле — увеличиваем кнопки управления версией для тача */
+@media (max-width: 767px) {
+  .pinModeBtn {
+    height: 36px;
+    padding: 0 14px 0 12px;
+    font-size: 13px;
+  }
+  .versionBtn {
+    height: 32px;
+    padding: 0 14px;
+    font-size: 12px;
+  }
+  .versionDelete {
+    width: 24px;
+    height: 24px;
+  }
 }
 
 /* Версии */

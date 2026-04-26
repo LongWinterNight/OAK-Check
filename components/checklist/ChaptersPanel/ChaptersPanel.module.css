@@ -8,6 +8,21 @@
   overflow: hidden;
 }
 
+@media (max-width: 767px) {
+  .panel {
+    width: 100%;
+    flex: 1;
+    border-right: none;
+  }
+  .header {
+    padding: 14px 16px 8px;
+    font-size: 11px;
+  }
+  .list {
+    padding: 8px 12px 16px;
+  }
+}
+
 .header {
   padding: 12px 14px 6px;
   font-size: 10.5px;

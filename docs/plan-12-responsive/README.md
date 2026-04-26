@@ -78,8 +78,8 @@
 
 - [x] **Architect** — брейкпоинты в CSS-переменные (04) · `b18fe1c`
 - [x] **Designer** — ревизия touch-targets базовых компонентов (05) · `82758f5`
-- [ ] **Frontend** — адаптация внутренних панелей чеклиста (06)
-- [ ] **Frontend** — адаптация модалок и UI-примитивов (06)
+- [x] **Frontend** — адаптация внутренних панелей чеклиста (06) · drill-down уже был, добавлены mobile media в ChaptersPanel/ItemsList, sticky composer с safe-area в CommentsPanel, hover→tap фикс в RenderPreview
+- [x] **Frontend** — адаптация модалок и UI-примитивов (06) — Modal full-screen на мобиле, Input 16px, Check3/actionBtn touch-area
 - [ ] **Frontend** — адаптация страниц tasks/review/auth (06)
 - [ ] **Mobile** — PWA manifest + safe-area + viewport (08)
 - [ ] **QA Automation** — Playwright responsive suite (12)
