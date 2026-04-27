@@ -88,20 +88,33 @@ export function ActivityFeedInfinite() {
   const [loading, setLoading] = useState(false);
   const [typeFilter, setTypeFilter] = useState<ActivityType | ''>('');
   const sentinelRef = useRef<HTMLDivElement>(null);
+  // Гард от двойных вызовов loadPage (strict-mode + IntersectionObserver,
+  // который может срабатывать дважды раньше чем loading=true успеет применится).
+  const loadingRef = useRef(false);
 
   const loadPage = useCallback(async (p: number, type: string) => {
+    if (loadingRef.current) return;
+    loadingRef.current = true;
     setLoading(true);
     try {
       const params = new URLSearchParams({ page: String(p), limit: '20' });
       if (type) params.set('type', type);
       const res = await fetch(`/api/activity?${params}`);
       const json = await res.json();
-      setEntries((prev) => (p === 1 ? json.data : [...prev, ...json.data]));
+      setEntries((prev) => {
+        if (p === 1) return json.data as ActivityEntry[];
+        // Dedup: между загрузками могли создаваться новые записи и
+        // одни и те же id попадают и в page=1, и в page=2 (offset сместился).
+        const seen = new Set(prev.map((e) => e.id));
+        const fresh = (json.data as ActivityEntry[]).filter((e) => !seen.has(e.id));
+        return [...prev, ...fresh];
+      });
       setHasMore(json.hasMore);
     } catch {
       // ignore
     } finally {
       setLoading(false);
+      loadingRef.current = false;
     }
   }, []);
 
@@ -117,13 +130,11 @@ export function ActivityFeedInfinite() {
     if (!el || !hasMore) return;
 
     const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && !loading) {
-          setPage((p) => {
-            const next = p + 1;
-            loadPage(next, typeFilter);
-            return next;
-          });
+      (obsEntries) => {
+        if (obsEntries[0].isIntersecting && !loadingRef.current) {
+          const next = page + 1;
+          setPage(next);
+          loadPage(next, typeFilter);
         }
       },
       { rootMargin: '80px' }
@@ -131,7 +142,7 @@ export function ActivityFeedInfinite() {
 
     observer.observe(el);
     return () => observer.disconnect();
-  }, [hasMore, loading, loadPage, typeFilter]);
+  }, [hasMore, page, loadPage, typeFilter]);
 
   const groups = groupByDate(entries);
 

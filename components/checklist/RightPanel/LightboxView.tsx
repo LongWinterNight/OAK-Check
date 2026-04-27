@@ -132,7 +132,17 @@ export default function LightboxView({
   const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
     if (panState.current.active) {
       panState.current.active = false;
-      (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
+      // На некоторых event-флоу (отмена tap, перехват системой) pointer
+      // capture уже освобождён к этому моменту. releasePointerCapture
+      // на освобождённом id бросает NotFoundError — оборачиваем в try.
+      try {
+        const el = e.currentTarget as HTMLElement;
+        if (el.hasPointerCapture?.(e.pointerId)) {
+          el.releasePointerCapture(e.pointerId);
+        }
+      } catch {
+        // ignore
+      }
     }
   };
 

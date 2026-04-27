@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Button, Modal } from '@/components/ui';
 import { Icons } from '@/components/icons';
+import { uid } from '@/lib/uid';
 import styles from './NewTemplateModal.module.css';
 
 interface NewTemplateModalProps {
@@ -23,7 +24,7 @@ export function NewTemplateModal({ onClose, onCreated }: NewTemplateModalProps) 
   const [name, setName] = useState('');
   const [category, setCategory] = useState('');
   const [description, setDescription] = useState('');
-  const [items, setItems] = useState<ItemDraft[]>([{ key: crypto.randomUUID(), title: '' }]);
+  const [items, setItems] = useState<ItemDraft[]>([{ key: uid(), title: '' }]);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const nameRef = useRef<HTMLInputElement>(null);
@@ -31,7 +32,7 @@ export function NewTemplateModal({ onClose, onCreated }: NewTemplateModalProps) 
   useEffect(() => { nameRef.current?.focus(); }, []);
 
   const addItem = () => {
-    setItems((prev) => [...prev, { key: crypto.randomUUID(), title: '' }]);
+    setItems((prev) => [...prev, { key: uid(), title: '' }]);
   };
 
   const removeItem = (key: string) => {

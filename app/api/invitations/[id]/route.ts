@@ -28,6 +28,9 @@ export async function DELETE(
 
     return new NextResponse(null, { status: 204 });
   } catch (e) {
+    if ((e as { code?: string }).code === 'P2025') {
+      return new NextResponse(null, { status: 204 });
+    }
     logger.error('DELETE /api/invitations/[id]:', e);
     return apiError('SERVER_ERROR');
   }

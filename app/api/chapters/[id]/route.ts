@@ -37,12 +37,14 @@ export async function DELETE(
 
   const { id } = await params;
   try {
-    const chapter = await prisma.chapter.findUnique({ where: { id } });
-    if (!chapter) return apiError('NOT_FOUND', 'Этап не найден');
-
     await prisma.chapter.delete({ where: { id } });
     return new NextResponse(null, { status: 204 });
   } catch (e) {
+    // Idempotent: если запись уже удалена (повторный клик / параллельный
+    // DELETE) — возвращаем 204, а не 500. P2025 — Prisma «record not found».
+    if ((e as { code?: string }).code === 'P2025') {
+      return new NextResponse(null, { status: 204 });
+    }
     logger.error('DELETE /api/chapters/[id]:', e);
     return apiError('SERVER_ERROR');
   }

@@ -16,6 +16,9 @@ export async function DELETE(
     await prisma.checklistTemplate.delete({ where: { id } });
     return new NextResponse(null, { status: 204 });
   } catch (e) {
+    if ((e as { code?: string }).code === 'P2025') {
+      return new NextResponse(null, { status: 204 });
+    }
     logger.error('DELETE /api/templates/[id]:', e);
     return apiError('SERVER_ERROR');
   }

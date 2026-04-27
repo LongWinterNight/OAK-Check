@@ -66,6 +66,9 @@ export async function DELETE(
     await prisma.comment.delete({ where: { id: commentId } });
     return new NextResponse(null, { status: 204 });
   } catch (e) {
+    if ((e as { code?: string }).code === 'P2025') {
+      return new NextResponse(null, { status: 204 });
+    }
     logger.error('DELETE /api/shots/[id]/comments/[commentId]:', e);
     return apiError('SERVER_ERROR');
   }
