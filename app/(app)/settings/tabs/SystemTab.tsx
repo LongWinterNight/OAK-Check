@@ -102,7 +102,7 @@ export default function SystemTab({ stats, users, storage }: SystemTabProps) {
           </div>
         </div>
         <div className={styles.sectionBody}>
-          <table className={styles.table}>
+          <table className={[styles.table, styles.tableKv].join(' ')}>
             <tbody>
               <tr>
                 <td style={{ fontWeight: 500, width: '40%' }}>СУБД</td>
@@ -149,7 +149,7 @@ export default function SystemTab({ stats, users, storage }: SystemTabProps) {
             </div>
           </div>
           <div className={styles.sectionBody}>
-            <table className={styles.table}>
+            <table className={[styles.table, styles.tableKv].join(' ')}>
               <tbody>
                 <tr>
                   <td style={{ fontWeight: 500, width: '40%' }}>Путь</td>

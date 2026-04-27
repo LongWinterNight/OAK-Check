@@ -93,7 +93,7 @@ export default function AppearanceTab() {
           </div>
         </div>
         <div className={styles.sectionBody}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 'var(--spacing-3)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: 'var(--spacing-3)' }}>
             {RADII.map(r => (
               <button
                 key={r.value}

@@ -190,9 +190,9 @@ export default function TeamTab({ users: initial, isAdmin, currentUserId }: Team
           <tbody>
             {users.map(u => (
               <tr key={u.id}>
-                <td className={styles.truncate} style={{ fontWeight: 500 }}>{u.name}{u.id === currentUserId && <span style={{ fontSize: 11, color: 'var(--fg-subtle)', marginLeft: 6 }}>(вы)</span>}</td>
-                <td className={styles.truncate} style={{ color: 'var(--fg-subtle)' }}>{u.email}</td>
-                <td>
+                <td data-label="Участник" className={styles.truncate} style={{ fontWeight: 500 }}>{u.name}{u.id === currentUserId && <span style={{ fontSize: 11, color: 'var(--fg-subtle)', marginLeft: 6 }}>(вы)</span>}</td>
+                <td data-label="Email" className={styles.truncate} style={{ color: 'var(--fg-subtle)' }}>{u.email}</td>
+                <td data-label="Роль">
                   {isAdmin && u.id !== currentUserId ? (
                     <select
                       className={styles.select}
@@ -207,13 +207,13 @@ export default function TeamTab({ users: initial, isAdmin, currentUserId }: Team
                     <span className={[styles.role, roleClass(u.role)].join(' ')}>{u.role}</span>
                   )}
                 </td>
-                <td>
+                <td data-label="Статус">
                   <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <span className={[styles.dot, u.online ? styles.dotOnline : ''].join(' ')} />
                     {u.online ? 'Онлайн' : 'Офлайн'}
                   </span>
                 </td>
-                <td style={{ color: 'var(--fg-subtle)', fontSize: 12 }}>
+                <td data-label="Дата входа" style={{ color: 'var(--fg-subtle)', fontSize: 12 }}>
                   {new Date(u.createdAt).toLocaleDateString('ru-RU')}
                 </td>
                 {isAdmin && (
@@ -256,9 +256,9 @@ export default function TeamTab({ users: initial, isAdmin, currentUserId }: Team
               <tbody>
                 {pending.map(inv => (
                   <tr key={inv.id}>
-                    <td className={styles.truncate} style={{ color: 'var(--fg-subtle)' }}>{inv.email}</td>
-                    <td><span className={styles.role}>{inv.role}</span></td>
-                    <td style={{ color: 'var(--fg-subtle)', fontSize: 12 }}>
+                    <td data-label="Email" className={styles.truncate} style={{ color: 'var(--fg-subtle)' }}>{inv.email}</td>
+                    <td data-label="Роль"><span className={styles.role}>{inv.role}</span></td>
+                    <td data-label="Истекает" style={{ color: 'var(--fg-subtle)', fontSize: 12 }}>
                       {new Date(inv.expiresAt).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
                     </td>
                     <td>

@@ -366,6 +366,7 @@
     flex-wrap: wrap;
     gap: 8px;
     align-items: flex-start;
+    padding: var(--spacing-4);
   }
 
   /* Invite / action button goes full-width below title */
@@ -374,30 +375,133 @@
     order: 2;
   }
 
-  /* Table: scroll horizontally inside section card */
+  /* Form rows: 2-кол грид → одна колонка */
+  .fieldRow {
+    grid-template-columns: 1fr;
+  }
+
+  .sectionBody {
+    padding: var(--spacing-4);
+  }
+
+  /* Таблицы на мобиле — никаких min-width и горизонтального скролла.
+     Превращаем строки в карточки: thead скрыт, каждый td — отдельная
+     строка с псевдо-меткой слева через ::before (атрибут data-label). */
   .section {
-    overflow-x: auto;
+    overflow-x: visible;
   }
 
   .table {
-    min-width: 480px;
+    min-width: 0;
+    width: 100%;
+    display: block;
   }
 
-  /* Shrink table cells a bit */
-  .table th,
-  .table td {
-    padding: 8px 10px;
-  }
-
-  .table td.truncate {
-    max-width: 120px;
-  }
-
-  /* Hide date + status columns (keep name, email, role, actions) */
-  .table th:nth-child(4),
-  .table td:nth-child(4),
-  .table th:nth-child(5),
-  .table td:nth-child(5) {
+  .table thead {
     display: none;
+  }
+
+  .table tbody,
+  .table tr {
+    display: block;
+    width: 100%;
+  }
+
+  .table tr {
+    padding: 12px var(--spacing-4);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .table tr:last-child {
+    border-bottom: none;
+  }
+
+  .table td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: none;
+    gap: 12px;
+    min-height: 28px;
+    word-break: break-word;
+  }
+
+  /* Псевдо-метка слева — берём из data-label атрибута td */
+  .table td::before {
+    content: attr(data-label);
+    font-size: 10.5px;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    color: var(--fg-subtle);
+    flex-shrink: 0;
+    min-width: 80px;
+  }
+
+  /* Если у td нет data-label (пустая ячейка действий) — без префикса */
+  .table td:not([data-label]) {
+    justify-content: flex-end;
+  }
+  .table td:not([data-label])::before {
+    display: none;
+  }
+
+  /* Truncate работает по правому краю значения */
+  .table td.truncate {
+    max-width: none;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    text-align: right;
+    word-break: break-all;
+  }
+
+  /* Key-value таблицы (SystemTab: «СУБД | PostgreSQL»). Здесь не нужен
+     стопка-карточка, нужны две колонки. Класс ставится дополнительно
+     к .table в SystemTab. */
+  .tableKv tr {
+    display: grid;
+    grid-template-columns: minmax(110px, 40%) 1fr;
+    gap: 10px;
+    padding: 10px var(--spacing-4);
+    align-items: start;
+  }
+  .tableKv td {
+    display: block;
+    padding: 0;
+    min-height: auto;
+    word-break: break-word;
+  }
+  .tableKv td::before { display: none; }
+
+  /* Stat cards — компактнее на мобиле */
+  .statGrid {
+    gap: var(--spacing-2);
+  }
+  .statCard {
+    padding: 12px 14px;
+  }
+  .statValue {
+    font-size: 22px;
+  }
+
+  /* Avatar row — стопка */
+  .avatarRow {
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  /* Invite form — стопка */
+  .inviteForm {
+    flex-direction: column;
+    align-items: stretch;
+    padding: var(--spacing-4);
+  }
+  .inviteForm .input,
+  .inviteForm .select,
+  .inviteForm .btnPrimary {
+    width: 100%;
   }
 }
