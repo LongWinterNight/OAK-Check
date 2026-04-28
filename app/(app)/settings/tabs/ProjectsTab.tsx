@@ -82,17 +82,17 @@ export default function ProjectsTab({ projects: initial, isAdmin }: ProjectsTabP
         <tbody>
           {filtered.map(p => (
             <tr key={p.id}>
-              <td>
+              <td data-label="Проект">
                 <Link href={`/projects/${p.id}`} style={{ color: 'var(--fg)', textDecoration: 'none', fontWeight: 500 }}>
                   {p.title}
                 </Link>
               </td>
-              <td style={{ color: 'var(--fg-subtle)' }}>{p.client}</td>
-              <td>{p.shotsCount}</td>
-              <td style={{ color: 'var(--fg-subtle)', fontSize: 12 }}>
+              <td data-label="Клиент" style={{ color: 'var(--fg-subtle)' }}>{p.client}</td>
+              <td data-label="Шоты">{p.shotsCount}</td>
+              <td data-label="Срок" style={{ color: 'var(--fg-subtle)', fontSize: 12 }}>
                 {p.dueDate ? new Date(p.dueDate).toLocaleDateString('ru-RU') : '—'}
               </td>
-              <td>
+              <td data-label="Статус">
                 {isAdmin ? (
                   <select
                     className={styles.select}

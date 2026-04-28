@@ -327,6 +327,16 @@
 }
 .filterRow::-webkit-scrollbar { display: none; }
 
+/* На мобиле фильтры лучше переносятся на новую строку — иначе
+   последний пункт обрезается за правым краем карточки. */
+@media (max-width: 767px) {
+  .filterRow {
+    flex-wrap: wrap;
+    overflow-x: visible;
+    width: 100%;
+  }
+}
+
 /* ── Tablet: table fits narrow content area ───────────────── */
 @media (min-width: 768px) and (max-width: 1023px) {
   /* Section card: let table scroll horizontally if needed */
@@ -436,7 +446,8 @@
     letter-spacing: 0.3px;
     color: var(--fg-subtle);
     flex-shrink: 0;
-    min-width: 80px;
+    min-width: 70px;
+    max-width: 100px;
   }
 
   /* Если у td нет data-label (пустая ячейка действий) — без префикса */

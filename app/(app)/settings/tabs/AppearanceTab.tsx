@@ -32,7 +32,7 @@ export default function AppearanceTab() {
           </div>
         </div>
         <div className={styles.sectionBody}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--spacing-3)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(140px, 100%), 1fr))', gap: 'var(--spacing-3)' }}>
             {[
               { id: false, label: 'Светлая', desc: 'Светлый режим' },
               { id: true,  label: 'Тёмная',  desc: 'Классическая тёмная тема' },
@@ -93,7 +93,7 @@ export default function AppearanceTab() {
           </div>
         </div>
         <div className={styles.sectionBody}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: 'var(--spacing-3)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(110px, 100%), 1fr))', gap: 'var(--spacing-3)' }}>
             {RADII.map(r => (
               <button
                 key={r.value}
