@@ -1,17 +1,15 @@
 .row {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  /* Auto-fit: 4 в ряд на десктопе, 2-3 на планшете, 2 на мобиле,
+     1 на xs (320) если карточка меньше 140 не помещается. */
+  grid-template-columns: repeat(auto-fit, minmax(min(140px, 100%), 1fr));
   gap: 12px;
 }
 
 @media (max-width: 767px) {
-  .row { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .row { gap: 8px; }
   .card { padding: 12px 14px; }
   .value { font-size: 24px; }
-}
-
-@media (min-width: 768px) and (max-width: 1023px) {
-  .row { grid-template-columns: repeat(2, 1fr); }
 }
 
 .card {

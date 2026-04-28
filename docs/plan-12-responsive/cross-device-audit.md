@@ -167,10 +167,12 @@ UX-ревизия по компонентам с конкретикой.
 ### P0 — критичные (видимые баги)
 - [x] ProjectsTab `data-label` + filterRow wrap (`7ecf41f`)
 - [x] AppearanceTab graceful grid (`7ecf41f`)
-- [ ] **ProjectsGrid карточки** на мобиле (320 → 1 колонка, fixed `min` нарушает)
-- [ ] **StatsRow** на dashboard (4 карточки → 2×2 на mobile, проверить)
-- [ ] **MyShots / MyDay** на dashboard — card-layout на мобиле
-- [ ] **Library cards** — minmax(min(220, 100%), 1fr)
+- [x] **ProjectsGrid карточки** — `minmax(min(280, 100%), 1fr)`
+- [x] **StatsRow** на dashboard — `minmax(min(140, 100%), 1fr)` auto-fit
+- [x] **MyShots** — на мобиле скрыт progress-bar, остаётся pct + due
+- [x] **Library cards** — `minmax(min(280, 100%), 1fr)`
+- [x] **Admin grid** — `minmax(min(220, 100%), 1fr)`
+- [x] **Kanban checklistLink** — на тач-экранах opacity 1 (раньше hover-only)
 
 ### P1 — системные
 - [ ] **KanbanBoard** — 1 колонка + табы статусов на мобиле

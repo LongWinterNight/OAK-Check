@@ -160,13 +160,18 @@
   transition: opacity 0.1s, background 0.1s, color 0.1s;
 }
 
-.card:hover .checklistLink {
-  opacity: 1;
+@media (hover: hover) {
+  .card:hover .checklistLink { opacity: 1; }
+  .checklistLink:hover {
+    background: var(--surface-raised);
+    color: var(--accent);
+  }
 }
 
-.checklistLink:hover {
-  background: var(--surface-raised);
-  color: var(--accent);
+/* На тач-экранах hover нет — иначе кнопка остаётся невидимой,
+   и нет способа открыть чек-лист с карточки. */
+@media (hover: none) {
+  .checklistLink { opacity: 1; }
 }
 
 /* ── Mobile: scroll-snap horizontal ───────────────────────── */

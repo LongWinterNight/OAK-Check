@@ -106,7 +106,7 @@ a.tableRow:hover { background: var(--surface-2); }
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr));
   gap: 16px;
 }
 
@@ -202,5 +202,5 @@ a.tableRow:hover { background: var(--surface-2); }
 @media (min-width: 768px) and (max-width: 1023px) {
   .content { padding: 20px 16px; }
   .twoCol { grid-template-columns: 1fr; }
-  .grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+  .grid { grid-template-columns: repeat(auto-fill, minmax(min(180px, 100%), 1fr)); }
 }

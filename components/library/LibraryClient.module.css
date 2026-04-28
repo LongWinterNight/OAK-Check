@@ -94,7 +94,8 @@
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  /* min(280, 100%) — без этого на 320px появляется horizontal scroll. */
+  grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
   gap: 12px;
   overflow-y: auto;
   padding-bottom: 16px;

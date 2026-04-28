@@ -96,3 +96,11 @@
   font-family: var(--font-mono);
   color: var(--fg-subtle);
 }
+
+/* На мобиле progress-bar (80px) + due рядом с длинным title режут
+   читаемость. Скрываем progress-bar — остаётся только % в pct. */
+@media (max-width: 767px) {
+  .progressWrap { display: none; }
+  .row { padding: 12px 14px; gap: 10px; }
+  .header { padding: 12px 14px; }
+}
