@@ -171,3 +171,39 @@ input,
 textarea {
   font-family: var(--font-ui);
 }
+
+/* ── Утилитарные responsive-классы ─────────────────────────── */
+/* Используются в новом коде вместо ad-hoc grid-template-columns. */
+
+/* Auto-fit grid с graceful-collapse: на узком viewport карточки
+   сворачиваются в стек, на широком распределяются по колонкам.
+   Кастомизируется через --col-min CSS-переменную. */
+.responsiveGrid {
+  display: grid;
+  gap: var(--spacing-3);
+  grid-template-columns: repeat(auto-fit, minmax(min(var(--col-min, 240px), 100%), 1fr));
+}
+
+/* Cluster — горизонтальная группа кнопок/тегов с переносом на
+   новую строку, когда не помещаются. Используется для filter-rows,
+   action-bars, badge-списков. */
+.responsiveCluster {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+/* Stack-on-mobile — на десктопе горизонтальный flex, на мобиле
+   стек. Для form-rows и других «двухкомпонентных» строк. */
+.responsiveStack {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+@media (max-width: 767px) {
+  .responsiveStack {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

@@ -79,11 +79,11 @@
 
 DoD на каждую веху: пройдено визуально на 320 / 375 / 768, нет horizontal scroll, touch-targets OK.
 
-- [ ] Веха A
-- [ ] Веха B
-- [ ] Веха C
-- [ ] Веха D
-- [ ] Веха E
+- [x] Веха A — Settings табы (ProjectsTab `7ecf41f`, AppearanceTab `7ecf41f`, TeamTab/SystemTab/ProfileTab уже OK)
+- [x] Веха B — Grid-контейнеры (`6ce7504`)
+- [x] Веха C — Kanban scroll-snap (`52f2d59` Plan 12.2) + checklistLink hover-fix (`6ce7504`). Свайп-табы статусов — отложено как P2.
+- [x] Веха D — Auth + модалки (Modal full-screen на мобиле, LoginForm safe-area)
+- [ ] Веха E — Playwright responsive suite (следующий)
 
 ---
 
@@ -111,13 +111,9 @@ DoD на каждую веху: пройдено визуально на 320 / 3
 
 - [x] Breakpoint-токены `--bp-*` в [globals.css](../../app/globals.css)
 - [x] Правила `dvh/svh`, `hover: hover`, safe-area задокументированы
-- [ ] Универсальный класс `.responsiveGrid` в `globals.css`:
-  ```css
-  .responsiveGrid { display: grid; gap: var(--spacing-3); grid-template-columns: repeat(auto-fit, minmax(min(var(--col-min, 240px), 100%), 1fr)); }
-  ```
-  С возможностью переопределять `--col-min` per-instance.
-- [ ] Helper-класс `.responsiveStack` для кнопочных групп: на мобиле wrap, на десктопе nowrap
-- [ ] (опционально) Layout-примитивы Stack/Cluster/Grid — пока только на новом коде
+- [x] Универсальный класс `.responsiveGrid` в [globals.css](../../app/globals.css) с переопределяемым `--col-min`
+- [x] Helper-класс `.responsiveCluster` (wrap-группа) и `.responsiveStack` (стек на мобиле) в `globals.css`
+- [ ] (опционально) React-примитивы Stack/Cluster/Grid — пока только CSS-классы на новом коде
 
 ---
 
