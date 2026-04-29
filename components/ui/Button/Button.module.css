@@ -44,6 +44,14 @@
   font-size: 14px;
 }
 
+/* На мобиле любой размер Button ≥ 44px по высоте (WCAG 2.5.5
+   touch-target). Визуально остаётся компактным благодаря padding. */
+@media (max-width: 767px) {
+  .sm { height: 44px; font-size: 13px; padding: 0 14px; }
+  .md { height: 44px; font-size: 14px; padding: 0 16px; }
+  .lg { height: 48px; font-size: 15px; padding: 0 20px; }
+}
+
 /* Варианты */
 .primary {
   background: var(--accent);

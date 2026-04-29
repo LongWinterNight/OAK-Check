@@ -101,6 +101,15 @@
   padding-bottom: 16px;
 }
 
+/* Touch-targets ≥ 44 на мобиле (WCAG 2.5.5) */
+@media (max-width: 767px) {
+  .catBtn {
+    height: 44px;
+    padding: 0 16px;
+    font-size: 13px;
+  }
+}
+
 .empty {
   flex: 1;
   display: flex;

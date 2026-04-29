@@ -274,4 +274,10 @@
     max-width: 100%;
     flex: 1 1 100%;
   }
+  /* Touch-targets ≥ 44 на мобиле (WCAG 2.5.5) */
+  .statusBtn {
+    height: 44px;
+    padding: 0 16px;
+    font-size: 13px;
+  }
 }

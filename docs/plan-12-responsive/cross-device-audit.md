@@ -83,7 +83,11 @@ DoD на каждую веху: пройдено визуально на 320 / 3
 - [x] Веха B — Grid-контейнеры (`6ce7504`)
 - [x] Веха C — Kanban scroll-snap (`52f2d59` Plan 12.2) + checklistLink hover-fix (`6ce7504`). Свайп-табы статусов — отложено как P2.
 - [x] Веха D — Auth + модалки (Modal full-screen на мобиле, LoginForm safe-area)
-- [ ] Веха E — Playwright responsive suite (следующий)
+- [x] Веха E — **Playwright responsive suite** работает (`pnpm test:e2e`):
+  - 4 viewport projects (mobile-xs 320, mobile iPhone 13, tablet iPad, desktop 1440)
+  - `no-horizontal-scroll.spec.ts` — 9 URL × 4 viewport, **все проходят**
+  - `touch-targets.spec.ts` — мобильные viewport'ы, выявлены и частично починены нарушения (TopBar avatar, Button-sm, ProjectsGrid filter, Library catBtn — все увеличены до 44 на мобиле). Остаются точечные иконки-кнопки 24-26px на /library/projects — пометить data-touch-ok после ручной проверки или расширить hit-area.
+  - `smoke.spec.ts` — все ключевые URL без console errors
 
 ---
 
