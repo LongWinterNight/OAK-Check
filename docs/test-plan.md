@@ -50,17 +50,21 @@
 
 **Итого P1: 26 тестов. Общий счёт: 200 тестов, ~840мс.**
 
-### P2 — UI-компоненты с логикой (~1 день)
+### P2 — UI-компоненты с логикой ◐ Закрыто 3 из 7
 
-Тесты с `@testing-library/react`, environment `jsdom`.
+Тесты с `@testing-library/react`, environment `jsdom`. Setup в
+`__tests__/setup.ts` подключает `@testing-library/jest-dom/vitest`.
+Per-файл маркер: `// @vitest-environment jsdom`.
 
-- [ ] **`components/ui/Check3`** — клик циклит todo → wip → done → todo, disabled state не реагирует
-- [ ] **`components/ui/Button`** — render, loading, disabled, icon prop
+- [x] **`components/ui/Check3`** — 10 тестов: aria-checked соответствие state, клик циклит todo→wip→done→todo, Enter/Space, disabled, кастомный size
+- [x] **`components/ui/Button`** — 10 тестов: variants/sizes (smoke), loading-spinner, disabled, icon/iconRight, fullWidth, type pass-through
+- [x] **`components/ui/Avatar`** — 12 тестов: initials, заглавные, src priority, online dot, стабильный hash имени → цвет, src=null fallback
 - [ ] **`components/ui/Badge`** — все варианты (neutral/done/wip/blocked/info/oak), dot/без dot
-- [ ] **`components/ui/Avatar`** — initials из имени, src имеет приоритет, size pass-through
 - [ ] **`components/ui/OakRing`** — % → длина дуги (math), color при value=100
 - [ ] **`components/ui/ProgressBar`** — width прогресса
 - [ ] **`components/ui/DatePicker`** — value → display формат, onChange при выборе
+
+**Итого P2 (часть): 32 теста. Общий счёт: 232 теста, 3.67 сек.**
 
 ### P3 — Сложные компоненты с side-effects (~1 день)
 

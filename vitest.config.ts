@@ -7,7 +7,11 @@ export default defineConfig({
   test: {
     environment: 'node',
     globals: true,
-    setupFiles: [],
+    // setup-файл подключается во ВСЕХ тестах (lib + UI). jest-dom matchers
+    // безопасны на node-окружении — просто не активируются без DOM.
+    setupFiles: ['./__tests__/setup.ts'],
+    // e2e/ — это Playwright, не vitest. Не пытаемся выполнить.
+    exclude: ['**/node_modules/**', '**/dist/**', '**/.next/**', 'e2e/**'],
   },
   resolve: {
     alias: {
