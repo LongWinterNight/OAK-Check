@@ -42,11 +42,13 @@
 
 Поведенческие модули — нужны mocks или fake timers.
 
-- [ ] **`lib/rate-limit.ts`** — окно срабатывания, сброс по истечении, отдельные ключи изолированы
-- [ ] **`lib/sse/emitter.ts`** — `subscribe`/`broadcast` с правильной фильтрацией по `projectId`, cleanup умерших подписчиков
-- [ ] **`lib/activity.ts`** — `logActivity` не падает при ошибке Prisma (try/catch внутри), пишет правильные поля
-- [ ] **`lib/auth-guard.ts`** — `requireAuth`/`requireRole`/`requireSelfOrAdmin` (mock `auth()`)
-- [ ] **`lib/storage.ts`** — `getStorageStatus` (mock `fs/promises` + `prisma.aggregate`)
+- [x] **`lib/rate-limit.ts`** — 7 тестов (fake timers, окно/сброс/изоляция/реальный 20/час)
+- [x] **`lib/sse/emitter.ts`** — 4 теста (фильтрация projectId, unsubscribe, dead-controller cleanup)
+- [x] **`lib/activity.ts`** — 4 теста (правильные поля, не падает на ошибке Prisma)
+- [x] **`lib/auth-guard.ts`** — 11 тестов (requireAuth/requireRole/requireSelfOrAdmin × все ветки)
+- [ ] **`lib/storage.ts`** — `getStorageStatus` отложено (низкий риск регрессии)
+
+**Итого P1: 26 тестов. Общий счёт: 200 тестов, ~840мс.**
 
 ### P2 — UI-компоненты с логикой (~1 день)
 
