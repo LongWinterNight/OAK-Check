@@ -66,19 +66,19 @@ Per-файл маркер: `// @vitest-environment jsdom`.
 
 **Итого P2: 63 теста (UI). Общий счёт: 263 теста, 3.57 сек.**
 
-### P3 — Сложные компоненты с side-effects (~1 день)
+### P3 — Сложные компоненты с side-effects ◐ Закрыто 1 из 6
 
 - [ ] **`components/checklist/ItemsList/ChecklistRow`** — 3-state клик, double-click → edit, кнопки visibility по `canManage`, flag-форма требует причину
-- [ ] **`components/checklist/RightPanel/CommentsPanel`** — submit → onSubmit, reply form появляется, edit → onEdit, double-submit заблокирован 600мс
+- [x] **`components/checklist/RightPanel/CommentsPanel`** — 14 тестов: submit с trim, double-submit блок 600мс, Enter/Shift+Enter, pendingPin + onPinClear, бейдж «изм.», delete видимость (автор/ADMIN/чужой), reply форма, эмодзи-fallback
 - [ ] **`components/projects/CoverPicker`** — выбор градиента, drag image, размер validation
 - [ ] **`components/kanban/KanbanBoard`** — drag → status change callback (с моком dnd-kit)
 - [ ] **`components/checklist/RightPanel/RenderPreview`** — pin click → onPinSet, version switch
 - [ ] **`components/checklist/RightPanel/LightboxView`** — wheel zoom math, scale clamp, reset
 
-### P4 — Store и хуки (~0.3 дня)
+### P4 — Store и хуки ◐ Закрыто 1 из 2
 
-- [ ] **`store/useThemeStore`** — `toggle` инвертирует, `setAccent` пишет в DOM `data-accent`, `setRadius` пишет CSS-переменную
-- [ ] **`hooks/useSSE`** — устанавливает EventSource с правильным URL, reconnect with backoff, cleanup на unmount
+- [x] **`store/useThemeStore`** — 9 тестов: начальное состояние, toggle, setAccent, setRadius, applyToDOM комбо
+- [ ] **`hooks/useSSE`** — отложен (требует мок EventSource, нетривиально)
 
 ### P5 — API integration (~1.5 дня)
 
