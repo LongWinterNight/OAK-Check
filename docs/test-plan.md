@@ -59,12 +59,12 @@ Per-файл маркер: `// @vitest-environment jsdom`.
 - [x] **`components/ui/Check3`** — 10 тестов: aria-checked соответствие state, клик циклит todo→wip→done→todo, Enter/Space, disabled, кастомный size
 - [x] **`components/ui/Button`** — 10 тестов: variants/sizes (smoke), loading-spinner, disabled, icon/iconRight, fullWidth, type pass-through
 - [x] **`components/ui/Avatar`** — 12 тестов: initials, заглавные, src priority, online dot, стабильный hash имени → цвет, src=null fallback
-- [ ] **`components/ui/Badge`** — все варианты (neutral/done/wip/blocked/info/oak), dot/без dot
-- [ ] **`components/ui/OakRing`** — % → длина дуги (math), color при value=100
-- [ ] **`components/ui/ProgressBar`** — width прогресса
-- [ ] **`components/ui/DatePicker`** — value → display формат, onChange при выборе
+- [x] **`components/ui/Badge`** — 10 тестов: 7 kinds × class match, 2 sizes, dot on/off, icon prop, className пропускается
+- [x] **`components/ui/OakRing`** — 11 тестов: aria-label, округление текста, dashoffset = circumference при 0/0 при 100, цвет --done/--accent, clamp, segments → правильное число circle, custom size
+- [x] **`components/ui/ProgressBar`** — 7 тестов: aria role + valuenow, width fill, clamp <0 и >100, custom height/color, value=0
+- [ ] **`components/ui/DatePicker`** — отложен (использует portal → нужна более сложная настройка)
 
-**Итого P2 (часть): 32 теста. Общий счёт: 232 теста, 3.67 сек.**
+**Итого P2: 63 теста (UI). Общий счёт: 263 теста, 3.57 сек.**
 
 ### P3 — Сложные компоненты с side-effects (~1 день)
 
