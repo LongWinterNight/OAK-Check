@@ -45,6 +45,9 @@ const MATRIX: Record<keyof typeof can, Record<Role, boolean>> = {
   flagItem: {
     ARTIST: true,  LEAD: true,  QA: true,  POST: true,  PM: true,  ADMIN: true,
   },
+  exportProject: {
+    ARTIST: false, LEAD: false, QA: false, POST: false, PM: true,  ADMIN: true,
+  },
 };
 
 describe('lib/roles — can.* matrix (RBAC спецификация)', () => {
@@ -111,9 +114,10 @@ describe('lib/roles — структурные проверки', () => {
     }
   });
 
-  it('editProject/deleteProject одинаковы (PM+ADMIN)', () => {
+  it('editProject/deleteProject/exportProject одинаковы (PM+ADMIN)', () => {
     for (const role of ALL_ROLES) {
       expect(can.editProject(role)).toBe(can.deleteProject(role));
+      expect(can.editProject(role)).toBe(can.exportProject(role));
     }
   });
 

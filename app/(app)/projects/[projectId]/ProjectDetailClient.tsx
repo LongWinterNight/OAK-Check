@@ -7,6 +7,7 @@ import { Badge, Button, ProgressBar, ConfirmDialog } from '@/components/ui';
 import { Icons } from '@/components/icons';
 import { NewShotModal } from '@/components/projects/NewShotModal';
 import { EditShotModal } from '@/components/projects/EditShotModal';
+import { ApplyChecklistModal } from '@/components/projects/ApplyChecklistModal';
 import { toast } from '@/components/ui/Toast/toastStore';
 import { shotStatusBadgeKind } from '@/lib/utils';
 import { can, type Role } from '@/lib/roles';
@@ -102,6 +103,7 @@ export default function ProjectDetailClient({
   const [editTarget, setEditTarget] = useState<ShotRow | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ShotRow | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [checklistTarget, setChecklistTarget] = useState<ShotRow | null>(null);
 
   const handleCreated = (shot: ShotRow) => {
     setShots((prev) => [...prev, shot]);
@@ -130,7 +132,8 @@ export default function ProjectDetailClient({
   const canEdit = can.editShot(userRole);
   const canDelete = can.deleteShot(userRole);
   const canCreate = can.createShot(userRole);
-  const canExport = can.deleteProject(userRole); // PM + ADMIN
+  const canExport = can.exportProject(userRole);
+  const canManage = can.manageChecklist(userRole);
 
   return (
     <>
@@ -205,6 +208,16 @@ export default function ProjectDetailClient({
                 </td>
                 <td className={styles.tdAction}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'flex-end' }}>
+                    {canManage && (
+                      <button
+                        className={styles.templateBtn}
+                        title="Применить шаблон чек-листа"
+                        onClick={() => setChecklistTarget(shot)}
+                      >
+                        <Icons.Plus size={11} />
+                        Шаблон
+                      </button>
+                    )}
                     <Link href={`/projects/${projectId}/${shot.id}/checklist`} className={styles.link}>
                       Чек-лист →
                     </Link>
@@ -282,6 +295,15 @@ export default function ProjectDetailClient({
           loading={deleting}
           onClose={() => setDeleteTarget(null)}
           onConfirm={handleDelete}
+        />
+      )}
+
+      {checklistTarget && (
+        <ApplyChecklistModal
+          shotId={checklistTarget.id}
+          shotCode={checklistTarget.code}
+          onClose={() => setChecklistTarget(null)}
+          onApplied={() => setChecklistTarget(null)}
         />
       )}
     </>

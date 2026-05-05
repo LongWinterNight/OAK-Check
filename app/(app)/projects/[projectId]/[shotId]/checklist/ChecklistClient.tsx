@@ -99,15 +99,22 @@ export default function ChecklistClient({
   const canManage = can.manageChecklist(userRole);
 
   const handleStateChange = async (itemId: string, state: 'TODO' | 'WIP' | 'DONE' | 'BLOCKED') => {
+    const prevChapters = chapters;
     applyStateChange(itemId, state);
     try {
-      await fetch(`/api/shots/${shot.id}/checklist/${itemId}`, {
+      const res = await fetch(`/api/shots/${shot.id}/checklist/${itemId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ state }),
       });
+      if (!res.ok) {
+        setChapters(prevChapters);
+        const d = await res.json().catch(() => ({}));
+        toast.error(d.message ?? 'Не удалось сохранить изменение');
+      }
     } catch {
-      toast.error('Не удалось сохранить изменение');
+      setChapters(prevChapters);
+      toast.error('Ошибка сети');
     }
   };
 
