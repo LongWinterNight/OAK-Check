@@ -87,11 +87,46 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
 
   callbacks: {
-    jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
+      // На логине / при явном update() — кладём свежие данные из user
       if (user) {
         token.id = user.id ?? '';
         token.role = ((user as Record<string, unknown>).role as string) ?? 'ARTIST';
+        token.roleRefreshedAt = Date.now();
+        return token;
       }
+
+      // На каждом последующем декоде токена обновляем роль из БД,
+      // но не чаще раза в 60с — чтобы не бить базу на каждый запрос.
+      // Без этого после смены роли админом у затронутого пользователя
+      // оставалась бы устаревшая роль в сессии до следующего логина.
+      const ROLE_TTL_MS = 60_000;
+      const lastRefresh = (token.roleRefreshedAt as number | undefined) ?? 0;
+      const force = trigger === 'update';
+      const stale = Date.now() - lastRefresh >= ROLE_TTL_MS;
+
+      if (!force && !stale) return token;
+
+      const tokenId = token.id;
+      if (typeof tokenId !== 'string' || !tokenId || tokenId === 'dev-safan') {
+        token.roleRefreshedAt = Date.now();
+        return token;
+      }
+
+      try {
+        const { prisma } = await import('@/lib/prisma');
+        const fresh = await prisma.user.findUnique({
+          where: { id: tokenId },
+          select: { role: true },
+        });
+        if (fresh) {
+          token.role = fresh.role;
+          token.roleRefreshedAt = Date.now();
+        }
+      } catch {
+        // БД временно недоступна — не разлогиниваем, оставляем прошлую роль
+      }
+
       return token;
     },
     session({ session, token }) {
