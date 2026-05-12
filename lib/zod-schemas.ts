@@ -126,7 +126,16 @@ export const UpdateMeSchema = z.object({
   username: UsernameSchema.optional(),
   newPassword: z.string().min(6).optional(),
   currentPassword: z.string().optional(),
-  avatarUrl: z.string().url().nullable().optional(),
+  // avatarUrl может быть и абсолютным URL, и относительным путём
+  // (/api/files/<uuid>.<ext> от нашего /api/upload). Поэтому валидируем
+  // как обычную строку с разумным capом и проверкой на безопасные префиксы.
+  avatarUrl: z.string()
+    .max(500)
+    .refine((v) => v.startsWith('/') || /^https?:\/\//i.test(v), {
+      message: 'Некорректный путь к файлу',
+    })
+    .nullable()
+    .optional(),
 });
 
 // Авторизация / регистрация

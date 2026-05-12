@@ -28,7 +28,11 @@ export async function PATCH(req: NextRequest) {
 
     const body = await req.json();
     const parsed = UpdateMeSchema.safeParse(body);
-    if (!parsed.success) return NextResponse.json({ error: 'Невалидные данные' }, { status: 400 });
+    if (!parsed.success) {
+      // Отдаём первое сообщение от zod чтобы пользователь видел конкретику
+      const msg = parsed.error.issues[0]?.message ?? 'Невалидные данные';
+      return NextResponse.json({ error: msg }, { status: 400 });
+    }
 
     const { name, email, username, newPassword, currentPassword, avatarUrl } = parsed.data;
     const updateData: Record<string, string | null> = {};
