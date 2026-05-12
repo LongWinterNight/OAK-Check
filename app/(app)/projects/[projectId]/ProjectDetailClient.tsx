@@ -163,9 +163,8 @@ function ShotRowItem({
         )}
       </div>
 
-      {/* Title + code + badges */}
+      {/* Code (kicker) + title + badges — код всегда сверху как принято в студии */}
       <div className={styles.shotTitleCol}>
-        <div className={styles.shotTitle}>{shot.title}</div>
         <div className={styles.shotSub}>
           <span className={styles.shotCode}>{shot.code}</span>
           {shot.blockedItemsCount > 0 && (
@@ -177,6 +176,7 @@ function ShotRowItem({
             </span>
           )}
         </div>
+        <div className={styles.shotTitle}>{shot.title}</div>
       </div>
 
       {/* Stage */}
