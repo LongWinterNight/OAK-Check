@@ -30,11 +30,33 @@ export async function PATCH(req: NextRequest) {
     const parsed = UpdateMeSchema.safeParse(body);
     if (!parsed.success) return NextResponse.json({ error: 'Невалидные данные' }, { status: 400 });
 
-    const { name, newPassword, currentPassword, avatarUrl } = parsed.data;
+    const { name, email, username, newPassword, currentPassword, avatarUrl } = parsed.data;
     const updateData: Record<string, string | null> = {};
 
     if (name) updateData.name = name;
     if (avatarUrl !== undefined) updateData.avatarUrl = avatarUrl;
+
+    // Email — проверяем уникальность (без учёта регистра, храним как ввёл)
+    if (email) {
+      const normalized = email.trim().toLowerCase();
+      const existing = await prisma.user.findFirst({
+        where: { email: { equals: normalized, mode: 'insensitive' }, NOT: { id: session.user.id } },
+        select: { id: true },
+      });
+      if (existing) return NextResponse.json({ error: 'Email уже занят' }, { status: 409 });
+      updateData.email = normalized;
+    }
+
+    // Username — lowercase, уникальный
+    if (username) {
+      const normalized = username.trim().toLowerCase();
+      const existing = await prisma.user.findFirst({
+        where: { username: { equals: normalized, mode: 'insensitive' }, NOT: { id: session.user.id } },
+        select: { id: true },
+      });
+      if (existing) return NextResponse.json({ error: 'Логин уже занят' }, { status: 409 });
+      updateData.username = normalized;
+    }
 
     if (newPassword) {
       if (!currentPassword) {

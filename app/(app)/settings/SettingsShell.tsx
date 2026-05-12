@@ -22,7 +22,7 @@ const ALL_TABS: { id: TabId; label: string; icon: React.ReactNode; desc: string;
 import type { StorageStatus } from '@/lib/storage';
 
 interface SettingsShellProps {
-  currentUser: { id: string; name: string; email: string; role: string; avatarUrl: string | null; lastLoginAt: string | null } | null;
+  currentUser: { id: string; name: string; email: string; username?: string | null; role: string; avatarUrl: string | null; lastLoginAt: string | null } | null;
   users: { id: string; name: string; email: string; role: string; online: boolean; avatarUrl: string | null; createdAt: string }[];
   projects: { id: string; title: string; client: string; status: string; shotsCount: number; coverGradient: string; dueDate: string | null }[];
   systemStats: { totalShots: number; totalItems: number; totalComments: number; totalVersions: number };

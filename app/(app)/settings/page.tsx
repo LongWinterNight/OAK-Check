@@ -12,7 +12,7 @@ export default async function SettingsPage() {
   const [users, projects, stats, storage] = await Promise.all([
     prisma.user.findMany({
       orderBy: { name: 'asc' },
-      select: { id: true, name: true, email: true, role: true, online: true, avatarUrl: true, createdAt: true, lastLoginAt: true, lastSeenAt: true },
+      select: { id: true, name: true, email: true, username: true, role: true, online: true, avatarUrl: true, createdAt: true, lastLoginAt: true, lastSeenAt: true },
     }),
     prisma.project.findMany({
       orderBy: { createdAt: 'desc' },
@@ -37,6 +37,7 @@ export default async function SettingsPage() {
     id: session.user.id,
     name: session.user.name ?? '',
     email: session.user.email ?? '',
+    username: currentUserDb?.username ?? null,
     role: session.user.role,
     avatarUrl: currentUserDb?.avatarUrl ?? null,
     lastLoginAt: currentUserDb?.lastLoginAt?.toISOString() ?? null,

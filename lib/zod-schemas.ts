@@ -112,8 +112,18 @@ export const UpdateUserRoleSchema = z.object({
   online: z.boolean().optional(),
 });
 
+// Логин: латинские буквы/цифры/нижнее подчёркивание, 3-30 символов.
+// Регистронезависимый — храним lowercase.
+export const UsernameSchema = z.string()
+  .trim()
+  .min(3, 'Минимум 3 символа')
+  .max(30, 'Максимум 30 символов')
+  .regex(/^[a-zA-Z0-9_]+$/, 'Допустимы только латинские буквы, цифры и _');
+
 export const UpdateMeSchema = z.object({
   name: z.string().min(1).max(100).optional(),
+  email: z.string().email('Некорректный email').max(255).optional(),
+  username: UsernameSchema.optional(),
   newPassword: z.string().min(6).optional(),
   currentPassword: z.string().optional(),
   avatarUrl: z.string().url().nullable().optional(),

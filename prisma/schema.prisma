@@ -9,6 +9,7 @@ datasource db {
 model User {
   id            String    @id @default(cuid())
   email         String    @unique
+  username      String?   @unique
   name          String
   role          Role      @default(ARTIST)
   avatarUrl     String?

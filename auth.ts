@@ -47,12 +47,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return { id: DEV_USER.id, name: DEV_USER.name, email: DEV_USER.email, role: DEV_USER.role };
         }
 
-        // Аккаунты из БД
+        // Аккаунты из БД — ищем по email ИЛИ username (регистр игнорим)
         try {
           const { prisma } = await import('@/lib/prisma');
           const { default: bcrypt } = await import('bcryptjs');
 
-          const user = await prisma.user.findUnique({ where: { email: identifier } });
+          const id = identifier.trim().toLowerCase();
+          const user = await prisma.user.findFirst({
+            where: {
+              OR: [
+                { email: { equals: id, mode: 'insensitive' } },
+                { username: { equals: id, mode: 'insensitive' } },
+              ],
+            },
+          });
           if (!user?.passwordHash) return null;
 
           // Проверка блокировки

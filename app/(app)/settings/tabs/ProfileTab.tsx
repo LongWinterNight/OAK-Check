@@ -5,11 +5,13 @@ import { Icons } from '@/components/icons';
 import styles from './tab.module.css';
 
 interface ProfileTabProps {
-  currentUser: { id: string; name: string; email: string; role: string; avatarUrl: string | null; lastLoginAt: string | null } | null;
+  currentUser: { id: string; name: string; email: string; username?: string | null; role: string; avatarUrl: string | null; lastLoginAt: string | null } | null;
 }
 
 export default function ProfileTab({ currentUser }: ProfileTabProps) {
   const [name, setName] = useState(currentUser?.name ?? '');
+  const [email, setEmail] = useState(currentUser?.email ?? '');
+  const [username, setUsername] = useState(currentUser?.username ?? '');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(currentUser?.avatarUrl ?? null);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
@@ -66,7 +68,16 @@ export default function ProfileTab({ currentUser }: ProfileTabProps) {
     setSaving(true);
     setStatus('idle');
     try {
-      await patchMe({ name });
+      const body: Record<string, string> = { name };
+      const trimmedEmail = email.trim();
+      const trimmedUsername = username.trim();
+      if (trimmedEmail && trimmedEmail.toLowerCase() !== (currentUser?.email ?? '').toLowerCase()) {
+        body.email = trimmedEmail;
+      }
+      if (trimmedUsername && trimmedUsername.toLowerCase() !== (currentUser?.username ?? '').toLowerCase()) {
+        body.username = trimmedUsername;
+      }
+      await patchMe(body);
       setStatus('ok');
     } catch (e: unknown) {
       setErrMsg(e instanceof Error ? e.message : 'Ошибка');
@@ -138,8 +149,23 @@ export default function ProfileTab({ currentUser }: ProfileTabProps) {
             </div>
             <div className={styles.field}>
               <label className={styles.label}>Email</label>
-              <input className={styles.input} value={currentUser?.email ?? ''} disabled style={{ opacity: 0.5 }} />
+              <input className={styles.input} type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@oak3d.ru" />
             </div>
+          </div>
+
+          <div className={styles.fieldRow}>
+            <div className={styles.field}>
+              <label className={styles.label}>Логин</label>
+              <input
+                className={styles.input}
+                value={username}
+                onChange={e => setUsername(e.target.value)}
+                placeholder="например, ivan_petrov"
+                autoComplete="off"
+              />
+              <span className={styles.hint}>Латинские буквы, цифры и _. Можно использовать вместо email для входа.</span>
+            </div>
+            <div className={styles.field} />
           </div>
 
           <div className={styles.actions}>
