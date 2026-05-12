@@ -224,18 +224,20 @@ export default function CommentsPanel({
                 <button
                   className={styles.iconBtn}
                   title="Редактировать"
+                  aria-label="Редактировать комментарий"
                   onClick={() => { setEditingId(comment.id); setReplyOpenFor(null); }}
                 >
-                  <Icons.Pen size={11} />
+                  <Icons.Pen size={14} />
                 </button>
               )}
               {canDelete && onDelete && (
                 <button
                   className={[styles.iconBtn, styles.iconBtnDanger].join(' ')}
                   title={isOwner ? 'Удалить' : 'Удалить (как админ)'}
+                  aria-label="Удалить комментарий"
                   onClick={() => onDelete(comment.id)}
                 >
-                  <Icons.X size={11} />
+                  <Icons.X size={14} />
                 </button>
               )}
             </div>
@@ -262,7 +264,7 @@ export default function CommentsPanel({
               className={styles.replyBtn}
               onClick={() => { setReplyOpenFor(replyOpenFor === comment.id ? null : comment.id); setEditingId(null); }}
             >
-              <Icons.Msg size={11} /> {pinNum ? `Ответить на пин #${pinNum}` : 'Ответить'}
+              <Icons.Msg size={13} /> {pinNum ? `Ответить на пин #${pinNum}` : 'Ответить'}
             </button>
           )}
 
