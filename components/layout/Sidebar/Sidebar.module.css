@@ -147,8 +147,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  height: 34px;
-  padding: 0 10px;
+  min-height: 34px;
+  padding: 6px 10px;
   border-radius: var(--radius);
   border: 1px solid transparent;
   cursor: pointer;
@@ -177,6 +177,15 @@
 
 .navLabel {
   flex: 1;
+  min-width: 0;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+  /* Длинные названия проектов («304_Donstroy_Reka_4/Донстрой_Река_4»)
+     переносятся максимум на 2 строки с многоточием. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 
 .navBadge {
