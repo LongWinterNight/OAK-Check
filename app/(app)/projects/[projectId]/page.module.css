@@ -302,6 +302,8 @@
   background: color-mix(in srgb, var(--blocked) 12%, transparent);
   color: var(--blocked);
   border: 1px solid color-mix(in srgb, var(--blocked) 30%, transparent);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .shotComments {
   display: inline-flex;
@@ -310,6 +312,8 @@
   font-size: 10.5px;
   font-family: var(--font-mono);
   color: var(--fg-subtle);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .shotStage {
