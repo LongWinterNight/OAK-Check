@@ -16,6 +16,9 @@ function tooltipText(body: string): string {
 interface RenderPreviewProps {
   versions: RenderVersion[];
   comments: Comment[];
+  // Controlled — версия задаётся снаружи (RightPanel хранит state)
+  activeVersion?: string;
+  onActiveVersionChange?: (version: string) => void;
   shotCode?: string;
   shotTitle?: string;
   canDeleteVersion?: boolean;
@@ -40,6 +43,8 @@ interface RenderPreviewProps {
 export default function RenderPreview({
   versions,
   comments,
+  activeVersion: activeVersionProp,
+  onActiveVersionChange,
   shotCode,
   shotTitle,
   canDeleteVersion = false,
@@ -59,9 +64,15 @@ export default function RenderPreview({
   onCommentReply,
   onCommentEdit,
 }: RenderPreviewProps) {
-  const [activeVersion, setActiveVersion] = useState(
+  // Контролируемый (через RightPanel) или uncontrolled fallback
+  const [internalVersion, setInternalVersion] = useState(
     versions.length > 0 ? versions[versions.length - 1].version : ''
   );
+  const activeVersion = activeVersionProp ?? internalVersion;
+  const setActiveVersion = (v: string) => {
+    if (onActiveVersionChange) onActiveVersionChange(v);
+    else setInternalVersion(v);
+  };
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [pinMode, setPinMode] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);

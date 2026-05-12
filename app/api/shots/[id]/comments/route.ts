@@ -61,6 +61,17 @@ export async function POST(
     });
     if (!shot) return apiError('NOT_FOUND', 'Шот не найден');
 
+    // Если указан versionId — версия должна принадлежать этому же шоту
+    if (parsed.data.versionId) {
+      const ver = await prisma.renderVersion.findUnique({
+        where: { id: parsed.data.versionId },
+        select: { shotId: true },
+      });
+      if (!ver || ver.shotId !== shotId) {
+        return apiError('VALIDATION_ERROR', 'Версия не принадлежит этому шоту');
+      }
+    }
+
     const comment = await prisma.comment.create({
       data: { shotId, userId: user.id, ...parsed.data },
       include: { user: { select: { id: true, name: true, avatarUrl: true } } },

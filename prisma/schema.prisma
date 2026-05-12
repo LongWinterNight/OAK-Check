@@ -152,6 +152,7 @@ enum ItemState {
 model Comment {
   id        String   @id @default(cuid())
   shotId    String
+  versionId String?
   userId    String
   body      String
   pinX      Float?
@@ -160,12 +161,14 @@ model Comment {
   createdAt DateTime @default(now())
   editedAt  DateTime?
 
-  shot    Shot      @relation(fields: [shotId], references: [id], onDelete: Cascade)
-  user    User      @relation(fields: [userId], references: [id])
-  parent  Comment?  @relation("Replies", fields: [parentId], references: [id])
-  replies Comment[] @relation("Replies")
+  shot    Shot           @relation(fields: [shotId], references: [id], onDelete: Cascade)
+  version RenderVersion? @relation(fields: [versionId], references: [id], onDelete: SetNull)
+  user    User           @relation(fields: [userId], references: [id])
+  parent  Comment?       @relation("Replies", fields: [parentId], references: [id])
+  replies Comment[]      @relation("Replies")
 
   @@index([shotId])
+  @@index([versionId])
   @@index([userId])
   @@index([parentId])
   @@map("comments")
@@ -182,7 +185,8 @@ model RenderVersion {
   fileSize     Int?
   createdAt    DateTime @default(now())
 
-  shot Shot @relation(fields: [shotId], references: [id], onDelete: Cascade)
+  shot     Shot      @relation(fields: [shotId], references: [id], onDelete: Cascade)
+  comments Comment[]
 
   @@index([shotId])
   @@map("render_versions")

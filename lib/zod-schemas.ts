@@ -63,6 +63,7 @@ export const CreateCommentSchema = z.object({
   pinX: z.number().min(0).max(100).optional(),
   pinY: z.number().min(0).max(100).optional(),
   parentId: z.string().cuid().optional(),
+  versionId: z.string().cuid().optional(),
 }).refine(
   (data) => (data.pinX === undefined) === (data.pinY === undefined),
   { message: 'pinX и pinY должны передаваться вместе' },

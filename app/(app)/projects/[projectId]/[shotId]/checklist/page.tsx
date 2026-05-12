@@ -94,6 +94,7 @@ export default async function ChecklistPage({ params }: Props) {
     pinX: com.pinX ?? null,
     pinY: com.pinY ?? null,
     parentId: com.parentId ?? null,
+    versionId: com.versionId ?? null,
   }));
 
   const shotData = {

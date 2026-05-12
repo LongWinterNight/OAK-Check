@@ -80,6 +80,7 @@ export interface ChapterWithItems extends Chapter {
 export interface Comment {
   id: string;
   shotId: string;
+  versionId: string | null;
   userId: string;
   body: string;
   pinX: number | null;

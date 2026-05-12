@@ -45,6 +45,9 @@ export default function ChecklistClient({
   const [showUpload, setShowUpload] = useState(false);
   const [shotStatus, setShotStatus] = useState(shot.status);
   const [assignee, setAssignee] = useState(shot.assignee ?? null);
+  // Активная версия для scope'а новых пинов/комментариев — RightPanel
+  // прокидывает наверх, чтобы при создании коммента мы знали к чему привязывать.
+  const [activeVersionId, setActiveVersionId] = useState<string | null>(null);
   // Pin flow: temporary pin → user types comment → submit attaches pin
   const [pendingPin, setPendingPin] = useState<{ x: number; y: number } | null>(null);
   // Bidirectional sync between render pins and comment list
@@ -222,6 +225,9 @@ export default function ChecklistClient({
           body: trimmed,
           ...(pin ? { pinX: pin.x, pinY: pin.y } : {}),
           ...(parentId ? { parentId } : {}),
+          // Прикрепляем к текущей активной версии — чтобы коммент/пин
+          // показывался только на ней (и в ленте этой версии)
+          ...(activeVersionId ? { versionId: activeVersionId } : {}),
         }),
       });
       if (res.ok) {
@@ -397,6 +403,7 @@ export default function ChecklistClient({
             currentUserRole={userRole}
             shotCode={shot.code}
             shotTitle={shot.title}
+            onActiveVersionChange={setActiveVersionId}
             canDeleteVersion={can.deleteShot(userRole)}
             canPin={can.pinComment(userRole)}
             pendingPin={pendingPin}
