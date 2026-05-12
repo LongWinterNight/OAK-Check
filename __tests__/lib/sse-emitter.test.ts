@@ -27,8 +27,8 @@ describe('lib/sse/emitter', () => {
     const a = makeController();
     const b = makeController();
 
-    subscribe('proj1', a.controller);
-    subscribe('proj1', b.controller);
+    subscribe('proj1', a.controller, 'u1');
+    subscribe('proj1', b.controller, 'u2');
 
     const event: SSEEvent = { type: 'comment:added', shotId: 's1', comment: { id: 'c1' } };
     broadcast('proj1', event);
@@ -48,8 +48,8 @@ describe('lib/sse/emitter', () => {
     const proj1 = makeController();
     const proj2 = makeController();
 
-    subscribe('proj1', proj1.controller);
-    subscribe('proj2', proj2.controller);
+    subscribe('proj1', proj1.controller, 'u1');
+    subscribe('proj2', proj2.controller, 'u2');
 
     broadcast('proj1', { type: 'comment:added', shotId: 's1', comment: {} });
 
@@ -59,7 +59,7 @@ describe('lib/sse/emitter', () => {
 
   it('unsubscribe — больше не получает события', () => {
     const a = makeController();
-    const unsubscribe = subscribe('proj1', a.controller);
+    const unsubscribe = subscribe('proj1', a.controller, 'u1');
 
     broadcast('proj1', { type: 'shot:status', shotId: 's1', status: 'WIP' });
     expect(a.controller.enqueue).toHaveBeenCalledTimes(1);
@@ -78,8 +78,8 @@ describe('lib/sse/emitter', () => {
     } as unknown as ReadableStreamDefaultController;
     const alive = makeController();
 
-    subscribe('proj1', dead);
-    subscribe('proj1', alive.controller);
+    subscribe('proj1', dead, 'u1');
+    subscribe('proj1', alive.controller, 'u2');
 
     // Первый broadcast — dead падает, удаляется
     broadcast('proj1', { type: 'comment:added', shotId: 's1', comment: {} });

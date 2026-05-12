@@ -5,6 +5,7 @@ import { requireRole, requireSelfOrAdmin } from '@/lib/auth-guard';
 import { apiError } from '@/lib/api-error';
 import { UpdateUserRoleSchema } from '@/lib/zod-schemas';
 import { logger } from '@/lib/logger';
+import { broadcastToUser } from '@/lib/sse/emitter';
 
 export async function PATCH(
   req: NextRequest,
@@ -35,6 +36,14 @@ export async function PATCH(
         userId: user.id,
         type: 'USER_ROLE_CHANGED',
         message: `${user.name} изменил роль ${updated.name} → ${parsed.data.role}`,
+      });
+
+      // Мгновенный refresh JWT у затронутого пользователя — клиент
+      // получает событие через /api/sse/me и дёргает session.update()
+      broadcastToUser(id, {
+        type: 'user:role-changed',
+        userId: id,
+        role: parsed.data.role,
       });
     }
 

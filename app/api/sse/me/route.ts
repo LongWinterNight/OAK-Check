@@ -3,12 +3,12 @@ import { auth } from '@/auth';
 
 export const dynamic = 'force-dynamic';
 
-const MAX_CONNECTION_MS = 10 * 60_000; // 10 minutes — client reconnects automatically
+// Глобальный SSE-канал на пользователя. Доставляет события вида user:*
+// (например, мгновенное обновление роли после смены админом). Mount-ится
+// один раз в Providers и держится пока вкладка открыта.
+const MAX_CONNECTION_MS = 10 * 60_000; // 10 min — EventSource переподключится сам
 
-export async function GET(
-  req: Request,
-  { params }: { params: Promise<{ projectId: string }> }
-) {
+export async function GET(req: Request) {
   const session = await auth();
   if (!session?.user?.id) {
     return new Response(JSON.stringify({ error: 'Не авторизован' }), {
@@ -17,7 +17,7 @@ export async function GET(
     });
   }
 
-  const { projectId } = await params;
+  const userId = session.user.id as string;
 
   let keepalive: ReturnType<typeof setInterval> | undefined;
   let timeout: ReturnType<typeof setTimeout> | undefined;
@@ -27,7 +27,8 @@ export async function GET(
     start(controller) {
       controller.enqueue(new TextEncoder().encode(': ping\n\n'));
 
-      unsubscribe = subscribe(projectId, controller, session.user!.id as string);
+      // projectId = null означает «глобальный пользовательский канал»
+      unsubscribe = subscribe(null, controller, userId);
 
       keepalive = setInterval(() => {
         try {
@@ -37,13 +38,11 @@ export async function GET(
         }
       }, 25_000);
 
-      // Close after MAX_CONNECTION_MS — EventSource reconnects automatically.
       timeout = setTimeout(() => {
         try { controller.close(); } catch { /* already closed */ }
         cleanup();
       }, MAX_CONNECTION_MS);
 
-      // Handle client disconnect via AbortSignal.
       req.signal?.addEventListener('abort', () => {
         cleanup();
       });
