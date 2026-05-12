@@ -26,7 +26,6 @@ export const CreateShotSchema = z.object({
   status: z.enum(['TODO', 'WIP', 'REVIEW', 'DONE']).optional(),
   assigneeId: z.string().cuid().optional(),
   dueDate: z.string().nullable().optional(),
-  software: z.string().optional(),
   resolution: z.string().optional(),
 });
 
@@ -36,7 +35,6 @@ export const UpdateShotSchema = z.object({
   status: z.enum(['TODO', 'WIP', 'REVIEW', 'DONE']).optional(),
   assigneeId: z.string().cuid().nullable().optional(),
   dueDate: z.string().nullable().optional(),
-  software: z.string().optional(),
   resolution: z.string().optional(),
   order: z.number().int().optional(),
 });

@@ -49,8 +49,6 @@ export function NewShotModal({ projectId, defaultStatus, onClose, onCreated }: N
         body: JSON.stringify({
           title: title.trim(),
           code: code.trim().toUpperCase(),
-          // software не указываем — студия не трекает ПО на уровне шота,
-          // в БД подхватится default из prisma schema
           resolution: resolution.trim() || undefined,
           dueDate: dueDate || undefined,
           status: defaultStatus || undefined,

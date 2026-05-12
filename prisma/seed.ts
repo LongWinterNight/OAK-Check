@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+﻿import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import bcrypt from 'bcryptjs';
 
@@ -102,7 +102,6 @@ async function main() {
       projectId: 'proj_skolkovo',
       code: 'SKO_SH04',
       title: 'Shot 04 · Lobby',
-      software: '3dsmax 2024 · V-Ray 6.2',
       resolution: '3840×2160',
       status: 'WIP',
       assigneeId: 'u1',
@@ -216,7 +215,6 @@ async function main() {
       data: {
         projectId: 'proj_skolkovo',
         ...s,
-        software: '3dsmax 2024 · V-Ray 6.2',
         resolution: '3840×2160',
         dueDate: new Date('2026-04-24'),
       },
@@ -231,7 +229,6 @@ async function main() {
       title: 'Shot 03 · Living Room',
       status: 'DONE',
       assigneeId: 'u1',
-      software: '3dsmax 2024 · Corona 10',
       resolution: '3840×2160',
       dueDate: new Date('2026-04-12'),
       order: 3,
@@ -245,7 +242,6 @@ async function main() {
       title: 'Shot 05 · Bathroom',
       status: 'DONE',
       assigneeId: 'u3',
-      software: '3dsmax 2024 · Corona 10',
       resolution: '3840×2160',
       dueDate: new Date('2026-04-12'),
       order: 5,
@@ -260,7 +256,6 @@ async function main() {
       title: 'Shot 02 · Facade Evening',
       status: 'TODO',
       assigneeId: 'u3',
-      software: '3dsmax 2024 · V-Ray 6.2',
       resolution: '5120×2880',
       dueDate: new Date('2026-04-28'),
       order: 2,
@@ -275,7 +270,6 @@ async function main() {
       title: 'Shot 11 · Kitchen',
       status: 'WIP',
       assigneeId: 'u1',
-      software: '3dsmax 2024 · V-Ray 6.2',
       resolution: '3840×2160',
       dueDate: new Date('2026-05-02'),
       order: 11,

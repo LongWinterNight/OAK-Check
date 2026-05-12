@@ -8,7 +8,6 @@ interface ShotData {
   id: string;
   code: string;
   title: string;
-  software?: string;
   resolution?: string;
   dueDate?: string | null;
   status?: string;
@@ -23,7 +22,6 @@ interface EditShotModalProps {
 export function EditShotModal({ shot, onClose, onUpdated }: EditShotModalProps) {
   const [title, setTitle] = useState(shot.title);
   const [code, setCode] = useState(shot.code);
-  const [software, setSoftware] = useState(shot.software ?? '');
   const [resolution, setResolution] = useState(shot.resolution ?? '');
   const [dueDate, setDueDate] = useState(
     shot.dueDate ? new Date(shot.dueDate).toISOString().split('T')[0] : ''
@@ -51,7 +49,6 @@ export function EditShotModal({ shot, onClose, onUpdated }: EditShotModalProps) 
         body: JSON.stringify({
           title: title.trim(),
           code: code.trim().toUpperCase(),
-          software: software.trim() || undefined,
           resolution: resolution.trim() || undefined,
           dueDate: dueDate || null,
         }),
@@ -107,18 +104,13 @@ export function EditShotModal({ shot, onClose, onUpdated }: EditShotModalProps) 
 
         <div className={styles.row}>
           <div className={styles.field}>
-            <label className={styles.label}>ПО</label>
-            <input className={styles.input} value={software} onChange={(e) => setSoftware(e.target.value)} />
-          </div>
-          <div className={styles.field}>
             <label className={styles.label}>Разрешение</label>
             <input className={styles.input} value={resolution} onChange={(e) => setResolution(e.target.value)} />
           </div>
-        </div>
-
-        <div className={styles.field}>
-          <label className={styles.label}>Дедлайн</label>
-          <DatePicker value={dueDate} onChange={setDueDate} />
+          <div className={styles.field}>
+            <label className={styles.label}>Дедлайн</label>
+            <DatePicker value={dueDate} onChange={setDueDate} />
+          </div>
         </div>
 
         {errors.form && <div className={styles.formError}>{errors.form}</div>}

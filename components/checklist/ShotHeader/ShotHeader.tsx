@@ -90,10 +90,6 @@ export default function ShotHeader({
             </span>
           )}
           <span className={styles.infoItem}>
-            <Icons.Cube size={13} />
-            {shot.software}
-          </span>
-          <span className={styles.infoItem}>
             <Icons.Image size={13} />
             {shot.resolution}
           </span>

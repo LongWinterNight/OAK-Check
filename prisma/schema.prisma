@@ -74,7 +74,6 @@ model Shot {
   projectId   String
   code        String
   title       String
-  software    String     @default("3dsmax 2024 · V-Ray 6.2")
   resolution  String     @default("3840×2160")
   status      ShotStatus @default(TODO)
   assigneeId  String?

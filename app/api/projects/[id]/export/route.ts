@@ -48,12 +48,11 @@ export async function GET(
         String(progress) + '%',
         String(total),
         escapeCsv(due),
-        escapeCsv(s.software),
         escapeCsv(s.resolution),
       ].join(',');
     });
 
-    const header = 'Код,Название,Статус,Исполнитель,Прогресс,Пунктов,Дедлайн,Программа,Разрешение';
+    const header = 'Код,Название,Статус,Исполнитель,Прогресс,Пунктов,Дедлайн,Разрешение';
     const bom = '﻿'; // UTF-8 BOM for Excel
     const csv = bom + [header, ...rows].join('\r\n');
 

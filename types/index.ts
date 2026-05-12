@@ -34,7 +34,6 @@ export interface Shot {
   projectId: string;
   code: string;
   title: string;
-  software: string;
   resolution: string;
   status: ShotStatus;
   assigneeId: string | null;
