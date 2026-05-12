@@ -12,7 +12,7 @@ export default async function SettingsPage() {
   const [users, projects, stats, storage] = await Promise.all([
     prisma.user.findMany({
       orderBy: { name: 'asc' },
-      select: { id: true, name: true, email: true, role: true, online: true, avatarUrl: true, createdAt: true, lastLoginAt: true },
+      select: { id: true, name: true, email: true, role: true, online: true, avatarUrl: true, createdAt: true, lastLoginAt: true, lastSeenAt: true },
     }),
     prisma.project.findMany({
       orderBy: { createdAt: 'desc' },
@@ -48,7 +48,12 @@ export default async function SettingsPage() {
       <div className={styles.content}>
         <SettingsShell
           currentUser={currentUser}
-          users={users.map(u => ({ ...u, createdAt: u.createdAt.toISOString() }))}
+          users={users.map(u => ({
+            ...u,
+            createdAt: u.createdAt.toISOString(),
+            // online = heartbeat за последние 2 минуты (lastSeenAt свежее)
+            online: u.lastSeenAt ? u.lastSeenAt.getTime() >= Date.now() - 2 * 60_000 : false,
+          }))}
           projects={projects.map(p => ({
             id: p.id,
             title: p.title,

@@ -1,8 +1,17 @@
 'use client';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { SessionProvider } from 'next-auth/react';
+import { SessionProvider, useSession } from 'next-auth/react';
 import { useState } from 'react';
+import { useHeartbeat } from '@/hooks/useHeartbeat';
+
+// Heartbeat запускается только если пользователь залогинен —
+// иначе ping будет фейлиться с 401.
+function HeartbeatRunner() {
+  const { status } = useSession();
+  useHeartbeat();
+  return status === 'authenticated' ? null : null;
+}
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -17,6 +26,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
       <QueryClientProvider client={queryClient}>
+        <HeartbeatRunner />
         {children}
       </QueryClientProvider>
     </SessionProvider>

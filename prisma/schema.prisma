@@ -16,6 +16,7 @@ model User {
   online        Boolean   @default(false)
   createdAt     DateTime  @default(now())
   lastLoginAt   DateTime?
+  lastSeenAt    DateTime?
   loginAttempts Int       @default(0)
   lockedUntil   DateTime?
 

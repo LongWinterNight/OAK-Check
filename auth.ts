@@ -72,10 +72,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             return null;
           }
 
-          // Успешный вход — сброс счётчика
+          // Успешный вход — сброс счётчика и отметка «онлайн»
           await prisma.user.update({
             where: { id: user.id },
-            data: { loginAttempts: 0, lockedUntil: null, lastLoginAt: new Date() },
+            data: { loginAttempts: 0, lockedUntil: null, lastLoginAt: new Date(), online: true },
           });
 
           return { id: user.id, name: user.name, email: user.email, role: user.role };
@@ -98,6 +98,26 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       session.user.id = (token.id as string) ?? '';
       session.user.role = (token.role as import('@/lib/roles').Role) ?? 'ARTIST';
       return session;
+    },
+  },
+
+  events: {
+    async signOut(message) {
+      // При выходе — снимаем флаг «онлайн»
+      try {
+        const userId =
+          'token' in message && message.token
+            ? (message.token.id as string | undefined)
+            : 'session' in message && message.session && 'userId' in message.session
+              ? (message.session.userId as string | undefined)
+              : undefined;
+        if (userId && userId !== 'dev-safan') {
+          const { prisma } = await import('@/lib/prisma');
+          await prisma.user.update({ where: { id: userId }, data: { online: false } });
+        }
+      } catch {
+        // не падать — это вспомогательное действие
+      }
     },
   },
 });
