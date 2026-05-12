@@ -1,33 +1,88 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import TopBar from '@/components/layout/TopBar/TopBar';
-import { Badge, Button, ProgressBar, ConfirmDialog } from '@/components/ui';
+import { Badge, Button, ConfirmDialog, Avatar, OakRing, ProgressBar } from '@/components/ui';
 import { Icons } from '@/components/icons';
 import { NewShotModal } from '@/components/projects/NewShotModal';
 import { EditShotModal } from '@/components/projects/EditShotModal';
-import { ApplyChecklistModal } from '@/components/projects/ApplyChecklistModal';
 import { toast } from '@/components/ui/Toast/toastStore';
-import { shotStatusBadgeKind } from '@/lib/utils';
+import { coverStyle } from '@/components/projects/projectCovers';
 import { can, type Role } from '@/lib/roles';
 import styles from './page.module.css';
 
+type ShotStatus = 'TODO' | 'WIP' | 'REVIEW' | 'DONE';
+
 const SHOT_STATUS_LABELS: Record<string, string> = {
-  TODO: 'Бэклог', WIP: 'В работе', REVIEW: 'На ревью', DONE: 'Сдано',
+  TODO: 'Не начат', WIP: 'В работе', REVIEW: 'На ревью', DONE: 'Готово',
 };
+
+const STATUS_BADGE_KIND: Record<string, 'neutral' | 'info' | 'wip' | 'done'> = {
+  TODO: 'neutral', WIP: 'info', REVIEW: 'wip', DONE: 'done',
+};
+
+interface ShotOwner {
+  id: string;
+  name: string;
+  avatarUrl: string | null;
+}
 
 interface ShotRow {
   id: string;
   code: string;
   title: string;
   status: string;
-  owner: string | null;
+  owner: ShotOwner | null;
   progress: number;
-  software?: string;
-  resolution?: string;
-  dueDate?: string | null;
+  stage: string | null;
+  blockedItemsCount: number;
+  commentsCount: number;
+  latestVersion: string | null;
+  thumbnail: string | null;
+  dueDate: string | null;
 }
+
+interface ProjectMeta {
+  id: string;
+  title: string;
+  client: string;
+  coverGradient: string | null;
+  coverImage: string | null;
+  dueDate: string | null;
+}
+
+interface ProjectStats {
+  total: number;
+  todo: number;
+  wip: number;
+  review: number;
+  done: number;
+  blocked: number;
+  progress: number;
+}
+
+interface ProjectDetailClientProps {
+  projectId: string;
+  project: ProjectMeta;
+  shots: ShotRow[];
+  stats: ProjectStats;
+  userRole: Role;
+}
+
+type FilterKey = 'all' | 'TODO' | 'WIP' | 'REVIEW' | 'DONE' | 'BLOCKED';
+
+const FILTER_LABELS: Record<FilterKey, string> = {
+  all:    'Все',
+  TODO:   'Не начаты',
+  WIP:    'В работе',
+  REVIEW: 'На ревью',
+  DONE:   'Готово',
+  BLOCKED: 'На стопе',
+};
+
+// Порядок групп в выводе (сверху вниз)
+const GROUP_ORDER: ShotStatus[] = ['TODO', 'WIP', 'REVIEW', 'DONE'];
 
 function ShotMenu({
   shot,
@@ -43,59 +98,137 @@ function ShotMenu({
   onDelete: () => void;
 }) {
   const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [open]);
-
   if (!canEdit && !canDelete) return null;
-
   return (
-    <div ref={ref} style={{ position: 'relative', display: 'inline-block' }}>
+    <div className={styles.menuWrap}>
       <button
         className={styles.menuBtn}
-        onClick={(e) => { e.preventDefault(); setOpen((v) => !v); }}
+        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setOpen((v) => !v); }}
         aria-label="Действия"
       >
         <Icons.More size={14} />
       </button>
       {open && (
-        <div className={styles.menu}>
-          {canEdit && (
-            <button className={styles.menuItem} onClick={() => { setOpen(false); onEdit(); }}>
-              <Icons.Pen size={13} /> Редактировать
-            </button>
-          )}
-          {canDelete && (
-            <button className={[styles.menuItem, styles.menuDanger].join(' ')} onClick={() => { setOpen(false); onDelete(); }}>
-              <Icons.X size={13} /> Удалить
-            </button>
-          )}
-        </div>
+        <>
+          <div className={styles.menuBackdrop} onClick={() => setOpen(false)} />
+          <div className={styles.menu}>
+            {canEdit && (
+              <button className={styles.menuItem} onClick={(e) => { e.preventDefault(); setOpen(false); onEdit(); }}>
+                <Icons.Pen size={13} /> Редактировать
+              </button>
+            )}
+            {canDelete && (
+              <button className={[styles.menuItem, styles.menuDanger].join(' ')} onClick={(e) => { e.preventDefault(); setOpen(false); onDelete(); }}>
+                <Icons.X size={13} /> Удалить
+              </button>
+            )}
+          </div>
+        </>
       )}
     </div>
   );
 }
 
-interface ProjectDetailClientProps {
+function ShotRowItem({
+  shot,
+  projectId,
+  canEdit,
+  canDelete,
+  onEdit,
+  onDelete,
+}: {
+  shot: ShotRow;
   projectId: string;
-  projectTitle: string;
-  projectClient: string;
-  shots: ShotRow[];
-  userRole: Role;
+  canEdit: boolean;
+  canDelete: boolean;
+  onEdit: (s: ShotRow) => void;
+  onDelete: (s: ShotRow) => void;
+}) {
+  const due = shot.dueDate
+    ? new Date(shot.dueDate).toLocaleDateString('ru', { day: 'numeric', month: 'short' })
+    : null;
+
+  return (
+    <Link href={`/projects/${projectId}/${shot.id}/checklist`} className={styles.shotRow}>
+      {/* Thumbnail */}
+      <div className={styles.shotThumb}>
+        {shot.thumbnail ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={shot.thumbnail} alt={shot.code} className={styles.shotThumbImg} />
+        ) : (
+          <div
+            className={styles.shotThumbPlaceholder}
+            style={{ background: `linear-gradient(135deg, hsl(${(shot.code.charCodeAt(0) * 17) % 360}, 25%, 28%), hsl(${(shot.code.charCodeAt(0) * 17 + 60) % 360}, 30%, 18%))` }}
+          />
+        )}
+      </div>
+
+      {/* Title + code + badges */}
+      <div className={styles.shotTitleCol}>
+        <div className={styles.shotTitle}>{shot.title}</div>
+        <div className={styles.shotSub}>
+          <span className={styles.shotCode}>{shot.code}</span>
+          {shot.blockedItemsCount > 0 && (
+            <span className={styles.shotBlocker}>● {shot.blockedItemsCount} блок.</span>
+          )}
+          {shot.commentsCount > 0 && (
+            <span className={styles.shotComments}>
+              <Icons.Msg size={11} /> {shot.commentsCount}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Stage */}
+      <div className={styles.shotStage}>{shot.stage ?? '—'}</div>
+
+      {/* Progress */}
+      <div className={styles.shotProgress}>
+        <ProgressBar value={shot.progress} height={4} />
+        <span className={styles.shotProgressPct}>{Math.round(shot.progress)}%</span>
+      </div>
+
+      {/* Version */}
+      <div className={styles.shotVersion}>{shot.latestVersion ?? '—'}</div>
+
+      {/* Status badge */}
+      <div className={styles.shotStatus}>
+        <Badge kind={STATUS_BADGE_KIND[shot.status] ?? 'neutral'} size="sm" dot>
+          {SHOT_STATUS_LABELS[shot.status] ?? shot.status}
+        </Badge>
+      </div>
+
+      {/* Due date */}
+      <div className={styles.shotDue}>{due ?? '—'}</div>
+
+      {/* Avatar */}
+      <div className={styles.shotOwner}>
+        {shot.owner ? (
+          <Avatar name={shot.owner.name} src={shot.owner.avatarUrl} size={26} />
+        ) : (
+          <div className={styles.shotOwnerEmpty} title="Не назначен">
+            <Icons.User size={12} />
+          </div>
+        )}
+      </div>
+
+      {/* Menu */}
+      <ShotMenu
+        shot={shot}
+        canEdit={canEdit}
+        canDelete={canDelete}
+        onEdit={() => onEdit(shot)}
+        onDelete={() => onDelete(shot)}
+      />
+    </Link>
+  );
 }
 
 export default function ProjectDetailClient({
   projectId,
-  projectTitle,
-  projectClient,
+  project,
   shots: initialShots,
+  stats,
   userRole,
 }: ProjectDetailClientProps) {
   const [shots, setShots] = useState(initialShots);
@@ -103,14 +236,24 @@ export default function ProjectDetailClient({
   const [editTarget, setEditTarget] = useState<ShotRow | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ShotRow | null>(null);
   const [deleting, setDeleting] = useState(false);
-  const [checklistTarget, setChecklistTarget] = useState<ShotRow | null>(null);
 
-  const handleCreated = (shot: ShotRow) => {
-    setShots((prev) => [...prev, shot]);
+  const [search, setSearch] = useState('');
+  const [filter, setFilter] = useState<FilterKey>('all');
+
+  const handleCreated = (shot: { id: string; code: string; title: string; status: string; owner: null; progress: number }) => {
+    setShots((prev) => [...prev, {
+      ...shot,
+      stage: null,
+      blockedItemsCount: 0,
+      commentsCount: 0,
+      latestVersion: null,
+      thumbnail: null,
+      dueDate: null,
+    }]);
   };
 
-  const handleUpdated = (updated: ShotRow) => {
-    setShots((prev) => prev.map((s) => s.id === updated.id ? { ...s, ...updated } : s));
+  const handleUpdated = (updated: { id: string; code?: string; title?: string; status?: string }) => {
+    setShots((prev) => prev.map((s) => s.id === updated.id ? { ...s, ...updated } as ShotRow : s));
   };
 
   const handleDelete = async () => {
@@ -132,15 +275,46 @@ export default function ProjectDetailClient({
   const canEdit = can.editShot(userRole);
   const canDelete = can.deleteShot(userRole);
   const canCreate = can.createShot(userRole);
-  const canExport = can.exportProject(userRole);
-  const canManage = can.manageChecklist(userRole);
+  const canExport = can.deleteProject(userRole); // PM + ADMIN
+
+  // Фильтрация + поиск
+  const filtered = useMemo(() => {
+    return shots.filter((s) => {
+      // фильтр по статусу или BLOCKED-пунктам
+      if (filter === 'BLOCKED') {
+        if (s.blockedItemsCount === 0) return false;
+      } else if (filter !== 'all') {
+        if (s.status !== filter) return false;
+      }
+      if (search) {
+        const q = search.toLowerCase();
+        if (!s.title.toLowerCase().includes(q) && !s.code.toLowerCase().includes(q)) return false;
+      }
+      return true;
+    });
+  }, [shots, filter, search]);
+
+  // Группировка по статусу (TODO / WIP / REVIEW / DONE)
+  const groups = useMemo(() => {
+    const map = new Map<ShotStatus, ShotRow[]>();
+    for (const status of GROUP_ORDER) map.set(status, []);
+    for (const s of filtered) {
+      const list = map.get(s.status as ShotStatus);
+      if (list) list.push(s);
+    }
+    return GROUP_ORDER.map((status) => ({ status, shots: map.get(status) ?? [] }));
+  }, [filtered]);
+
+  const dueLabel = project.dueDate
+    ? new Date(project.dueDate).toLocaleDateString('ru', { day: 'numeric', month: 'short', year: 'numeric' })
+    : null;
 
   return (
     <>
       <TopBar
         breadcrumbs={[
           { label: 'Проекты', href: '/projects' },
-          { label: projectTitle },
+          { label: project.title },
         ]}
         action={
           <div style={{ display: 'flex', gap: 8 }}>
@@ -149,7 +323,7 @@ export default function ProjectDetailClient({
                 variant="ghost"
                 size="sm"
                 icon={<Icons.Paper size={14} />}
-                onClick={() => window.open(`/api/projects/${projectId}/export`, '_blank')}
+                onClick={() => window.open(`/api/projects/${project.id}/export`, '_blank')}
               >
                 Экспорт CSV
               </Button>
@@ -169,105 +343,125 @@ export default function ProjectDetailClient({
       />
 
       <div className={styles.content}>
-        <div className={styles.header}>
-          <div>
-            <div className={styles.client}>{projectClient}</div>
-            <h1 className={styles.title}>{projectTitle}</h1>
+        {/* ── Hero ──────────────────────────────────────── */}
+        <div className={styles.hero}>
+          <div className={styles.heroCover} style={coverStyle(project.coverImage, project.coverGradient)} />
+          <div className={styles.heroBody}>
+            <div className={styles.heroBreadcrumb}>
+              <Link href="/projects" className={styles.heroBreadLink}>
+                <Icons.ChevL size={12} /> Проекты
+              </Link>
+            </div>
+            <h1 className={styles.heroTitle}>{project.title}</h1>
+            <div className={styles.heroClient}>{project.client}</div>
+
+            <div className={styles.heroStats}>
+              <div className={styles.heroStat}>
+                <div className={styles.heroStatValue}>{stats.total}</div>
+                <div className={styles.heroStatLabel}>Всего</div>
+              </div>
+              <div className={[styles.heroStat, styles.heroStatWip].join(' ')}>
+                <div className={styles.heroStatValue}>{stats.wip}</div>
+                <div className={styles.heroStatLabel}>В работе</div>
+              </div>
+              <div className={[styles.heroStat, styles.heroStatReview].join(' ')}>
+                <div className={styles.heroStatValue}>{stats.review}</div>
+                <div className={styles.heroStatLabel}>На ревью</div>
+              </div>
+              <div className={[styles.heroStat, styles.heroStatBlocked].join(' ')}>
+                <div className={styles.heroStatValue}>{stats.blocked}</div>
+                <div className={styles.heroStatLabel}>На стопе</div>
+              </div>
+              <div className={[styles.heroStat, styles.heroStatDone].join(' ')}>
+                <div className={styles.heroStatValue}>{stats.done}</div>
+                <div className={styles.heroStatLabel}>Готово</div>
+              </div>
+            </div>
+
+            {dueLabel && (
+              <div className={styles.heroDue}>
+                <Icons.Calendar size={12} /> Дедлайн проекта: {dueLabel}
+              </div>
+            )}
+          </div>
+          <div className={styles.heroRing}>
+            <OakRing value={stats.progress} size={88} stroke={5} segments={2} />
           </div>
         </div>
 
-        {/* Desktop table */}
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th className={styles.th}>Шот</th>
-              <th className={styles.th}>Статус</th>
-              <th className={styles.th}>Исполнитель</th>
-              <th className={styles.th}>Прогресс</th>
-              <th className={styles.th}></th>
-            </tr>
-          </thead>
-          <tbody>
-            {shots.map((shot) => (
-              <tr key={shot.id} className={styles.tr}>
-                <td className={styles.td}>
-                  <div className={styles.shotCode}>{shot.code}</div>
-                  <div className={styles.shotTitle}>{shot.title}</div>
-                </td>
-                <td className={styles.td}>
-                  <Badge kind={shotStatusBadgeKind(shot.status as 'TODO' | 'WIP' | 'REVIEW' | 'DONE')} size="sm" dot>
-                    {SHOT_STATUS_LABELS[shot.status] ?? shot.status}
-                  </Badge>
-                </td>
-                <td className={styles.td}>
-                  <span className={styles.owner}>{shot.owner ?? '—'}</span>
-                </td>
-                <td className={styles.tdProgress}>
-                  <ProgressBar value={shot.progress} height={5} />
-                  <span className={styles.pct}>{Math.round(shot.progress)}%</span>
-                </td>
-                <td className={styles.tdAction}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'flex-end' }}>
-                    {canManage && (
-                      <button
-                        className={styles.templateBtn}
-                        title="Применить шаблон чек-листа"
-                        onClick={() => setChecklistTarget(shot)}
-                      >
-                        <Icons.Plus size={11} />
-                        Шаблон
-                      </button>
-                    )}
-                    <Link href={`/projects/${projectId}/${shot.id}/checklist`} className={styles.link}>
-                      Чек-лист →
-                    </Link>
-                    <ShotMenu
-                      shot={shot}
-                      canEdit={canEdit}
-                      canDelete={canDelete}
-                      onEdit={() => setEditTarget(shot)}
-                      onDelete={() => setDeleteTarget(shot)}
-                    />
-                  </div>
-                </td>
-              </tr>
-            ))}
-            {shots.length === 0 && (
-              <tr>
-                <td colSpan={5} className={styles.emptyRow}>Шоты не добавлены</td>
-              </tr>
+        {/* ── Toolbar ───────────────────────────────────── */}
+        <div className={styles.toolbar}>
+          <div className={styles.searchWrap}>
+            <Icons.Search size={14} />
+            <input
+              className={styles.search}
+              placeholder="Поиск по шоту…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            {search && (
+              <button className={styles.searchClear} onClick={() => setSearch('')} title="Очистить">
+                <Icons.X size={11} />
+              </button>
             )}
-          </tbody>
-        </table>
+          </div>
 
-        {/* Mobile card list */}
-        <div className={styles.cardList}>
-          {shots.length === 0 && (
-            <div className={styles.emptyRow}>Шоты не добавлены</div>
-          )}
-          {shots.map((shot) => (
-            <Link
-              key={shot.id}
-              href={`/projects/${projectId}/${shot.id}/checklist`}
-              className={styles.shotCard}
-            >
-              <div className={styles.shotCardTop}>
-                <span className={styles.shotCardCode}>{shot.code}</span>
-                <span className={styles.shotCardTitle}>{shot.title}</span>
-                <Badge kind={shotStatusBadgeKind(shot.status as 'TODO' | 'WIP' | 'REVIEW' | 'DONE')} size="sm" dot>
-                  {SHOT_STATUS_LABELS[shot.status] ?? shot.status}
-                </Badge>
-              </div>
-              <div className={styles.shotCardBottom}>
-                <div className={styles.shotCardBar}>
-                  <div className={styles.shotCardBarFill} style={{ width: `${Math.round(shot.progress)}%` }} />
-                </div>
-                <span className={styles.shotCardPct}>{Math.round(shot.progress)}%</span>
-                {shot.owner && <span className={styles.shotCardOwner}>{shot.owner}</span>}
-              </div>
-            </Link>
-          ))}
+          <div className={styles.filterTabs}>
+            {(['all', 'WIP', 'REVIEW', 'BLOCKED', 'DONE', 'TODO'] as FilterKey[]).map((f) => (
+              <button
+                key={f}
+                className={[styles.filterBtn, filter === f ? styles.filterActive : ''].join(' ')}
+                onClick={() => setFilter(f)}
+              >
+                {FILTER_LABELS[f]}
+              </button>
+            ))}
+          </div>
         </div>
+
+        {/* ── Shots groups ──────────────────────────────── */}
+        {filtered.length === 0 ? (
+          <div className={styles.empty}>
+            <Icons.Oak size={32} color="var(--fg-subtle)" />
+            <div className={styles.emptyTitle}>
+              {search || filter !== 'all' ? 'По фильтру ничего' : 'Шоты не добавлены'}
+            </div>
+            <div className={styles.emptyText}>
+              {search || filter !== 'all'
+                ? 'Попробуйте сбросить фильтр или поиск.'
+                : 'Добавьте первый шот через кнопку «Новый шот» сверху.'}
+            </div>
+          </div>
+        ) : (
+          <div className={styles.groups}>
+            {groups.map((g) => {
+              if (g.shots.length === 0) return null;
+              return (
+                <div key={g.status} className={styles.group}>
+                  <div className={styles.groupHeader}>
+                    <Badge kind={STATUS_BADGE_KIND[g.status]} size="sm" dot>
+                      {SHOT_STATUS_LABELS[g.status]}
+                    </Badge>
+                    <span className={styles.groupCount}>{g.shots.length}</span>
+                  </div>
+                  <div className={styles.groupItems}>
+                    {g.shots.map((shot) => (
+                      <ShotRowItem
+                        key={shot.id}
+                        shot={shot}
+                        projectId={projectId}
+                        canEdit={canEdit}
+                        canDelete={canDelete}
+                        onEdit={setEditTarget}
+                        onDelete={setDeleteTarget}
+                      />
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {showNew && (
@@ -295,15 +489,6 @@ export default function ProjectDetailClient({
           loading={deleting}
           onClose={() => setDeleteTarget(null)}
           onConfirm={handleDelete}
-        />
-      )}
-
-      {checklistTarget && (
-        <ApplyChecklistModal
-          shotId={checklistTarget.id}
-          shotCode={checklistTarget.code}
-          onClose={() => setChecklistTarget(null)}
-          onApplied={() => setChecklistTarget(null)}
         />
       )}
     </>
