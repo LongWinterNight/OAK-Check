@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import { Icons } from '@/components/icons';
 import type { RenderVersion, Comment } from '@/types';
 import { threadStatus, STATUS_COLOR } from '@/lib/pin-status';
+import CommentsPanel from './CommentsPanel';
 import styles from './LightboxView.module.css';
 
 function tooltipText(body: string): string {
@@ -26,6 +27,14 @@ interface LightboxViewProps {
   onNext: () => void;
   onVersionSelect?: (version: string) => void;
   onPinSubmit?: (body: string, x: number, y: number) => Promise<unknown>;
+  // Управление комментариями в правой панели
+  currentUser?: { id: string; name: string };
+  currentUserRole?: string;
+  shotId?: string;
+  onCommentSubmit?: (body: string) => void;
+  onCommentDelete?: (commentId: string) => void;
+  onCommentReply?: (parentId: string, body: string) => void;
+  onCommentEdit?: (commentId: string, body: string) => void;
 }
 
 const MIN_SCALE = 1;
@@ -46,6 +55,13 @@ export default function LightboxView({
   onNext,
   onVersionSelect,
   onPinSubmit,
+  currentUser,
+  currentUserRole,
+  shotId,
+  onCommentSubmit,
+  onCommentDelete,
+  onCommentReply,
+  onCommentEdit,
 }: LightboxViewProps) {
   const current = versions.find((v) => v.version === activeVersion);
   const pinnedComments = comments.filter((c) => c.pinX !== null && c.pinY !== null);
@@ -54,14 +70,11 @@ export default function LightboxView({
   const [translate, setTranslate] = useState({ x: 0, y: 0 });
   const [pinMode, setPinMode] = useState(false);
   const [pendingPin, setPendingPin] = useState<{ x: number; y: number } | null>(null);
-  const [draft, setDraft] = useState('');
-  const [submitting, setSubmitting] = useState(false);
 
   const wrapRef = useRef<HTMLDivElement>(null);
   const panState = useRef<{ active: boolean; startX: number; startY: number; baseX: number; baseY: number }>({
     active: false, startX: 0, startY: 0, baseX: 0, baseY: 0,
   });
-  const formRef = useRef<HTMLDivElement>(null);
   const cancelPendingPinRef = useRef<(() => void) | null>(null);
 
   // Reset zoom and pin при смене версии
@@ -69,7 +82,6 @@ export default function LightboxView({
     setScale(1);
     setTranslate({ x: 0, y: 0 });
     setPendingPin(null);
-    setDraft('');
     setPinMode(false);
   }, [activeVersion]);
 
@@ -179,31 +191,28 @@ export default function LightboxView({
     if (x < 0 || x > 100 || y < 0 || y > 100) return;
     setPendingPin({ x, y });
     setPinMode(false);
-    // фокус в textarea — через requestAnimationFrame после рендера
+    // фокус в textarea правой панели — через requestAnimationFrame после рендера
     requestAnimationFrame(() => {
-      formRef.current?.querySelector('textarea')?.focus();
+      document.querySelector<HTMLTextAreaElement>(`.${styles.sidePanel} textarea`)?.focus();
     });
-  };
-
-  const submitPin = async () => {
-    if (!pendingPin || !draft.trim() || !onPinSubmit || submitting) return;
-    setSubmitting(true);
-    try {
-      const result = await onPinSubmit(draft.trim(), pendingPin.x, pendingPin.y);
-      if (result) {
-        setPendingPin(null);
-        setDraft('');
-      }
-    } finally {
-      setSubmitting(false);
-    }
   };
 
   const cancelPendingPin = () => {
     setPendingPin(null);
-    setDraft('');
   };
   cancelPendingPinRef.current = cancelPendingPin;
+
+  // Композер в правой панели вызывает один onSubmit(body). Здесь решаем,
+  // что делать: если есть pendingPin — отправляем коммент с координатами,
+  // иначе — обычный коммент без пина.
+  const handlePanelSubmit = async (body: string) => {
+    if (pendingPin && onPinSubmit) {
+      const result = await onPinSubmit(body, pendingPin.x, pendingPin.y);
+      if (result) setPendingPin(null);
+    } else if (onCommentSubmit) {
+      onCommentSubmit(body);
+    }
+  };
 
   const transformStyle: React.CSSProperties = {
     transform: `translate(${translate.x}px, ${translate.y}px) scale(${scale})`,
@@ -214,9 +223,14 @@ export default function LightboxView({
         : 'default',
   };
 
+  const showSidePanel = !!onCommentSubmit && !!currentUser;
+
   return createPortal(
     <div className={styles.overlay} onClick={onClose}>
-      <div className={styles.content} onClick={(e) => e.stopPropagation()}>
+      <div
+        className={[styles.content, showSidePanel ? styles.contentWithSide : ''].join(' ')}
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Top bar: shot info | version tabs | tools */}
         <div className={styles.topBar}>
           <div className={styles.shotInfo}>
@@ -339,45 +353,25 @@ export default function LightboxView({
           </div>
         </div>
 
-        {/* Pin comment composer */}
-        {pendingPin && onPinSubmit && (
-          <div ref={formRef} className={styles.pinForm} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.pinFormHeader}>
-              <span className={styles.pinFormDot} />
-              <span>Комментарий к пину</span>
-              <button type="button" className={styles.pinFormClear} onClick={cancelPendingPin} title="Отменить">
-                <Icons.X size={11} /> Отменить
-              </button>
-            </div>
-            <textarea
-              className={styles.pinFormInput}
-              placeholder="Опишите проблему в этой точке…"
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  submitPin();
-                }
-                if (e.key === 'Escape') {
-                  e.preventDefault();
-                  cancelPendingPin();
-                }
-              }}
-              rows={2}
-              disabled={submitting}
+        {/* Right side panel — комментарии + агрегатор + композер */}
+        {showSidePanel && (
+          <aside className={styles.sidePanel} onClick={(e) => e.stopPropagation()}>
+            <CommentsPanel
+              comments={comments}
+              currentUserId={currentUser?.id}
+              currentUserRole={currentUserRole}
+              currentUser={currentUser}
+              pendingPin={pendingPin}
+              highlightedCommentId={highlightedCommentId ?? null}
+              onPinClear={cancelPendingPin}
+              onHighlight={onHighlight}
+              onSubmit={handlePanelSubmit}
+              onDelete={onCommentDelete}
+              onReply={onCommentReply}
+              onEdit={onCommentEdit}
+              shotId={shotId}
             />
-            <div className={styles.pinFormActions}>
-              <button
-                type="button"
-                className={styles.pinFormSubmit}
-                disabled={!draft.trim() || submitting}
-                onClick={submitPin}
-              >
-                {submitting ? 'Отправка…' : 'Отправить'}
-              </button>
-            </div>
-          </div>
+          </aside>
         )}
 
         {/* Hotkey hint footer */}

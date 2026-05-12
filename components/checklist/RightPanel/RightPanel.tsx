@@ -66,6 +66,13 @@ export default function RightPanel({
         onPinClear={onPinClear}
         onLightboxPinSubmit={onLightboxPinSubmit}
         onVersionDeleted={onVersionDeleted}
+        currentUser={currentUser}
+        currentUserRole={currentUserRole}
+        shotId={shotId}
+        onCommentSubmit={onCommentSubmit}
+        onCommentDelete={onCommentDelete}
+        onCommentReply={onCommentReply}
+        onCommentEdit={onCommentEdit}
       />
       <CommentsPanel
         comments={comments}

@@ -21,6 +21,22 @@
   justify-content: center;
 }
 
+/* Когда есть правая панель — раздвигаем место под неё.
+   imgWrap уже использует 92vw по умолчанию; здесь сжимаем за счёт padding. */
+.contentWithSide .imgWrap {
+  width: calc(100vw - 420px);
+  max-width: calc(100vw - 420px);
+  margin-right: 400px;
+}
+
+@media (max-width: 1279px) {
+  .contentWithSide .imgWrap {
+    width: calc(100vw - 380px);
+    max-width: calc(100vw - 380px);
+    margin-right: 360px;
+  }
+}
+
 /* Top bar: 3-column grid (shot info | version tabs | tools) */
 .topBar {
   position: absolute;
@@ -236,6 +252,45 @@
   height: 500px;
   background: #2a3a4a;
   border-radius: var(--radius);
+}
+
+/* Right side panel — CommentsPanel container */
+.sidePanel {
+  position: absolute;
+  top: 64px;
+  right: 0;
+  bottom: 0;
+  width: 400px;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 8px 16px 12px;
+  z-index: 4;
+  overflow: hidden;
+}
+
+@media (max-width: 1279px) {
+  .sidePanel { width: 360px; }
+}
+
+@media (max-width: 1023px) {
+  .contentWithSide .imgWrap {
+    width: 100vw;
+    max-width: 100vw;
+    margin-right: 0;
+    height: calc(50vh);
+  }
+  .sidePanel {
+    position: absolute;
+    top: 50vh;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    border-left: none;
+    border-top: 1px solid var(--border);
+  }
 }
 
 /* Hotkey hint footer */

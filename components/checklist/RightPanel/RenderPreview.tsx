@@ -27,6 +27,14 @@ interface RenderPreviewProps {
   onPinClear?: () => void;
   onLightboxPinSubmit?: (body: string, x: number, y: number) => Promise<unknown>;
   onVersionDeleted?: (id: string) => void;
+  // Управление комментариями в правой панели лайтбокса
+  currentUser?: { id: string; name: string };
+  currentUserRole?: string;
+  shotId?: string;
+  onCommentSubmit?: (body: string) => void;
+  onCommentDelete?: (commentId: string) => void;
+  onCommentReply?: (parentId: string, body: string) => void;
+  onCommentEdit?: (commentId: string, body: string) => void;
 }
 
 export default function RenderPreview({
@@ -43,6 +51,13 @@ export default function RenderPreview({
   onPinClear,
   onLightboxPinSubmit,
   onVersionDeleted,
+  currentUser,
+  currentUserRole,
+  shotId,
+  onCommentSubmit,
+  onCommentDelete,
+  onCommentReply,
+  onCommentEdit,
 }: RenderPreviewProps) {
   const [activeVersion, setActiveVersion] = useState(
     versions.length > 0 ? versions[versions.length - 1].version : ''
@@ -225,6 +240,13 @@ export default function RenderPreview({
           onNext={goNext}
           onVersionSelect={setActiveVersion}
           onPinSubmit={onLightboxPinSubmit}
+          currentUser={currentUser}
+          currentUserRole={currentUserRole}
+          shotId={shotId}
+          onCommentSubmit={onCommentSubmit}
+          onCommentDelete={onCommentDelete}
+          onCommentReply={onCommentReply}
+          onCommentEdit={onCommentEdit}
         />
       )}
     </div>
