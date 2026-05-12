@@ -1,11 +1,15 @@
 .panel {
-  width: 260px;
+  width: 200px;
   flex-shrink: 0;
   border-right: 1px solid var(--border);
   background: var(--surface);
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+
+@media (min-width: 1280px) {
+  .panel { width: 220px; }
 }
 
 @media (max-width: 767px) {
