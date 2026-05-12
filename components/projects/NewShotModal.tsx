@@ -21,7 +21,6 @@ interface NewShotModalProps {
 export function NewShotModal({ projectId, defaultStatus, onClose, onCreated }: NewShotModalProps) {
   const [title, setTitle] = useState('');
   const [code, setCode] = useState('');
-  const [software, setSoftware] = useState('3dsmax 2024 · V-Ray 6.2');
   const [resolution, setResolution] = useState('3840×2160');
   const [dueDate, setDueDate] = useState('');
   const [loading, setLoading] = useState(false);
@@ -50,7 +49,8 @@ export function NewShotModal({ projectId, defaultStatus, onClose, onCreated }: N
         body: JSON.stringify({
           title: title.trim(),
           code: code.trim().toUpperCase(),
-          software: software.trim() || undefined,
+          // software не указываем — студия не трекает ПО на уровне шота,
+          // в БД подхватится default из prisma schema
           resolution: resolution.trim() || undefined,
           dueDate: dueDate || undefined,
           status: defaultStatus || undefined,
@@ -118,15 +118,6 @@ export function NewShotModal({ projectId, defaultStatus, onClose, onCreated }: N
 
         <div className={styles.row}>
           <div className={styles.field}>
-            <label className={styles.label}>ПО</label>
-            <input
-              className={styles.input}
-              value={software}
-              onChange={(e) => setSoftware(e.target.value)}
-              placeholder="3dsmax 2024 · V-Ray 6.2"
-            />
-          </div>
-          <div className={styles.field}>
             <label className={styles.label}>Разрешение</label>
             <input
               className={styles.input}
@@ -135,11 +126,10 @@ export function NewShotModal({ projectId, defaultStatus, onClose, onCreated }: N
               placeholder="3840×2160"
             />
           </div>
-        </div>
-
-        <div className={styles.field}>
-          <label className={styles.label}>Дедлайн</label>
-          <DatePicker value={dueDate} onChange={setDueDate} />
+          <div className={styles.field}>
+            <label className={styles.label}>Дедлайн</label>
+            <DatePicker value={dueDate} onChange={setDueDate} />
+          </div>
         </div>
 
         {errors.form && <div className={styles.formError}>{errors.form}</div>}
