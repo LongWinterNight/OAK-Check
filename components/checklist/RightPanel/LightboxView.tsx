@@ -297,17 +297,6 @@ export default function LightboxView({
           </div>
         </div>
 
-        {versions.length > 1 && (
-          <>
-            <button className={[styles.nav, styles.navL].join(' ')} onClick={onPrev} title="Предыдущая (←)">
-              <Icons.ChevL size={20} />
-            </button>
-            <button className={[styles.nav, styles.navR].join(' ')} onClick={onNext} title="Следующая (→)">
-              <Icons.ChevR size={20} />
-            </button>
-          </>
-        )}
-
         <div
           ref={wrapRef}
           className={styles.imgWrap}
