@@ -94,6 +94,8 @@ export default function ChecklistClient({
 
   const totalItems = chapters.flatMap((c) => c.items);
   const totalProgress = computeProgress(totalItems);
+  const itemsDone = totalItems.filter((i) => i.state === 'DONE').length;
+  const itemsTotal = totalItems.length;
   const activeChapter = chapters.find((c) => c.id === activeChapterId) ?? chapters[0];
 
   const canManage = can.manageChecklist(userRole);
@@ -307,6 +309,8 @@ export default function ChecklistClient({
         <ShotHeader
           shot={{ ...shot, status: shotStatus }}
           progress={totalProgress}
+          itemsDone={itemsDone}
+          itemsTotal={itemsTotal}
           latestVersion={versions[versions.length - 1]?.version ?? 'v001'}
           canChangeStatus={can.changeStatus(userRole)}
           canAssign={can.assign(userRole)}

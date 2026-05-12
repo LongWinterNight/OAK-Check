@@ -43,20 +43,22 @@ describe('computeProgress', () => {
 
 describe('computeChapterStats', () => {
   it('возвращает нули для пустого списка', () => {
-    expect(computeChapterStats([])).toEqual({ progress: 0, doneCount: 0, blockedCount: 0 });
+    expect(computeChapterStats([])).toEqual({ progress: 0, doneCount: 0, wipCount: 0, blockedCount: 0 });
   });
 
-  it('правильно считает doneCount и blockedCount', () => {
+  it('правильно считает doneCount, wipCount и blockedCount', () => {
     const items = [
       { state: 'DONE' as const },
       { state: 'BLOCKED' as const },
       { state: 'TODO' as const },
       { state: 'DONE' as const },
+      { state: 'WIP' as const },
     ];
     const stats = computeChapterStats(items);
     expect(stats.doneCount).toBe(2);
+    expect(stats.wipCount).toBe(1);
     expect(stats.blockedCount).toBe(1);
-    expect(stats.progress).toBe(50);
+    expect(stats.progress).toBe(40);
   });
 });
 

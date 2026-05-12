@@ -28,13 +28,15 @@ export function computeProgress(items: Pick<CheckItem, 'state'>[]): number {
 export function computeChapterStats(items: Pick<CheckItem, 'state'>[]): {
   progress: number;
   doneCount: number;
+  wipCount: number;
   blockedCount: number;
 } {
   const total = items.length;
   const doneCount = items.filter((i) => i.state === 'DONE').length;
+  const wipCount = items.filter((i) => i.state === 'WIP').length;
   const blockedCount = items.filter((i) => i.state === 'BLOCKED').length;
   const progress = total === 0 ? 0 : Math.round((doneCount / total) * 100);
-  return { progress, doneCount, blockedCount };
+  return { progress, doneCount, wipCount, blockedCount };
 }
 
 // Маппинг статуса из БД → ItemState для Check3

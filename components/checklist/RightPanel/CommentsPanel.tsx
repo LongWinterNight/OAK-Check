@@ -79,6 +79,11 @@ function InlineForm({ initial = '', placeholder, submitLabel, onSubmit, onCancel
   );
 }
 
+type ThreadFilter = 'all' | 'open' | 'blocker' | 'resolved';
+type ThreadStatus = 'open' | 'blocker' | 'resolved';
+
+const BLOCKER_RE = /(^|\s)(🚨|\[блок(ер)?\]|\[blocker\]|блокер[!:.]|critical[!:.])/i;
+
 export default function CommentsPanel({
   comments,
   currentUserId,
@@ -98,6 +103,7 @@ export default function CommentsPanel({
   const [linkUrl, setLinkUrl] = useState('');
   const [replyOpenFor, setReplyOpenFor] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [filter, setFilter] = useState<ThreadFilter>('all');
   const submittingRef = useRef(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -109,6 +115,38 @@ export default function CommentsPanel({
 
   const topLevel = comments.filter((c) => !c.parentId);
   const getReplies = (id: string) => comments.filter((c) => c.parentId === id);
+
+  // Статус треда-пина (только для top-level с пином):
+  //   blocker = автор пометил тег/смайл-маркером
+  //   resolved = есть хотя бы один ответ
+  //   open = пин без ответов и без маркера
+  const threadStatus = (c: Comment): ThreadStatus | null => {
+    if (c.parentId) return null;
+    if (c.pinX === null) return null;
+    if (BLOCKER_RE.test(c.body)) return 'blocker';
+    const replies = comments.filter((x) => x.parentId === c.id);
+    return replies.length > 0 ? 'resolved' : 'open';
+  };
+
+  const aggregator = topLevel.reduce(
+    (acc, c) => {
+      const st = threadStatus(c);
+      if (st === 'blocker') acc.blocker += 1;
+      else if (st === 'open') acc.open += 1;
+      else if (st === 'resolved') acc.resolved += 1;
+      return acc;
+    },
+    { blocker: 0, open: 0, resolved: 0 },
+  );
+
+  const visibleThreads = topLevel.filter((c) => {
+    if (filter === 'all') return true;
+    const st = threadStatus(c);
+    if (filter === 'open') return st === 'open';
+    if (filter === 'blocker') return st === 'blocker';
+    if (filter === 'resolved') return st === 'resolved';
+    return true;
+  });
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -152,8 +190,7 @@ export default function CommentsPanel({
     return idx >= 0 ? idx + 1 : null;
   };
 
-  const pinnedCount = comments.filter(c => c.pinX !== null).length;
-  const headerLabel = `Комментарии${comments.length > 0 ? ` (${comments.length})` : ''}`;
+  const headerLabel = `Пины и комментарии`;
 
   const isAdmin = currentUserRole === 'ADMIN';
 
@@ -255,22 +292,63 @@ export default function CommentsPanel({
     );
   };
 
+  const totalThreads = topLevel.length;
+  const filterTabs: { id: ThreadFilter; label: string; count: number }[] = [
+    { id: 'all', label: 'Все', count: totalThreads },
+    { id: 'open', label: 'Открытые', count: aggregator.open },
+    { id: 'blocker', label: 'Блокеры', count: aggregator.blocker },
+    { id: 'resolved', label: 'Решённые', count: aggregator.resolved },
+  ];
+
   return (
     <div className={styles.panel}>
-      <div className={styles.header}>
-        {headerLabel}
-        {pinnedCount > 0 && (
-          <span className={styles.pinCount} title={`${pinnedCount} пин(ов) на рендере`}>
-            <Icons.Dot size={6} /> {pinnedCount} пин.
-          </span>
-        )}
+      <div className={styles.headerRow}>
+        <div className={styles.header}>{headerLabel}</div>
+        <div className={styles.aggregator}>
+          {aggregator.blocker > 0 && (
+            <span className={[styles.aggBadge, styles.aggBlocker].join(' ')}>
+              <span className={styles.aggDot} /> {aggregator.blocker} блок.
+            </span>
+          )}
+          {aggregator.open > 0 && (
+            <span className={[styles.aggBadge, styles.aggOpen].join(' ')}>
+              <span className={styles.aggDot} /> {aggregator.open} откр.
+            </span>
+          )}
+          {aggregator.resolved > 0 && (
+            <span className={[styles.aggBadge, styles.aggResolved].join(' ')}>
+              <span className={styles.aggDot} /> {aggregator.resolved} решено
+            </span>
+          )}
+        </div>
       </div>
+
+      {totalThreads > 0 && (
+        <div className={styles.filterTabs} role="tablist" aria-label="Фильтр пинов">
+          {filterTabs.map((t) => (
+            <button
+              key={t.id}
+              role="tab"
+              aria-selected={filter === t.id}
+              className={[styles.filterTab, filter === t.id ? styles.filterTabActive : ''].join(' ')}
+              onClick={() => setFilter(t.id)}
+              type="button"
+            >
+              {t.label}
+              {t.count > 0 && <span className={styles.filterTabCount}>{t.count}</span>}
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className={styles.list}>
         {topLevel.length === 0 && (
           <div className={styles.empty}>Комментариев пока нет</div>
         )}
-        {topLevel.map((comment) => (
+        {topLevel.length > 0 && visibleThreads.length === 0 && (
+          <div className={styles.empty}>В этой категории пусто</div>
+        )}
+        {visibleThreads.map((comment) => (
           <div key={comment.id} className={styles.thread}>
             {renderComment(comment, false)}
             {getReplies(comment.id).map((reply) => renderComment(reply, true))}

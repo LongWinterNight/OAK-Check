@@ -35,19 +35,19 @@ describe('CommentsPanel', () => {
     expect(screen.getByText(/комментариев пока нет/i)).toBeInTheDocument();
   });
 
-  it('считает заголовок «Комментарии (N)»', () => {
+  it('показывает заголовок «Пины и комментарии»', () => {
     const comments = [mkComment({ id: 'a' }), mkComment({ id: 'b' })];
     render(<CommentsPanel comments={comments} currentUser={{ name: 'Я' }} />);
-    expect(screen.getByText(/комментарии \(2\)/i)).toBeInTheDocument();
+    expect(screen.getByText(/пины и комментарии/i)).toBeInTheDocument();
   });
 
-  it('показывает индикатор пинов «N пин.» если есть пин-комменты', () => {
+  it('показывает агрегатор «N откр.» для пинов без ответов', () => {
     const comments = [
       mkComment({ id: 'a', pinX: 10, pinY: 20 }),
       mkComment({ id: 'b' }),
     ];
     render(<CommentsPanel comments={comments} currentUser={{ name: 'Я' }} />);
-    expect(screen.getByText(/1 пин\./i)).toBeInTheDocument();
+    expect(screen.getByText(/1 откр\./i)).toBeInTheDocument();
   });
 
   it('submit вызывает onSubmit с trimmed body', () => {

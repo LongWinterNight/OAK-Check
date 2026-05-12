@@ -74,6 +74,7 @@ export interface ChapterWithItems extends Chapter {
   items: CheckItem[];
   progress: number;
   blockedCount: number;
+  wipCount: number;
   doneCount: number;
 }
 

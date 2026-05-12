@@ -52,7 +52,7 @@ export default function ChaptersPanel({
         return;
       }
       const chapter = await res.json();
-      onChapterCreated?.({ ...chapter, items: [], progress: 0, doneCount: 0, blockedCount: 0 });
+      onChapterCreated?.({ ...chapter, items: [], progress: 0, doneCount: 0, wipCount: 0, blockedCount: 0 });
       onSelect(chapter.id);
       setNewTitle('');
       setAddingChapter(false);
@@ -153,9 +153,18 @@ export default function ChaptersPanel({
                     </div>
                   )}
                   <div className={styles.subtitle}>
-                    {chapter.doneCount}/{total}
+                    <span className={styles.count}>{chapter.doneCount}/{total}</span>
+                    {chapter.wipCount > 0 && (
+                      <span className={[styles.miniBadge, styles.wip].join(' ')}>
+                        <span className={styles.dot} />
+                        {chapter.wipCount} в работе
+                      </span>
+                    )}
                     {chapter.blockedCount > 0 && (
-                      <span className={styles.blocked}> · {chapter.blockedCount} блок.</span>
+                      <span className={[styles.miniBadge, styles.blockedBadge].join(' ')}>
+                        <span className={styles.dot} />
+                        {chapter.blockedCount} блок.
+                      </span>
                     )}
                   </div>
                 </div>
