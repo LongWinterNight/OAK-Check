@@ -34,6 +34,9 @@ export default async function AdminPage() {
 
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
+  // Эти запросы — read-only, в транзакции их держать незачем (требование
+  // эксклюзивного коннекта приводило к P2028 при параллельной нагрузке).
+  // Запускаем параллельно через Promise.all — пул раздаёт коннекты как обычно.
   const [
     totalUsers,
     usersByRole,
@@ -46,7 +49,7 @@ export default async function AdminPage() {
     storageResult,
     blockedShots,
     topUsers,
-  ] = await prisma.$transaction([
+  ] = await Promise.all([
     prisma.user.count(),
     prisma.user.groupBy({ by: ['role'], _count: { _all: true }, orderBy: { role: 'asc' } }),
     prisma.project.count(),

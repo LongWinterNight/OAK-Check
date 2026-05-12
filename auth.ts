@@ -88,28 +88,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
   callbacks: {
     async jwt({ token, user, trigger }) {
-      // На логине / при явном update() — кладём свежие данные из user
+      // На логине — кладём данные из user в токен
       if (user) {
         token.id = user.id ?? '';
         token.role = ((user as Record<string, unknown>).role as string) ?? 'ARTIST';
-        token.roleRefreshedAt = Date.now();
         return token;
       }
 
-      // На каждом последующем декоде токена обновляем роль из БД,
-      // но не чаще раза в 60с — чтобы не бить базу на каждый запрос.
-      // Без этого после смены роли админом у затронутого пользователя
-      // оставалась бы устаревшая роль в сессии до следующего логина.
-      const ROLE_TTL_MS = 60_000;
-      const lastRefresh = (token.roleRefreshedAt as number | undefined) ?? 0;
-      const force = trigger === 'update';
-      const stale = Date.now() - lastRefresh >= ROLE_TTL_MS;
-
-      if (!force && !stale) return token;
+      // Перечитываем роль из БД ТОЛЬКО когда клиент явно дёрнул update().
+      // На клиенте это делает useUserChannel, реагируя на SSE-событие
+      // user:role-changed. Так мы получаем мгновенный refresh при смене роли
+      // и не бьём БД на каждом декоде токена (что переполняло пул коннектов
+      // при параллельных auth() из админ-страницы / heartbeat / SSE-роутов).
+      if (trigger !== 'update') return token;
 
       const tokenId = token.id;
       if (typeof tokenId !== 'string' || !tokenId || tokenId === 'dev-safan') {
-        token.roleRefreshedAt = Date.now();
         return token;
       }
 
@@ -119,10 +113,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           where: { id: tokenId },
           select: { role: true },
         });
-        if (fresh) {
-          token.role = fresh.role;
-          token.roleRefreshedAt = Date.now();
-        }
+        if (fresh) token.role = fresh.role;
       } catch {
         // БД временно недоступна — не разлогиниваем, оставляем прошлую роль
       }
