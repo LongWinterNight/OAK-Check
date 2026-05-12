@@ -215,7 +215,9 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  overflow: hidden;
+  /* overflow: visible — нужно чтобы dropdown «...» меню не обрезался
+     границами контейнера. Радиус компенсируем на крайних строках. */
+  position: relative;
 }
 
 /* ── Shot row ──────────────────────────────────────────────── */
@@ -232,6 +234,16 @@
   position: relative;
 }
 .shotRow:last-child { border-bottom: none; }
+
+/* Скруглённые углы крайних строк — компенсация overflow:visible */
+.shotRow:first-child {
+  border-top-left-radius: var(--radius-lg);
+  border-top-right-radius: var(--radius-lg);
+}
+.shotRow:last-child {
+  border-bottom-left-radius: var(--radius-lg);
+  border-bottom-right-radius: var(--radius-lg);
+}
 @media (hover: hover) {
   .shotRow:hover { background: var(--surface-2); }
 }
@@ -362,6 +374,7 @@
 /* Menu dropdown */
 .menuWrap {
   position: relative;
+  z-index: 5; /* поверх соседних строк */
 }
 .menuBtn {
   width: 24px;
@@ -381,7 +394,7 @@
 @media (hover: none) { .menuBtn { opacity: 1; } }
 .menuBtn:hover { background: var(--surface-3); color: var(--fg); }
 
-.menuBackdrop { position: fixed; inset: 0; z-index: 10; }
+.menuBackdrop { position: fixed; inset: 0; z-index: 90; }
 .menu {
   position: absolute;
   top: calc(100% + 4px);
@@ -389,10 +402,10 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-lg);
   min-width: 160px;
   overflow: hidden;
-  z-index: 20;
+  z-index: 100; /* поверх всего внутри page-контента */
 }
 .menuItem {
   display: flex;
