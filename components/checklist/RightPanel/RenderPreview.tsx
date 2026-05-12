@@ -16,6 +16,8 @@ function tooltipText(body: string): string {
 interface RenderPreviewProps {
   versions: RenderVersion[];
   comments: Comment[];
+  shotCode?: string;
+  shotTitle?: string;
   canDeleteVersion?: boolean;
   canPin?: boolean;
   pendingPin?: { x: number; y: number } | null;
@@ -30,6 +32,8 @@ interface RenderPreviewProps {
 export default function RenderPreview({
   versions,
   comments,
+  shotCode,
+  shotTitle,
   canDeleteVersion = false,
   canPin = false,
   pendingPin = null,
@@ -211,12 +215,15 @@ export default function RenderPreview({
           versions={versions}
           activeVersion={activeVersion}
           comments={comments}
+          shotCode={shotCode}
+          shotTitle={shotTitle}
           canPin={canPin}
           highlightedCommentId={highlightedCommentId}
           onHighlight={onHighlight}
           onClose={() => setLightboxOpen(false)}
           onPrev={goPrev}
           onNext={goNext}
+          onVersionSelect={setActiveVersion}
           onPinSubmit={onLightboxPinSubmit}
         />
       )}

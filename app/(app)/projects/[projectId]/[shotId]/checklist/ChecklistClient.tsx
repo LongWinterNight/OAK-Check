@@ -395,6 +395,8 @@ export default function ChecklistClient({
             comments={comments}
             currentUser={currentUser}
             currentUserRole={userRole}
+            shotCode={shot.code}
+            shotTitle={shot.title}
             canDeleteVersion={can.deleteShot(userRole)}
             canPin={can.pinComment(userRole)}
             pendingPin={pendingPin}

@@ -5,6 +5,7 @@ import Avatar from '@/components/ui/Avatar/Avatar';
 import Button from '@/components/ui/Button/Button';
 import { Icons } from '@/components/icons';
 import type { Comment } from '@/types';
+import { threadStatus as computeThreadStatus, type ThreadStatus } from '@/lib/pin-status';
 import styles from './CommentsPanel.module.css';
 
 interface CommentsPanelProps {
@@ -80,9 +81,6 @@ function InlineForm({ initial = '', placeholder, submitLabel, onSubmit, onCancel
 }
 
 type ThreadFilter = 'all' | 'open' | 'blocker' | 'resolved';
-type ThreadStatus = 'open' | 'blocker' | 'resolved';
-
-const BLOCKER_RE = /(^|\s)(🚨|\[блок(ер)?\]|\[blocker\]|блокер[!:.]|critical[!:.])/i;
 
 export default function CommentsPanel({
   comments,
@@ -116,17 +114,7 @@ export default function CommentsPanel({
   const topLevel = comments.filter((c) => !c.parentId);
   const getReplies = (id: string) => comments.filter((c) => c.parentId === id);
 
-  // Статус треда-пина (только для top-level с пином):
-  //   blocker = автор пометил тег/смайл-маркером
-  //   resolved = есть хотя бы один ответ
-  //   open = пин без ответов и без маркера
-  const threadStatus = (c: Comment): ThreadStatus | null => {
-    if (c.parentId) return null;
-    if (c.pinX === null) return null;
-    if (BLOCKER_RE.test(c.body)) return 'blocker';
-    const replies = comments.filter((x) => x.parentId === c.id);
-    return replies.length > 0 ? 'resolved' : 'open';
-  };
+  const threadStatus = (c: Comment): ThreadStatus | null => computeThreadStatus(c, comments);
 
   const aggregator = topLevel.reduce(
     (acc, c) => {

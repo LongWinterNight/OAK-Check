@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Icons } from '@/components/icons';
 import type { RenderVersion, Comment } from '@/types';
+import { threadStatus, STATUS_COLOR } from '@/lib/pin-status';
 import styles from './LightboxView.module.css';
 
 function tooltipText(body: string): string {
@@ -15,12 +16,15 @@ interface LightboxViewProps {
   versions: RenderVersion[];
   activeVersion: string;
   comments: Comment[];
+  shotCode?: string;
+  shotTitle?: string;
   canPin?: boolean;
   highlightedCommentId?: string | null;
   onHighlight?: (id: string | null) => void;
   onClose: () => void;
   onPrev: () => void;
   onNext: () => void;
+  onVersionSelect?: (version: string) => void;
   onPinSubmit?: (body: string, x: number, y: number) => Promise<unknown>;
 }
 
@@ -32,12 +36,15 @@ export default function LightboxView({
   versions,
   activeVersion,
   comments,
+  shotCode,
+  shotTitle,
   canPin = false,
   highlightedCommentId,
   onHighlight,
   onClose,
   onPrev,
   onNext,
+  onVersionSelect,
   onPinSubmit,
 }: LightboxViewProps) {
   const current = versions.find((v) => v.version === activeVersion);
@@ -55,6 +62,7 @@ export default function LightboxView({
     active: false, startX: 0, startY: 0, baseX: 0, baseY: 0,
   });
   const formRef = useRef<HTMLDivElement>(null);
+  const cancelPendingPinRef = useRef<(() => void) | null>(null);
 
   // Reset zoom and pin при смене версии
   useEffect(() => {
@@ -65,17 +73,30 @@ export default function LightboxView({
     setPinMode(false);
   }, [activeVersion]);
 
-  // Esc / стрелки
+  // Hotkeys: Esc / стрелки / P (toggle pin mode)
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (pendingPin) return; // в режиме редактирования коммента не трогаем стрелки
-      if (e.key === 'Escape') onClose();
+      // если фокус в textarea/input — отдаём приоритет редактированию
+      const target = e.target as HTMLElement | null;
+      const isEditing = target?.tagName === 'TEXTAREA' || target?.tagName === 'INPUT';
+
+      if (e.key === 'Escape') {
+        if (pendingPin) cancelPendingPinRef.current?.();
+        else onClose();
+        return;
+      }
+      if (isEditing || pendingPin) return; // стрелки/P не трогаем во время ввода
+
       if (e.key === 'ArrowLeft') onPrev();
       if (e.key === 'ArrowRight') onNext();
+      if ((e.key === 'p' || e.key === 'P' || e.key === 'з' || e.key === 'З') && canPin && onPinSubmit) {
+        e.preventDefault();
+        setPinMode((v) => !v);
+      }
     };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
-  }, [onClose, onPrev, onNext, pendingPin]);
+  }, [onClose, onPrev, onNext, pendingPin, canPin, onPinSubmit]);
 
   // Wheel zoom — относительно курсора (точка под курсором остаётся на месте)
   const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
@@ -182,6 +203,7 @@ export default function LightboxView({
     setPendingPin(null);
     setDraft('');
   };
+  cancelPendingPinRef.current = cancelPendingPin;
 
   const transformStyle: React.CSSProperties = {
     transform: `translate(${translate.x}px, ${translate.y}px) scale(${scale})`,
@@ -195,31 +217,58 @@ export default function LightboxView({
   return createPortal(
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.content} onClick={(e) => e.stopPropagation()}>
-        {/* Top toolbar */}
-        <div className={styles.topToolbar}>
-          {canPin && onPinSubmit && (
-            <button
-              className={[styles.toolBtn, pinMode ? styles.toolBtnActive : ''].join(' ')}
-              onClick={() => setPinMode((v) => !v)}
-              title={pinMode ? 'Отменить установку пина' : 'Поставить пин (клик по рендеру)'}
-            >
-              <Icons.Dot size={8} /> {pinMode ? 'Кликните на рендер' : 'Пин'}
-            </button>
+        {/* Top bar: shot info | version tabs | tools */}
+        <div className={styles.topBar}>
+          <div className={styles.shotInfo}>
+            {shotCode && <span className={styles.shotInfoCode}>{shotCode}</span>}
+            {shotTitle && <span className={styles.shotInfoTitle}>{shotTitle}</span>}
+          </div>
+
+          {versions.length > 0 && (
+            <div className={styles.versionTabs} role="tablist" aria-label="Версии рендера">
+              {versions.map((v) => (
+                <button
+                  key={v.id}
+                  role="tab"
+                  aria-selected={v.version === activeVersion}
+                  className={[
+                    styles.versionTab,
+                    v.version === activeVersion ? styles.versionTabActive : '',
+                  ].join(' ')}
+                  onClick={() => onVersionSelect?.(v.version)}
+                  type="button"
+                >
+                  {v.version}
+                </button>
+              ))}
+            </div>
           )}
-          <div className={styles.zoomControls}>
-            <span className={styles.zoomLabel}>{Math.round(scale * 100)}%</span>
-            <button
-              className={styles.toolBtn}
-              onClick={resetZoom}
-              disabled={scale === 1}
-              title="Сбросить масштаб (1:1)"
-            >
-              1:1
+
+          <div className={styles.topActions}>
+            {canPin && onPinSubmit && (
+              <button
+                className={[styles.toolBtn, pinMode ? styles.toolBtnActive : ''].join(' ')}
+                onClick={() => setPinMode((v) => !v)}
+                title={pinMode ? 'Отменить установку пина (P)' : 'Поставить пин (P)'}
+              >
+                <Icons.Dot size={8} /> {pinMode ? 'Кликните на рендер' : 'Добавить пин'}
+              </button>
+            )}
+            <div className={styles.zoomControls}>
+              <span className={styles.zoomLabel}>{Math.round(scale * 100)}%</span>
+              <button
+                className={styles.toolBtn}
+                onClick={resetZoom}
+                disabled={scale === 1}
+                title="Сбросить масштаб (1:1)"
+              >
+                1:1
+              </button>
+            </div>
+            <button className={styles.closeBtn} onClick={onClose} title="Закрыть (Esc)">
+              <Icons.X size={18} />
             </button>
           </div>
-          <button className={styles.closeBtn} onClick={onClose} title="Закрыть (Esc)">
-            <Icons.X size={18} />
-          </button>
         </div>
 
         {versions.length > 1 && (
@@ -259,14 +308,23 @@ export default function LightboxView({
               />
             )}
 
-            {/* Existing pins */}
+            {/* Existing pins — окрашены по статусу треда */}
             {pinnedComments.map((c, i) => {
               const isActive = highlightedCommentId === c.id;
+              const status = threadStatus(c, comments) ?? 'open';
+              const color = STATUS_COLOR[status];
               return (
                 <div
                   key={c.id}
-                  className={[styles.pin, isActive ? styles.pinActive : ''].join(' ')}
-                  style={{ left: `${c.pinX}%`, top: `${c.pinY}%` }}
+                  className={[styles.pin, styles.pinStatus, isActive ? styles.pinStatusActive : ''].join(' ')}
+                  style={{
+                    left: `${c.pinX}%`,
+                    top: `${c.pinY}%`,
+                    background: color,
+                    borderColor: '#fff',
+                    color: '#fff',
+                  }}
+                  data-pin-status={status}
                   onMouseEnter={() => onHighlight?.(c.id)}
                   onMouseLeave={() => onHighlight?.(null)}
                   onClick={(e) => e.stopPropagation()}
@@ -322,7 +380,26 @@ export default function LightboxView({
           </div>
         )}
 
-        <div className={styles.version}>{activeVersion}</div>
+        {/* Hotkey hint footer */}
+        <div className={styles.hotkeys}>
+          {canPin && onPinSubmit && (
+            <span className={styles.hotkey}>
+              <kbd className={styles.kbd}>P</kbd> Пин
+            </span>
+          )}
+          {versions.length > 1 && (
+            <span className={styles.hotkey}>
+              <kbd className={styles.kbd}>←</kbd>
+              <kbd className={styles.kbd}>→</kbd> Версия
+            </span>
+          )}
+          <span className={styles.hotkey}>
+            <kbd className={styles.kbd}>scroll</kbd> Зум
+          </span>
+          <span className={styles.hotkey}>
+            <kbd className={styles.kbd}>Esc</kbd> Закрыть
+          </span>
+        </div>
       </div>
     </div>,
     document.body,
