@@ -28,7 +28,7 @@ interface LightboxViewProps {
   onVersionSelect?: (version: string) => void;
   onPinSubmit?: (body: string, x: number, y: number) => Promise<unknown>;
   // Управление комментариями в правой панели
-  currentUser?: { id: string; name: string };
+  currentUser?: { id: string; name: string; avatarUrl?: string | null };
   currentUserRole?: string;
   shotId?: string;
   onCommentSubmit?: (body: string) => void;

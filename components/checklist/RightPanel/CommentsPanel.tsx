@@ -12,7 +12,7 @@ interface CommentsPanelProps {
   comments: Comment[];
   currentUserId?: string;
   currentUserRole?: string;
-  currentUser?: { name: string };
+  currentUser?: { name: string; avatarUrl?: string | null };
   pendingPin?: { x: number; y: number } | null;
   highlightedCommentId?: string | null;
   onPinClear?: () => void;
@@ -198,7 +198,7 @@ export default function CommentsPanel({
         onMouseEnter={() => pinNum && onHighlight?.(comment.id)}
         onMouseLeave={() => pinNum && onHighlight?.(null)}
       >
-        <Avatar name={comment.user.name} size={isReply ? 22 : 26} />
+        <Avatar name={comment.user.name} src={comment.user.avatarUrl} size={isReply ? 22 : 26} />
         <div className={styles.commentBody}>
           <div className={styles.commentHead}>
             <span className={styles.name}>{comment.user.name.split(' ')[0]}</span>
@@ -361,7 +361,7 @@ export default function CommentsPanel({
           </div>
         )}
         <div className={styles.composerTop}>
-          <Avatar name={currentUser?.name ?? '?'} size={26} />
+          <Avatar name={currentUser?.name ?? '?'} src={currentUser?.avatarUrl ?? null} size={26} />
           <textarea
             ref={textareaRef}
             className={styles.composerInput}

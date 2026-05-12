@@ -30,6 +30,15 @@ export default async function Sidebar() {
   const [session, projects] = await Promise.all([auth(), getProjects()]);
   const user = session?.user;
 
+  // Аватарка не в JWT — догружаем из БД (id уже из сессии)
+  const { prisma } = await import('@/lib/prisma');
+  const userAvatar = user?.id
+    ? await prisma.user.findUnique({
+        where: { id: user.id },
+        select: { avatarUrl: true },
+      }).catch(() => null)
+    : null;
+
   return (
     <aside className={styles.sidebar}>
       {/* Логотип */}
@@ -51,6 +60,7 @@ export default async function Sidebar() {
         <UserRow
           name={user?.name ?? 'Пользователь'}
           role={(user as { role?: string })?.role ?? 'ARTIST'}
+          avatarUrl={userAvatar?.avatarUrl ?? null}
         />
       </div>
     </aside>

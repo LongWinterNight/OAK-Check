@@ -128,9 +128,22 @@ export default async function ChecklistPage({ params }: Props) {
       : null,
   };
 
+  // Аватарка не лежит в JWT (там только id/name/role) — догружаем из БД.
+  // На session.user.id один лёгкий SELECT с avatarUrl.
+  const sessionUserAvatar = session?.user?.id
+    ? await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { avatarUrl: true },
+      })
+    : null;
+
   const currentUser = session?.user
-    ? { id: session.user.id, name: session.user.name ?? 'Пользователь' }
-    : { id: '', name: 'Гость' };
+    ? {
+        id: session.user.id,
+        name: session.user.name ?? 'Пользователь',
+        avatarUrl: sessionUserAvatar?.avatarUrl ?? null,
+      }
+    : { id: '', name: 'Гость', avatarUrl: null };
   const userRole = session?.user?.role ?? 'ARTIST';
 
   return (

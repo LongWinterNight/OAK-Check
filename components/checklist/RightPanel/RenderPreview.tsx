@@ -31,7 +31,7 @@ interface RenderPreviewProps {
   onLightboxPinSubmit?: (body: string, x: number, y: number) => Promise<unknown>;
   onVersionDeleted?: (id: string) => void;
   // Управление комментариями в правой панели лайтбокса
-  currentUser?: { id: string; name: string };
+  currentUser?: { id: string; name: string; avatarUrl?: string | null };
   currentUserRole?: string;
   shotId?: string;
   onCommentSubmit?: (body: string) => void;

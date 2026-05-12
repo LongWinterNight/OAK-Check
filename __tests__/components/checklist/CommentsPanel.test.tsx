@@ -7,6 +7,7 @@ import type { Comment } from '@/types';
 const mkComment = (overrides: Partial<Comment> = {}): Comment => ({
   id: overrides.id ?? 'c1',
   shotId: 'shot1',
+  versionId: overrides.versionId ?? null,
   userId: overrides.userId ?? 'u1',
   body: overrides.body ?? 'Hello',
   pinX: overrides.pinX ?? null,

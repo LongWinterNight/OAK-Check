@@ -26,7 +26,7 @@ export default async function ActivityFeed() {
         {activities.map((a) => (
           <div key={a.id} className={styles.row}>
             <span className={styles.time}>{formatTime(a.createdAt)}</span>
-            <Avatar name={a.user.name} size={22} />
+            <Avatar name={a.user.name} src={a.user.avatarUrl} size={22} />
             <div className={styles.text}>
               <span className={styles.name}>{a.user.name.split(' ')[0]}</span>{' '}
               <span className={styles.action}>{a.message}</span>

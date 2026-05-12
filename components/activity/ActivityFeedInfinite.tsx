@@ -52,7 +52,7 @@ function ActivityRow({ entry }: { entry: ActivityEntry }) {
         <div className={styles.message}>
           {entry.user && (
             <span className={styles.userName}>
-              <Avatar name={entry.user.name} size={18} />
+              <Avatar name={entry.user.name} src={entry.user.avatarUrl ?? null} size={18} />
               {entry.user.name}
             </span>
           )}

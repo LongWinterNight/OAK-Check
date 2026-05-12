@@ -9,7 +9,7 @@ import styles from './RightPanel.module.css';
 interface RightPanelProps {
   versions: RenderVersion[];
   comments: Comment[];
-  currentUser?: { id: string; name: string };
+  currentUser?: { id: string; name: string; avatarUrl?: string | null };
   currentUserRole?: string;
   shotCode?: string;
   shotTitle?: string;

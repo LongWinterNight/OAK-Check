@@ -184,7 +184,7 @@ export default function ChecklistRow({
                 title="Назначен: изменить"
                 onClick={() => setShowAssign((v) => !v)}
               >
-                <Avatar name={owner.name} size={22} />
+                <Avatar name={owner.name} src={owner.avatarUrl} size={22} />
               </button>
             ) : (
               <button
@@ -217,7 +217,7 @@ export default function ChecklistRow({
           </div>
         )}
 
-        {!canManage && owner && <Avatar name={owner.name} size={22} />}
+        {!canManage && owner && <Avatar name={owner.name} src={owner.avatarUrl} size={22} />}
 
         {/* Note toggle */}
         {canManage && !item.note && !editingNote && (

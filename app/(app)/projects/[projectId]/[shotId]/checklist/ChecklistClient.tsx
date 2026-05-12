@@ -23,7 +23,7 @@ interface ChecklistClientProps {
   initialChapters: ChapterWithItems[];
   versions: RenderVersion[];
   comments: Comment[];
-  currentUser: { id: string; name: string };
+  currentUser: { id: string; name: string; avatarUrl?: string | null };
   userRole: Role;
   users: Pick<User, 'id' | 'name'>[];
 }

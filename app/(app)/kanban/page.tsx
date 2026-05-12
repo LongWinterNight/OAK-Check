@@ -16,7 +16,7 @@ export default async function KanbanPage() {
   const shots = await prisma.shot.findMany({
     include: {
       project: { select: { id: true, title: true } },
-      owner: { select: { name: true } },
+      owner: { select: { name: true, avatarUrl: true } },
       items: { select: { state: true } },
     },
     orderBy: [{ status: 'asc' }, { order: 'asc' }],
@@ -29,6 +29,7 @@ export default async function KanbanPage() {
     projectId: s.project.id,
     projectTitle: s.project.title,
     ownerName: s.owner?.name ?? null,
+    ownerAvatarUrl: s.owner?.avatarUrl ?? null,
     dueDate: s.dueDate?.toISOString() ?? null,
     progress: computeProgress(s.items as { state: 'TODO' | 'WIP' | 'DONE' | 'BLOCKED' }[]),
     status: s.status as KanbanShot['status'],

@@ -33,6 +33,7 @@ export interface KanbanShot {
   projectId: string;
   projectTitle: string;
   ownerName: string | null;
+  ownerAvatarUrl: string | null;
   dueDate: string | null;
   progress: number;
   status: ShotStatus;
@@ -69,7 +70,7 @@ function KanbanCard({ shot, isDragging, canDrag }: { shot: KanbanShot; isDraggin
           {due && <span className={styles.date}>{due}</span>}
         </div>
         <div className={styles.cardActions}>
-          {shot.ownerName && <Avatar name={shot.ownerName} size={22} />}
+          {shot.ownerName && <Avatar name={shot.ownerName} src={shot.ownerAvatarUrl} size={22} />}
           <Link
             href={`/projects/${shot.projectId}/${shot.id}/checklist`}
             className={styles.checklistLink}
@@ -234,6 +235,7 @@ export default function KanbanBoard({
               projectId: projectFilter,
               projectTitle: project?.title ?? '',
               ownerName: null,
+              ownerAvatarUrl: null,
               dueDate: null,
               progress: 0,
               status: newShotColumn,

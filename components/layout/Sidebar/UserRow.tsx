@@ -19,9 +19,10 @@ const ROLE_LABELS: Record<string, string> = {
 interface UserRowProps {
   name: string;
   role: string;
+  avatarUrl?: string | null;
 }
 
-export function UserRow({ name, role }: UserRowProps) {
+export function UserRow({ name, role, avatarUrl }: UserRowProps) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
@@ -46,7 +47,7 @@ export function UserRow({ name, role }: UserRowProps) {
         </>
       )}
       <button className={styles.row} onClick={() => setMenuOpen((v) => !v)}>
-        <Avatar name={name} size={26} online />
+        <Avatar name={name} src={avatarUrl ?? null} size={26} online />
         <div className={styles.info}>
           <div className={styles.name}>{name}</div>
           <div className={styles.roleLabel}>{ROLE_LABELS[role] ?? role}</div>
