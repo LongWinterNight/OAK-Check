@@ -70,6 +70,7 @@ export default function LightboxView({
   const [translate, setTranslate] = useState({ x: 0, y: 0 });
   const [pinMode, setPinMode] = useState(false);
   const [pendingPin, setPendingPin] = useState<{ x: number; y: number } | null>(null);
+  const [sidePanelOpen, setSidePanelOpen] = useState(true);
 
   const wrapRef = useRef<HTMLDivElement>(null);
   const panState = useRef<{ active: boolean; startX: number; startY: number; baseX: number; baseY: number }>({
@@ -223,7 +224,8 @@ export default function LightboxView({
         : 'default',
   };
 
-  const showSidePanel = !!onCommentSubmit && !!currentUser;
+  const canShowSidePanel = !!onCommentSubmit && !!currentUser;
+  const showSidePanel = canShowSidePanel && sidePanelOpen;
 
   return createPortal(
     <div className={styles.overlay} onClick={onClose}>
@@ -279,6 +281,16 @@ export default function LightboxView({
                 1:1
               </button>
             </div>
+            {canShowSidePanel && (
+              <button
+                className={[styles.iconBtn, sidePanelOpen ? styles.iconBtnActive : ''].join(' ')}
+                onClick={() => setSidePanelOpen((v) => !v)}
+                title={sidePanelOpen ? 'Скрыть комментарии' : 'Показать комментарии'}
+                aria-pressed={sidePanelOpen}
+              >
+                <Icons.Msg size={16} />
+              </button>
+            )}
             <button className={styles.closeBtn} onClick={onClose} title="Закрыть (Esc)">
               <Icons.X size={18} />
             </button>

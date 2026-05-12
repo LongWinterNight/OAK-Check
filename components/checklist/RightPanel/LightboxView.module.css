@@ -1,7 +1,8 @@
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.92);
+  background: rgba(20, 22, 26, 0.82);
+  backdrop-filter: blur(4px);
   z-index: 1000;
   display: flex;
   align-items: center;
@@ -182,7 +183,8 @@
   color: rgba(255, 255, 255, 0.7);
 }
 
-.closeBtn {
+.closeBtn,
+.iconBtn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -193,10 +195,18 @@
   background: rgba(255, 255, 255, 0.06);
   color: #fff;
   cursor: pointer;
-  transition: background 0.12s;
-  margin-left: 4px;
+  transition: background 0.12s, border-color 0.12s;
 }
-.closeBtn:hover { background: rgba(255, 255, 255, 0.18); }
+
+.closeBtn { margin-left: 4px; }
+.closeBtn:hover,
+.iconBtn:hover { background: rgba(255, 255, 255, 0.18); }
+
+.iconBtnActive {
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+  color: #fff;
+}
 
 .nav {
   position: absolute;
