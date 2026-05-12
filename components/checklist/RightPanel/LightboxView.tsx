@@ -71,6 +71,8 @@ export default function LightboxView({
   const [pinMode, setPinMode] = useState(false);
   const [pendingPin, setPendingPin] = useState<{ x: number; y: number } | null>(null);
   const [sidePanelOpen, setSidePanelOpen] = useState(true);
+  // Скрытие пинов — для чистого просмотра пикселей под маркером
+  const [pinsVisible, setPinsVisible] = useState(true);
 
   const wrapRef = useRef<HTMLDivElement>(null);
   const panState = useRef<{ active: boolean; startX: number; startY: number; baseX: number; baseY: number }>({
@@ -264,7 +266,14 @@ export default function LightboxView({
             {canPin && onPinSubmit && (
               <button
                 className={[styles.toolBtn, pinMode ? styles.toolBtnActive : ''].join(' ')}
-                onClick={() => setPinMode((v) => !v)}
+                onClick={() => {
+                  setPinMode((v) => {
+                    // Включаем pin-mode — показываем пины (иначе непонятно
+                    // где уже стоят и где можно поставить)
+                    if (!v) setPinsVisible(true);
+                    return !v;
+                  });
+                }}
                 title={pinMode ? 'Отменить установку пина (P)' : 'Поставить пин (P)'}
               >
                 <Icons.Dot size={8} /> {pinMode ? 'Кликните на рендер' : 'Добавить пин'}
@@ -281,6 +290,14 @@ export default function LightboxView({
                 1:1
               </button>
             </div>
+            <button
+              className={[styles.iconBtn, pinsVisible ? styles.iconBtnActive : ''].join(' ')}
+              onClick={() => setPinsVisible((v) => !v)}
+              title={pinsVisible ? 'Скрыть пины (для просмотра под маркерами)' : 'Показать пины'}
+              aria-pressed={pinsVisible}
+            >
+              <Icons.Eye size={16} />
+            </button>
             {canShowSidePanel && (
               <button
                 className={[styles.iconBtn, sidePanelOpen ? styles.iconBtnActive : ''].join(' ')}
@@ -316,7 +333,7 @@ export default function LightboxView({
             )}
 
             {/* Pending pin */}
-            {pendingPin && (
+            {pinsVisible && pendingPin && (
               <div
                 className={[styles.pin, styles.pinPending].join(' ')}
                 style={{ left: `${pendingPin.x}%`, top: `${pendingPin.y}%` }}
@@ -324,7 +341,7 @@ export default function LightboxView({
             )}
 
             {/* Existing pins — окрашены по статусу треда */}
-            {pinnedComments.map((c, i) => {
+            {pinsVisible && pinnedComments.map((c, i) => {
               const isActive = highlightedCommentId === c.id;
               const status = threadStatus(c, comments) ?? 'open';
               const color = STATUS_COLOR[status];
