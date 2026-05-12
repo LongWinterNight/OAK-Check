@@ -75,10 +75,9 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: 'Нет данных для обновления' }, { status: 400 });
     }
 
-    // Dev-аккаунт существует только в сессии, не в БД
-    if (session.user.id === 'dev-safan') {
-      return NextResponse.json({ error: 'Данные demo-аккаунта нельзя изменить' }, { status: 403 });
-    }
+    // Раньше dev-аккаунт блокировался, но он upsert'ится в БД при логине,
+    // и пользователь должен иметь возможность редактировать свой профиль.
+    // При следующем логине upsert делает update: {} — наши изменения сохраняются.
 
     const updated = await prisma.user.update({
       where: { id: session.user.id },

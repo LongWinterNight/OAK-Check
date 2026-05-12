@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { Icons } from '@/components/icons';
+import { AvatarCropModal } from '@/components/settings/AvatarCropModal';
 import styles from './tab.module.css';
 
 interface ProfileTabProps {
@@ -20,6 +21,7 @@ export default function ProfileTab({ currentUser }: ProfileTabProps) {
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState<'idle' | 'ok' | 'err'>('idle');
   const [errMsg, setErrMsg] = useState('');
+  const [cropFile, setCropFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?';
@@ -37,19 +39,28 @@ export default function ProfileTab({ currentUser }: ProfileTabProps) {
     }
   }
 
-  async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 2 * 1024 * 1024) {
-      setErrMsg('Файл слишком большой (макс. 2 МБ)');
+    // Лимит на исходник — 40 МБ; кропнутая аватарка получится ~50-200 КБ
+    if (file.size > 40 * 1024 * 1024) {
+      setErrMsg('Файл слишком большой (макс. 40 МБ)');
       setStatus('err');
+      if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
+    setStatus('idle');
+    setCropFile(file);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  }
+
+  async function handleCropped(blob: Blob, fileName: string) {
+    setCropFile(null);
     setAvatarUploading(true);
     setStatus('idle');
     try {
       const fd = new FormData();
-      fd.append('file', file);
+      fd.append('file', new File([blob], fileName, { type: 'image/jpeg' }));
       const res = await fetch('/api/upload', { method: 'POST', body: fd });
       if (!res.ok) throw new Error('Ошибка загрузки');
       const { url } = await res.json();
@@ -60,7 +71,6 @@ export default function ProfileTab({ currentUser }: ProfileTabProps) {
       setStatus('err');
     } finally {
       setAvatarUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   }
 
@@ -102,6 +112,13 @@ export default function ProfileTab({ currentUser }: ProfileTabProps) {
 
   return (
     <>
+      {cropFile && (
+        <AvatarCropModal
+          file={cropFile}
+          onCropped={handleCropped}
+          onClose={() => setCropFile(null)}
+        />
+      )}
       {/* Avatar + info */}
       <div className={styles.section}>
         <div className={styles.sectionHead}>
