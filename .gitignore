@@ -34,6 +34,10 @@ yarn-error.log*
 .env*
 !.env.example
 
+# personal notes (только для владельца проекта)
+MY_NOTES.md
+NOTES.local.md
+
 # vercel
 .vercel
 
